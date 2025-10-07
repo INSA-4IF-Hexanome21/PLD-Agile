@@ -5,17 +5,14 @@ public abstract class Site {
     protected String id;
     protected String lat;
     protected String lng;
-    protected Timestamp depart_heure;
+    protected Timestamp depart_heure = null;
+    protected Timestamp arrivee_heure = null;
 
-    public Site(String id, String lat, String lng, Timestamp depart_heure) {
+    public Site(String id, String lat, String lng) {
         this.id = id;
         this.lat = lat;
         this.lng = lng;
-        this.depart_heure = depart_heure;
     }
-
-    public abstract void ajouter();
-    public abstract void supprimer();
 
     public String getId() {
         return id;
@@ -31,6 +28,10 @@ public abstract class Site {
 
     public Timestamp getDepartHeure() {
         return depart_heure;
+    }
+
+    public Timestamp getArriveeHeure() {
+        return arrivee_heure;
     }
 
 }
