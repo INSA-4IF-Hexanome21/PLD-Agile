@@ -38,11 +38,11 @@ public class Carte {
 
     // Méthodes 
     public void ajouterNoeud(Noeud noeud) {
-        this.noeuds.add(noeud);
+        if (!noeuds.contains(noeud)) this.noeuds.add(noeud);
     }
 
     public void ajouterTroncon(Troncon troncon) {
-        this.troncons.add(troncon);
+        if (!troncons.contains(troncon)) this.troncons.add(troncon);
     }
 
     public void ajouterSite(Site site) {
