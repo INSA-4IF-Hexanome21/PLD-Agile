@@ -1,4 +1,4 @@
-package modeles;
+package main.java.model;
 
 public class Entrepot extends Site {
 
