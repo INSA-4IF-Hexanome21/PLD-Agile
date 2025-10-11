@@ -1,6 +1,4 @@
-package main.java.app;
-
-import main.java.model.*;
+package app;
 
 public class Main {
     public static void main(String[] args) {

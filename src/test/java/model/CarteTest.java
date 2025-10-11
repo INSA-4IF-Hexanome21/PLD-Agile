@@ -1,12 +1,9 @@
-package test.java.model;
-
-import main.java.model.Carte;
-import main.java.model.Trajet;
+package model;
 
 public class CarteTest {
 
-    public static void testCarte() {
-        Carte carte = new Carte();
+    public static void main(String[] args) {
+        Carte carte =new Carte();
         Trajet trajet = new Trajet(1);
 
         carte.ajouterTrajet(trajet);
