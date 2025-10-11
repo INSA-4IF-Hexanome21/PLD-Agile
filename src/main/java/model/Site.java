@@ -1,4 +1,4 @@
-package modeles;
+package model;
 
 import java.time.LocalTime;
 

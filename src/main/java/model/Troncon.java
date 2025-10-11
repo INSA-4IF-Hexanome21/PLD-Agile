@@ -1,4 +1,4 @@
-package modeles;
+package model;
 
 public class Troncon{
 
