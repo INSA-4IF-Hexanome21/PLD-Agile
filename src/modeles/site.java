@@ -1,12 +1,14 @@
 package modeles;
 
+import java.time.LocalTime;
+
 public abstract class Site {
 
     protected String id;
     protected String lat;
     protected String lng;
-    protected Timestamp depart_heure = null;
-    protected Timestamp arrivee_heure = null;
+    protected LocalTime depart_heure = null;
+    protected LocalTime arrivee_heure = null;
 
     public Site(String id, String lat, String lng) {
         this.id = id;
@@ -26,11 +28,11 @@ public abstract class Site {
         return lng;
     }
 
-    public Timestamp getDepartHeure() {
+    public LocalTime getDepartHeure() {
         return depart_heure;
     }
 
-    public Timestamp getArriveeHeure() {
+    public LocalTime getArriveeHeure() {
         return arrivee_heure;
     }
 
