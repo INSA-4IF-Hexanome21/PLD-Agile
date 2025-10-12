@@ -9,6 +9,7 @@ public class Trajet {
     // Attributs
     private Integer idLivreur;
     private List<Site> sites;
+    private List<Troncon> troncons;
     private Float dureeTrajet;
     private LocalTime heureDebut;
     private LocalTime heureFin;
@@ -18,6 +19,7 @@ public class Trajet {
     public Trajet(Integer id) {
         this.idLivreur = id;
         this.sites = new ArrayList<>();
+        this.troncons = new ArrayList<>();
         this.dureeTrajet = null;
         this.heureDebut = LocalTime.of(8, 00); //On part toujours de l'entrpôt à 8h
         this.heureFin = null;
@@ -47,5 +49,13 @@ public class Trajet {
 
     public List<Site> getSites(){
         return sites;
+    }
+
+    public List<Troncon> getTroncons() {
+        return troncons;
+    }
+
+    public void setTroncons(List<Troncon> troncons) {
+        this.troncons = troncons;
     }
 }
