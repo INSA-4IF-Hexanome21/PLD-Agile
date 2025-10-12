@@ -9,3 +9,6 @@ javac -d target/classes src/main/java/model/*.java
 
 # Compiler les tests
 javac -cp target/classes -d target/test-classes src/test/java/model/*.java
+
+# Exécuter les tests 
+java -cp target/classes model.<classTest>
