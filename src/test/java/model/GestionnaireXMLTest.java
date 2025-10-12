@@ -1,8 +1,5 @@
-package test;
+package model;
 
-import model.Noeud;
-import model.Troncon;
-import model.GestionnaireXML;
 
 public class GestionnaireXMLTest {
 
