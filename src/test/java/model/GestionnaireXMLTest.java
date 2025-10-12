@@ -5,7 +5,7 @@ public class GestionnaireXMLTest {
 
     public static void main(String[] args) {
         // Chemin vers ton fichier XML local
-        String cheminFichier = "../../../ressources/fichiersXMLPickupDelivery/petitPlan.xml";
+        String cheminFichier = "ressources/fichiersXMLPickupDelivery/petitPlan.xml";
 
         // Création du gestionnaire XML et chargement des données
         GestionnaireXML gestionnaire = new GestionnaireXML(cheminFichier);
