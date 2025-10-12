@@ -4,6 +4,7 @@ package model;
 public class GestionnaireXMLTest {
 
     public static void main(String[] args) {
+        System.out.println("===== TEST Gestionaire =====");
         // Chemin vers ton fichier XML local
         String cheminFichier = "ressources/fichiersXMLPickupDelivery/petitPlan.xml";
 

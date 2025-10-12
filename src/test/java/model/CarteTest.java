@@ -3,6 +3,7 @@ package model;
 public class CarteTest {
 
     public static void main(String[] args) {
+         System.out.println("===== TEST Carte =====");
         Carte carte =new Carte();
         Trajet trajet = new Trajet(1);
         

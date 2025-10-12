@@ -1,9 +1,9 @@
-package tests;
+package model;
 
-import modeles.Trajet;
 
 public class trajetTest {
-    public static void main() {
+    public static void main(String[] args) {
+        System.out.println("===== TEST Trajet =====");
         Trajet trajet = new Trajet(1);
         System.out.println("Id livreur : " + trajet.getIdLivreur());
         System.out.println("Heure début : " + trajet.getHeureDebut());
