@@ -1,4 +1,6 @@
-package model;
+package tests;
+
+import modeles.Carte;
 
 public class CarteTest {
 
