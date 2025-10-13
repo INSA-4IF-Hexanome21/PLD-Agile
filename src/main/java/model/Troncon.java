@@ -61,6 +61,6 @@ public class Troncon {
     //Méthode éventuel pour les tables de haschage
     @Override
     public int hashCode() {
-        return Objects.hash(nomRue, origine, destination);
+        return Objects.hash(origine, destination);
     }
 }

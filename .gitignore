@@ -102,4 +102,4 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-src/lib
+lib
