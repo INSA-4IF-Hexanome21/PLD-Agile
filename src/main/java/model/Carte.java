@@ -37,6 +37,14 @@ public class Carte {
         return trajets;
     }
 
+    public void setNoeuds(HashMap<Long, Noeud> noeuds) {
+        this.noeuds = noeuds;
+    }
+
+    public void setTroncons(List<Troncon> troncons) {
+        this.troncons = troncons;
+    }
+
     // Méthodes 
     public void ajouterNoeud(Noeud noeud) {
         if (!noeuds.containsKey(noeud.getId())) this.noeuds.put(noeud.getId(), noeud);
