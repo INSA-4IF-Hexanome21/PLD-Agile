@@ -15,9 +15,18 @@ public class Trajet {
     private LocalTime heureFin;
 
 
-    // Constructeur
+    // Constructeur complet
     public Trajet(Livreur livreur) {
         this.livreur = livreur;
+        this.sites = new ArrayList<>();
+        this.troncons = new ArrayList<>();
+        this.dureeTrajet = null;
+        this.heureDebut = LocalTime.of(8, 00); //On part toujours de l'entrpôt à 8h
+        this.heureFin = null;
+    }
+    // Constructeur incomplet
+    public Trajet() {
+        this.livreur = null;
         this.sites = new ArrayList<>();
         this.troncons = new ArrayList<>();
         this.dureeTrajet = null;
