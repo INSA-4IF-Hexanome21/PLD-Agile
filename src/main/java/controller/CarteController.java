@@ -1,5 +1,8 @@
 package controller;
 
+import java.util.HashMap;
+import java.util.List;
+
 import model.Carte;
 import model.GestionnaireXML;
 import model.Noeud;
@@ -9,19 +12,23 @@ public class CarteController {
     private Carte carte;
     private GestionnaireXML gestionnaireXML;
 
-    public CarteController(String cheminFichier) {
+    public CarteController() {
         this.carte = new Carte();
-        this.gestionnaireXML = new GestionnaireXML(cheminFichier);
+        this.gestionnaireXML = new GestionnaireXML();
     }
 
-    public void chargerCarteDepuisXML() {
-        for (var n : gestionnaireXML.getNoeuds()) {
-            carte.ajouterNoeud(n);
-        }
-        for (var t : gestionnaireXML.getTroncons()) {
-            carte.ajouterTroncon(t);
-        }
+    public void chargerCarteDepuisXML(String cheminFichier) {
+    if (gestionnaireXML == null) {
+        gestionnaireXML = new GestionnaireXML(); 
+    } 
+    HashMap<Long, Noeud> noeuds = gestionnaireXML.chargerPlanNoeuds(cheminFichier);
+    if (carte == null) {
+        carte = new Carte();
     }
+    carte.setNoeuds(noeuds);
+    List<Troncon> troncons = gestionnaireXML.chargerPlanTroncons(cheminFichier,noeuds);
+    carte.setTroncons(troncons);
+}
 
     public String getCarteJSON() {
     StringBuilder json = new StringBuilder();

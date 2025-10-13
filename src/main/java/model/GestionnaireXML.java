@@ -8,9 +8,9 @@ import java.util.*;
 
 public class GestionnaireXML {
 
-    //Méthode pour charger un plan et renvoyer la Map de noeuds
-    public static Map<Long, Noeud> chargerPlanNoeuds(String cheminFichier) {
-        Map<Long, Noeud> mapNoeuds = new HashMap<>();
+    // Méthode pour charger un plan et renvoyer la HashMap de noeuds
+    public static HashMap<Long, Noeud> chargerPlanNoeuds(String cheminFichier) {
+        HashMap<Long, Noeud> mapNoeuds = new HashMap<>();
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -31,8 +31,9 @@ public class GestionnaireXML {
         }
         return mapNoeuds;
     }
-    //Méthode pour charger un plan et renvoyer la liste de tronçons
-    public static List<Troncon> chargerPlanTroncons(String cheminFichier, Map<Long, Noeud> mapNoeuds) {
+
+    // Méthode pour charger un plan et renvoyer la liste de tronçons
+    public static List<Troncon> chargerPlanTroncons(String cheminFichier, HashMap<Long, Noeud> mapNoeuds) {
         List<Troncon> troncons = new ArrayList<>();
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -62,8 +63,8 @@ public class GestionnaireXML {
         return troncons;
     }
 
-    //Méthode pour charger une demande de livraison et renvoyer le trajet a effectuert ainsi que la liste de sites qui n'existe pas
-    public static Trajet chargerDemandeLivraisons(String cheminFichier, Map<Long, Noeud> mapNoeuds) {
+    // Méthode pour charger une demande de livraison et renvoyer le trajet à effectuer
+    public static Trajet chargerDemandeLivraisons(String cheminFichier, HashMap<Long, Noeud> mapNoeuds) {
         Trajet trajet = new Trajet();
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -78,20 +79,18 @@ public class GestionnaireXML {
             long idEntrepot = Long.parseLong(adresseEntrepot);
 
             Noeud noeudEntrepot = trouverNoeud(adresseEntrepot, mapNoeuds);
-            if(noeudEntrepot == null){
+            if (noeudEntrepot == null) {
                 Entrepot entrepot = new Entrepot(idEntrepot);
-                trajet.getSitesNonAccecibles().add(entrepot);
-            }
-            else{
+                trajet.getSitesNonAccessibles().add(entrepot);
+            } else {
                 Entrepot entrepot = new Entrepot(
-                    idEntrepot,
-                    noeudEntrepot.getLatitude(),
-                    noeudEntrepot.getLongitude()
+                        idEntrepot,
+                        noeudEntrepot.getLatitude(),
+                        noeudEntrepot.getLongitude()
                 );
                 entrepot.setDepartHeure(LocalTime.parse(heureDepart));
                 trajet.getSites().add(entrepot);
-                }
-            
+            }
 
             // Livraisons
             NodeList livraisonsXML = document.getElementsByTagName("livraison");
@@ -104,49 +103,44 @@ public class GestionnaireXML {
                 long idLivraison = Long.parseLong(adresseLivraison);
                 int dureeEnlevement = Integer.parseInt(elem.getAttribute("dureeEnlevement"));
                 int dureeLivraison = Integer.parseInt(elem.getAttribute("dureeLivraison"));
-                int numLivraison = i ;
+                int numLivraison = i;
 
                 // Pickup
                 Noeud noeudPickup = trouverNoeud(adresseEnlevement, mapNoeuds);
                 Pickup pickup;
-                if(noeudPickup == null){
+                if (noeudPickup == null) {
+                    pickup = new Pickup(idLivraison, numLivraison, dureeEnlevement);  
+                } else {
                     pickup = new Pickup(
-                        idLivraison, 
-                        numLivraison, 
-                        dureeEnlevement
+                            idLivraison,
+                            noeudPickup.getLatitude(),
+                            noeudPickup.getLongitude(),
+                            numLivraison,
+                            dureeEnlevement
                     );
-                    trajet.getSitesNonAccecibles().add(pickup);
-                }
-                else{
-                    pickup = new Pickup(
-                        idLivraison,
-                        noeudPickup.getLatitude(),
-                        noeudPickup.getLongitude(),
-                        numLivraison,
-                        dureeEnlevement
-                    );
-                    trajet.getSites().add(pickup);
                 }
 
                 // Delivery
                 Noeud noeudDelivery = trouverNoeud(adresseLivraison, mapNoeuds);
                 Delivery delivery;
-                if(noeudDelivery == null){
+                if (noeudDelivery == null) {
+                    delivery = new Delivery(idEnlevement, numLivraison, dureeLivraison);
+                    trajet.getSitesNonAccessibles().add(delivery);
+                } else {
                     delivery = new Delivery(
-                        idEnlevement,
-                        numLivraison,
-                        dureeLivraison
+                            idEnlevement,
+                            noeudDelivery.getLatitude(),
+                            noeudDelivery.getLongitude(),
+                            numLivraison,
+                            dureeLivraison
                     );
-                    trajet.getSitesNonAccecibles().add(delivery);
+                }
+                if( noeudDelivery == null || noeudPickup == null) {
+                    trajet.getSitesNonAccessibles().add(pickup);
+                    trajet.getSitesNonAccessibles().add(delivery);
                 }
                 else{
-                    delivery = new Delivery(
-                        idEnlevement,
-                        noeudDelivery.getLatitude(),
-                        noeudDelivery.getLongitude(),
-                        numLivraison,
-                        dureeLivraison
-                    );
+                    trajet.getSites().add(pickup);
                     trajet.getSites().add(delivery);
                 }
             }
@@ -159,7 +153,7 @@ public class GestionnaireXML {
     }
 
     // --- Méthode utilitaire ---
-    private static Noeud trouverNoeud(String idStr, Map<Long, Noeud> mapNoeuds) {
+    private static Noeud trouverNoeud(String idStr, HashMap<Long, Noeud> mapNoeuds) {
         try {
             long id = Long.parseLong(idStr);
             return mapNoeuds.get(id);

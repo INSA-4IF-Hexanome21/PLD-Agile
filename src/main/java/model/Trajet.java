@@ -63,7 +63,7 @@ public class Trajet {
         return sites;
     }
 
-    public List<Site> getSitesNonAccecibles(){
+    public List<Site> getSitesNonAccessibles(){
         return nonAccessibles;
     }
 

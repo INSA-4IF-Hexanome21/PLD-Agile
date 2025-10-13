@@ -1,7 +1,7 @@
 package model;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class GestionnaireXMLTest {
 
@@ -11,8 +11,8 @@ public class GestionnaireXMLTest {
         // Chemin vers le fichier plan
         String cheminPlan = "ressources/fichiersXMLPickupDelivery/petitPlan.xml";
 
-        // --- Charger la Map de noeuds ---
-        Map<Long, Noeud> mapNoeuds = GestionnaireXML.chargerPlanNoeuds(cheminPlan);
+        // --- Charger la HashMap de noeuds ---
+        HashMap<Long, Noeud> mapNoeuds = GestionnaireXML.chargerPlanNoeuds(cheminPlan);
         System.out.println("===== NOEUDS =====");
         for (Noeud n : mapNoeuds.values()) {
             System.out.println(n);
@@ -40,8 +40,8 @@ public class GestionnaireXMLTest {
                                    " | Lng = " + site.getLng());
             }
 
-            System.out.println("\nSites non accessibles : " + trajet.getSitesNonAccecibles().size());
-            for (Site site : trajet.getSitesNonAccecibles()) {
+            System.out.println("\nSites non accessibles : " + trajet.getSitesNonAccessibles().size());
+            for (Site site : trajet.getSitesNonAccessibles()) {
                 System.out.println(site.getClass().getSimpleName() +
                                    " | ID = " + site.getId());
             }

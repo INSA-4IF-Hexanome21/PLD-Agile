@@ -22,8 +22,8 @@ public class Main {
 
        // Chemin vers ton fichier XML local
         String cheminFichier = "ressources/fichiersXMLPickupDelivery/grandPlan.xml";
-        CarteController carteController = new CarteController(cheminFichier);
-        carteController.chargerCarteDepuisXML();
+        CarteController carteController = new CarteController();
+        carteController.chargerCarteDepuisXML(cheminFichier);
 
         Carte carte = carteController.getCarte();
 
