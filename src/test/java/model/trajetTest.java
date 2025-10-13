@@ -6,7 +6,7 @@ public class trajetTest {
         System.out.println("===== TEST Trajet =====");
         Livreur livreur = new Livreur(0, "Petit", "Bobert")
         Trajet trajet = new Trajet(livreur);
-        System.out.println("Id livreur : " + trajet.getIdLivreur());
+        System.out.println("Livreur : " + trajet.getLivreur());
         System.out.println("Heure début : " + trajet.getHeureDebut());
         System.out.println("Sites : " + trajet.getSites());
         System.out.println("Durée trajet : " + trajet.getdureeTrajet());

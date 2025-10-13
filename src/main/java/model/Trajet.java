@@ -31,7 +31,7 @@ public class Trajet {
         return this.livreur;
     }
 
-    public void setIdLivreur(Livreur new_livreur){
+    public void setLivreur(Livreur new_livreur){
         this.livreur = new_livreur;
     }
 
