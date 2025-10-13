@@ -1,16 +1,25 @@
-# PLD-Agile
+# PLD Agile
+
+**Hexanôme H21**
 
 ## Utilisation
 
 Compiler le code principal :
-`javac -d target/classes src/main/java/model/*.java`
+```bash
+javac -d target/classes src/main/java/model/*.java
+```
 
 Compiler les tests :
-`javac -cp target/classes -d target/test-classes src/test/java/model/*.java`
+```bash
+javac -cp target/classes -d target/test-classes src/test/java/model/*.java
+```
 
 Exécuter les tests :
-`java -cp target/classes model.<classTest>`
+```bash
+java -cp target/classes model.<classTest>
+```
 
 ## Ressources
 
-https://drive.google.com/drive/folders/1LWnPBXDfblA7rICWYRWhbtlnZqZKL9tM?usp=sharing
+- [Google Drive](https://drive.google.com/drive/folders/1LWnPBXDfblA7rICWYRWhbtlnZqZKL9tM?usp=sharing)
+- [Wiki](https://github.com/INSA-4IF-Hexanome21/PLD-Agile/wiki)
