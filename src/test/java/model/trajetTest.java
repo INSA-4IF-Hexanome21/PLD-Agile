@@ -4,7 +4,8 @@ package model;
 public class trajetTest {
     public static void main(String[] args) {
         System.out.println("===== TEST Trajet =====");
-        Trajet trajet = new Trajet(1);
+        Livreur livreur = new Livreur(0, "Petit", "Bobert")
+        Trajet trajet = new Trajet(livreur);
         System.out.println("Id livreur : " + trajet.getIdLivreur());
         System.out.println("Heure début : " + trajet.getHeureDebut());
         System.out.println("Sites : " + trajet.getSites());
