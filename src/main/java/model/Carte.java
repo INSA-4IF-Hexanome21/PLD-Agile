@@ -1,26 +1,27 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Carte {
 
     // Attributs
-    private List<Noeud> noeuds;
+    private HashMap<Long, Noeud> noeuds;
     private List<Troncon> troncons;
     private List<Site> sites;
     private List<Trajet> trajets;
 
     // Constructeur
     public Carte() {
-        this.noeuds = new ArrayList<>();
+        this.noeuds = new HashMap<>();
         this.troncons = new ArrayList<>();
         this.sites = new ArrayList<>();
         this.trajets = new ArrayList<>();
     }
 
     // Getters et Setters
-    public List<Noeud> getNoeuds() {
+    public HashMap<Long, Noeud> getNoeuds() {
         return noeuds;
     }
 
@@ -38,7 +39,7 @@ public class Carte {
 
     // Méthodes 
     public void ajouterNoeud(Noeud noeud) {
-        if (!noeuds.contains(noeud)) this.noeuds.add(noeud);
+        if (!noeuds.containsKey(noeud.getId())) this.noeuds.put(noeud.getId(), noeud);
     }
 
     public void ajouterTroncon(Troncon troncon) {
