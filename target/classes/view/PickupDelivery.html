@@ -15,19 +15,19 @@
       margin: 2rem;
     }
 
-    #map {
-      height: 500px;
-      width: 600px;
-      margin: 0 auto;
-      border: 2px solid #ccc;
-      border-radius: 8px;
-    }
+   #map {
+  height: 80vh; /* ocupa 80% de la altura de la ventana */
+  width: 90%;   /* casi todo el ancho */
+  margin: 1rem auto;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+}
+
   </style>
 </head>
 <body>
   <h2>Bonjour, voici la page Pickup & Delivery</h2>
   <div id="map"></div>
-
   <script>
     // --- Initialisation de la carte ---
     const map = L.map('map', {
@@ -41,21 +41,29 @@
         '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
     }).addTo(map);
 
-    // --- Exemples de points ---
-    const entrepot = [45.7578, 4.8320];      // Entrepôt
-    const pickup = [45.7600, 4.8350];        // Point de pickup
-    const delivery = [45.7525, 4.8285];      // Point de livraison
+    // --- Fetch depuis le backend ---
+    fetch("/api/carte")
+      .then(res => res.json())
+      .then(data => {
+        // Ajouter les noeuds
+        data.noeuds.forEach(n => {
+          L.marker([n.lat, n.lng]).addTo(map).bindPopup("Noeud " + n.id);
+        });
 
-    // --- Marqueurs ---
-    L.marker(entrepot).addTo(map).bindPopup("Entrepôt");
-    L.marker(pickup).addTo(map).bindPopup("Pickup");
-    L.marker(delivery).addTo(map).bindPopup("Delivery");
+        // Ajouter les troncons
+        data.troncons.forEach(t => {
+          const from = data.noeuds.find(n => n.id === t.from);
+          const to = data.noeuds.find(n => n.id === t.to);
+          if (from && to) {
+            L.polyline([[from.lat, from.lng], [to.lat, to.lng]], { color: 'blue' }).addTo(map);
+          }
+        });
 
-    // --- Lignes entre les points ---
-    const route = L.polyline([ delivery,entrepot, pickup ], { color: 'blue' }).addTo(map);
-
-    // --- Adapter la vue à la taille du trajet ---
-    map.fitBounds(trajet.getBounds());
+        // Adapter la vue à la taille de tous les noeuds
+        const bounds = L.latLngBounds(data.noeuds.map(n => [n.lat, n.lng]));
+        map.fitBounds(bounds);
+      })
+      .catch(err => console.error(err));
   </script>
 </body>
 </html>
