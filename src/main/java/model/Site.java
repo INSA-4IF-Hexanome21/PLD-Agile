@@ -4,27 +4,27 @@ import java.time.LocalTime;
 
 public abstract class Site {
 
-    protected String id;
-    protected String lat;
-    protected String lng;
+    protected long id;
+    protected float lat;
+    protected float lng;
     protected LocalTime depart_heure = null;
     protected LocalTime arrivee_heure = null;
 
-    public Site(String id, String lat, String lng) {
+    public Site(long id, float lat, float lng) {
         this.id = id;
         this.lat = lat;
         this.lng = lng;
     }
 
-    public String getId() {
+    public long getId() {
         return id;
     }
 
-    public String getLat() {
+    public float getLat() {
         return lat;
     }
 
-    public String getLng() {
+    public float getLng() {
         return lng;
     }
 
