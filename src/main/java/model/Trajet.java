@@ -7,7 +7,7 @@ import java.time.LocalTime;
 public class Trajet {
 
     // Attributs
-    private Integer idLivreur;
+    private Livreur livreur;
     private List<Site> sites;
     private List<Troncon> troncons;
     private Float dureeTrajet;
@@ -16,8 +16,8 @@ public class Trajet {
 
 
     // Constructeur
-    public Trajet(Integer id) {
-        this.idLivreur = id;
+    public Trajet(Livreur livreur) {
+        this.livreur = livreur;
         this.sites = new ArrayList<>();
         this.troncons = new ArrayList<>();
         this.dureeTrajet = null;
@@ -27,12 +27,12 @@ public class Trajet {
 
     // Getters et Setters
 
-    public Integer getIdLivreur() {
-        return idLivreur;
+    public Livreur getLivreur() {
+        return this.livreur;
     }
 
-    public void setIdLivreur(Integer id){
-        this.idLivreur = id;
+    public void setIdLivreur(Livreur new_livreur){
+        this.livreur = new_livreur;
     }
 
     public LocalTime getHeureDebut() {
