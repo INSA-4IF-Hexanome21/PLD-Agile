@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import model.Carte;
-import model.GestionnaireXML;
 import model.Noeud;
 import model.Troncon;
 

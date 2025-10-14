@@ -1,10 +1,19 @@
-package model;
+package controller;
 
 import org.w3c.dom.*;
+
+import model.Delivery;
+import model.Entrepot;
+import model.Noeud;
+import model.Pickup;
+import model.Trajet;
+import model.Troncon;
+
 import javax.xml.parsers.*;
 import java.io.File;
 import java.time.LocalTime;
 import java.util.*;
+import java.time.format.DateTimeFormatter;
 
 public class GestionnaireXML {
 
@@ -88,7 +97,21 @@ public class GestionnaireXML {
                         noeudEntrepot.getLatitude(),
                         noeudEntrepot.getLongitude()
                 );
-                entrepot.setDepartHeure(LocalTime.parse(heureDepart));
+                try {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("H:m:s");
+                    LocalTime heure = LocalTime.parse(heureDepart, formatter);
+                    entrepot.setDepartHeure(heure);
+                }
+                catch (Exception e1) {
+                    try {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("H:m");
+                        LocalTime heure = LocalTime.parse(heureDepart, formatter);
+                        entrepot.setDepartHeure(heure);
+                    } catch (Exception e2) {
+                        System.err.println("Impossible de lire l'heure de départ : " + heureDepart);
+                        entrepot.setDepartHeure(LocalTime.of(8, 0)); // valeur par défaut
+                    }
+                }
                 trajet.getSites().add(entrepot);
             }
 
