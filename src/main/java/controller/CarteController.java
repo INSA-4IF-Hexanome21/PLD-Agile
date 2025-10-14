@@ -2,6 +2,7 @@ package controller;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import model.Carte;
 import model.Noeud;
@@ -35,7 +36,7 @@ public class CarteController {
     int noeudCount = 0;
     int noeudTotal = carte.getNoeuds().size();
     for (Noeud n : carte.getNoeuds().values()) {
-        json.append(String.format("{\"id\":%d,\"lat\":%f,\"lng\":%f}",
+        json.append(String.format(Locale.US,"{\"id\":%d,\"lat\":%f,\"lng\":%f}",
                 n.getId(), n.getLatitude(), n.getLongitude()));
         noeudCount++;
         if (noeudCount < noeudTotal) json.append(",");
