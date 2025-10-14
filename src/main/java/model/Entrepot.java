@@ -12,4 +12,8 @@ public class Entrepot extends Site {
         super(id, lat, lng);
     }
 
+    @Override
+    public String getTypeSite() {
+        return "entrepot";
+    }
 }

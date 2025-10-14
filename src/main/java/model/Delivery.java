@@ -36,4 +36,9 @@ public class Delivery extends Site {
         this.dureeLivraison = dureeLivraison;
     }
 
+    @Override
+    public String getTypeSite() {
+        return "livraison";
+    }
+
 }

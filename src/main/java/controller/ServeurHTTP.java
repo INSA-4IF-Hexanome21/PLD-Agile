@@ -54,15 +54,20 @@ public class ServeurHTTP {
             exchange.close();
         });
         
-        // Route API - retourner les données de la carte en JSON
-        serveur.createContext("/api/carte", exchange -> {
-            byte[] octets = carteController.getCarteJSON().getBytes();
-            exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
-            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            exchange.sendResponseHeaders(200, octets.length);
-            exchange.getResponseBody().write(octets);
-            exchange.close();
-        });
+       serveur.createContext("/api/carte", exchange -> {
+        System.out.println(">>> Requête reçue sur /api/carte <<<");
+        
+        String jsonResponse = carteController.getCarteJSON();
+        byte[] octets = jsonResponse.getBytes("UTF-8");
+        
+        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.sendResponseHeaders(200, octets.length);
+        exchange.getResponseBody().write(octets);
+        exchange.close();
+        
+        System.out.println(">>> Réponse envoyée <<<");
+    });
         
         // Route pour les fichiers JavaScript
         serveur.createContext("/js/", exchange -> {

@@ -23,10 +23,14 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-       // Chemin vers ton fichier XML local
+       // 1. carte
         String cheminFichier = "ressources/fichiersXMLPickupDelivery/grandPlan.xml";
         CarteController carteController = new CarteController();
         carteController.chargerCarteDepuisXML(cheminFichier);
+            
+        // 2. demandes 
+        String cheminDemandes = "ressources/fichiersXMLPickupDelivery/demandeGrand7.xml";
+        carteController.chargerDemandesDepuisXML(cheminDemandes);
 
         Carte carte = carteController.getCarte();
 
