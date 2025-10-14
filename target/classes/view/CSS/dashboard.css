@@ -74,8 +74,8 @@
 /* Indicadores de color para tipos de sites */
 .site-indicator {
   display: inline-block;
-  width: 14px;
-  height: 14px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   margin-right: 8px;
   border: 2px solid white;
@@ -499,3 +499,29 @@ a:focus {
   outline: 2px solid var(--spie-orange);
   outline-offset: 2px;
 }
+
+/* Indicadores de color en el sidebar */
+.site-indicator {
+  display:inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.site-indicator.entrepot { background: #2b6cb0; }
+.site-indicator.collecte  { background: #38a169; }
+.site-indicator.livraison { background: #e53e3e; }
+.site-indicator.noeuds { background: #16697A; }
+
+/* Map dim class */
+.leaflet-container.map-dim {
+  filter: grayscale(0.6) brightness(0.6);
+  transition: filter 180ms ease;
+}
+
+/* small visual for sidebar buttons (ajusta según tu tema) */
+.sidebar-nav { display:block; width:100%; padding:8px 10px; text-align:left; border:none; background:transparent; cursor:pointer; margin-bottom:6px; border-radius:6px; }
+.sidebar-nav.active { background: rgba(102,126,234,0.12); color:#2a2a2a; }
+.control-btn { padding:8px 10px; border-radius:6px; border:none; cursor:pointer; background:#667eea; color:#fff; margin:6px 4px; }
+.control-btn.ghost { background:transparent; color:#333; border:1px solid rgba(0,0,0,0.06); }

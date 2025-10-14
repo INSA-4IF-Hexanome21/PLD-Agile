@@ -1,84 +1,103 @@
+// /js/dashboard.js - completo
 
-// Variable globale pour la carte Leaflet
+// Variables globales
 let carte = null;
 let marqueurs = [];
 let lignes = [];
+let siteMarkers = [];
+let noeudMarkers = [];
+let tronconLines = [];
+let donneesGlobales = null;
 
 // Configuración de colores para cada tipo de site
 const COULEURS_SITES = {
-  'entrepot': '#16697A',     // Azul oscuro - Almacén
-  'livraison': '#82C0CC',    // Azul claro - Entrega
-  'collecte': '#FFA62B',     // Naranja - Recolección
-  'default': '#667eea'       // Morado - Por defecto
+  'depot': '#2b6cb0',
+  'pickup': '#38a169',
+  'collecte': '#38a169',
+  'delivery': '#e53e3e',
+  'livraison': '#e53e3e',
+  'entrepot': '#2b6cb0',
+  'default': '#999999'
 };
 
+// Estado de visibilidad
+const visibilityState = {
+  entrepot: true,
+  collecte: true,
+  livraison: true,
+  noeuds: true,
+  troncons: true
+};
 
-/**
- * Charge un composant dans le contenu principal
- * @param {string} url - L'URL du composant à charger
- */
+/* ----------------- UTILIDADES / INIT ----------------- */
+
 function chargerComposantPrincipal(url) {
   console.log('Chargement du composant:', url);
-  
-  // Afficher un message de chargement avec animation
-  document.getElementById('main-content').innerHTML = '<p>Chargement en cours...</p>';
-  
+  const main = document.getElementById('main-content');
+  if (!main) return;
+  main.innerHTML = '<p>Chargement en cours...</p>';
+
   fetch(url)
     .then(res => {
       if (!res.ok) throw new Error('Erreur de chargement: ' + url);
       return res.text();
     })
     .then(html => {
-      document.getElementById('main-content').innerHTML = html;
-      
-      // Initialiser la carte si on charge PickupDelivery
+      main.innerHTML = html;
       if (url.includes('PickupDelivery.html')) {
-        setTimeout(initialiserCarte, 100); // Attendre que le DOM soit mis à jour
+        // dejamos un timeout corto para que el DOM dentro de main se renderice
+        setTimeout(initialiserCarte, 100);
       }
     })
     .catch(err => {
       console.error("Erreur lors du chargement du composant:", err);
-      document.getElementById('main-content').innerHTML = 
-        '<p style="color: #e74c3c;">Erreur lors du chargement du composant</p>';
+      main.innerHTML = '<p style="color: #e74c3c;">Erreur lors du chargement du composant</p>';
     });
 }
 
-/**
- * Initialise la carte Leaflet avec les données du backend
- */
+function computeSiteRadius(map) {
+  const zoom = map && map.getZoom ? map.getZoom() : 13;
+  // Ajusta la escala: cuanto mayor el zoom, mayor el radio (pero protegemos con min/max)
+  return Math.max(4, Math.min(12, Math.round(zoom * 1.2)));
+}
+
+/* ----------------- MAP INITIALIZATION ----------------- */
+
 function initialiserCarte() {
   console.log('Initialisation de la carte...');
-  
-  // Détruire la carte existante si elle existe
+
+  // Remove previous map if exists
   if (carte !== null) {
-    carte.remove();
+    try { carte.off(); carte.remove(); } catch (e) {}
     marqueurs = [];
     lignes = [];
+    siteMarkers = [];
+    noeudMarkers = [];
+    tronconLines = [];
+    donneesGlobales = null;
   }
 
   const elementCarte = document.getElementById('map');
   if (!elementCarte) {
     console.error('Élément #map non trouvé dans le DOM');
+    document.getElementById('main-content').innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable</p>';
     return;
   }
 
-  // Créer la carte centrée sur Lyon
+  // Crear mapa
   carte = L.map('map', {
     center: [45.7578137, 4.8320114],
     zoom: 15,
     zoomControl: true,
-    preferCanvas: true // Meilleure performance pour beaucoup d'éléments
+    preferCanvas: true
   });
 
-  // Ajouter la couche OpenStreetMap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap',
+    maxZoom: 19
   }).addTo(carte);
 
-  console.log('Récupération des données depuis /api/carte...');
-
-  // Charger les données depuis le backend
+  // Cargar datos
   fetch("/api/carte")
     .then(res => {
       if (!res.ok) throw new Error('Erreur API: ' + res.status);
@@ -86,7 +105,9 @@ function initialiserCarte() {
     })
     .then(donnees => {
       console.log('Données reçues:', donnees);
+      donneesGlobales = donnees;
       afficherDonneesSurCarte(donnees);
+      configurerControlesVisibilite(); // engancha los controles
     })
     .catch(err => {
       console.error('Erreur lors du chargement des données de la carte:', err);
@@ -94,223 +115,327 @@ function initialiserCarte() {
     });
 }
 
-/**
- * Obtient la couleur selon le type de site
- * @param {string} type - Le type de site
- * @returns {string} Le code couleur hexadécimal
- */
-function obtenirCouleurSite(type) {
-  return COULEURS_SITES[type] || COULEURS_SITES['default'];
-}
+/* ----------------- RENDER DATOS EN MAPA ----------------- */
 
-/**
- * Obtient le nom lisible du type de site
- * @param {string} type - Le type de site
- * @returns {string} Le nom en français
- */
-function obtenirNomTypeSite(type) {
-  const noms = {
-    'entrepot': 'Entrepôt',
-    'livraison': 'Livraison',
-    'collecte': 'Collecte'
-  };
-  return noms[type] || type.charAt(0).toUpperCase() + type.slice(1);
-}
 function afficherDonneesSurCarte(donnees) {
-  // 1) Tronçons (igual)
+  if (!carte) {
+    console.error('Carte no inicializada');
+    return;
+  }
+
+  // Asegurarse pane para sites (z-index alto)
+  ensureSitePane();
+
+  // 1) Tronçons (fondo)
   if (donnees.troncons && donnees.troncons.length > 0) {
     console.log('Affichage de', donnees.troncons.length, 'tronçons');
     donnees.troncons.forEach(troncon => {
-      const depart = donnees.noeuds.find(n => n.id === troncon.from);
-      const arrivee = donnees.noeuds.find(n => n.id === troncon.to);
+      const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === troncon.from);
+      const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === troncon.to);
       if (depart && arrivee) {
         const ligne = L.polyline(
-          [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]], 
-          { color: '#667eea', weight: 3, opacity: 0.6, smoothFactor: 1 }
+          [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
+          { color: '#667eea', weight: 3, opacity: 0.4, smoothFactor: 1 }
         ).addTo(carte);
-        ligne.bindPopup(`
-          <strong>Tronçon</strong><br>
-          De: ${troncon.from}<br>
-          À: ${troncon.to}<br>
-          Longueur: ${troncon.longueur ? troncon.longueur.toFixed(2) + 'm' : 'N/A'}
-        `);
-        lignes.push(ligne);
+        ligne.bindPopup(`<strong>Tronçon</strong><br>De: ${troncon.from}<br>À: ${troncon.to}`);
+        tronconLines.push(ligne);
       }
     });
   }
-  
 
-  // 2) Nœuds (dibujamos antes de los sites para que sites queden encima)
+  // 2) Nœuds (medio)
   if (donnees.noeuds && donnees.noeuds.length > 0) {
     console.log('Affichage de', donnees.noeuds.length, 'nœuds');
-    const iconePersonnalisee = L.divIcon({
-      className: 'marqueur-personnalise',
-      html: '<div class="marqueur-noeud" style="background: #16697A; width: 12px; height: 12px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(22, 105, 122, 0.4);"></div>',
-      iconSize: [12, 12],
-      iconAnchor: [6, 6]
-    });
-
     donnees.noeuds.forEach(noeud => {
-      const marqueur = L.marker([noeud.lat, noeud.lng], { icon: iconePersonnalisee });
-      marqueur.addTo(carte);
-      marqueur.bindPopup(`
-        <div style="font-family: 'Segoe UI', sans-serif;">
-          <strong style="color: #667eea; font-size: 1.1em;">Nœud ${noeud.id}</strong><br>
-          <span style="color: #666;">Latitude: ${noeud.lat.toFixed(6)}</span><br>
-          <span style="color: #666;">Longitude: ${noeud.lng.toFixed(6)}</span>
-        </div>
-      `);
-      marqueurs.push(marqueur);
+      const icone = L.divIcon({
+        className: 'marqueur-personnalise',
+        html: `<div class="marqueur-noeud" style="background:#16697A;width:10px;height:10px;border-radius:50%;border:2px solid white;"></div>`,
+        iconSize: [10,10], iconAnchor: [5,5]
+      });
+      const marker = L.marker([noeud.lat, noeud.lng], { icon: icone, zIndexOffset: 100 }).addTo(carte);
+      marker.bindPopup(`<strong>Nœud ${noeud.id}</strong><br>Lat: ${noeud.lat.toFixed(6)}<br>Lng: ${noeud.lng.toFixed(6)}`);
+      noeudMarkers.push(marker);
     });
-
-    // Ajustar la vista incluyendo todos los nœuds (si quieres incluir sites también, ver nota)
-    const limites = L.latLngBounds(donnees.noeuds.map(n => [n.lat, n.lng]));
-    carte.fitBounds(limites, { padding: [50, 50] });
-  } else {
-    console.warn('Aucun nœud à afficher');
   }
 
- // fuera de la función (en el scope donde tienes `carte`, `lignes`, `marqueurs`), añade:
-const siteMarkers = []; // almacenar marcadores de sites para poder actualizarlos al hacer zoom
+  // 3) Sites (encima)
+  console.log('Sites reçus:', donnees.sites);
+  if (donnees.sites && donnees.sites.length > 0) {
+    // limpiar previos
+    siteMarkers.forEach(m => { try { carte.removeLayer(m); } catch (e) {} });
+    siteMarkers.length = 0;
 
-function computeSiteRadius(map) {
-  // calcula un radio legible a partir del zoom actual (ajusta multiplicador si quieres más/menos grandes)
-  const zoom = map.getZoom ? map.getZoom() : 13;
-  return Math.max(10, Math.round(zoom * 1.6)); // mínimo 10px; escala con zoom
+    const initialRadius = computeSiteRadius(carte);
+
+    donnees.sites.forEach(site => {
+      const rawType = (site.type || '').toString().toLowerCase();
+      let normalizedType = rawType;
+      if (rawType === 'livraison' || rawType === 'delivery') normalizedType = 'livraison';
+      else if (rawType === 'collecte' || rawType === 'pickup' || rawType === 'pick-up') normalizedType = 'collecte';
+      else if (rawType === 'entrepot' || rawType === 'depot' || rawType === 'warehouse') normalizedType = 'entrepot';
+
+      const color = COULEURS_SITES[normalizedType] || COULEURS_SITES['default'];
+
+      if (site.lat != null && site.lng != null) {
+        const marker = L.circleMarker([site.lat, site.lng], {
+          radius: initialRadius,
+          fillOpacity: 1,
+          color: '#ffffff',
+          weight: 2,
+          fillColor: color,
+          pane: 'sitePane'
+        });
+
+        // metadata para filtros
+        marker.options.siteType = normalizedType;
+        marker.options.siteId = site.id;
+
+        marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -initialRadius - 6] });
+        marker.bindPopup(`<strong style="color:${color}">${normalizedType} ${site.id}</strong><br>Lat: ${site.lat.toFixed(6)}<br>Lng: ${site.lng.toFixed(6)}`);
+
+        marker.addTo(carte);
+        siteMarkers.push(marker);
+      }
+    });
+
+    // resize al zoom (solo una vez)
+    if (!carte._siteZoomHandlerAdded) {
+      carte.on('zoomend', () => {
+        const newR = computeSiteRadius(carte);
+        siteMarkers.forEach(m => {
+          try {
+            if (m && m.setRadius) m.setRadius(newR);
+            // actualizar tooltip offset
+            const tip = m.getTooltip && m.getTooltip();
+            if (tip) {
+              const content = tip.getContent ? tip.getContent() : (m.options && m.options.siteId ? m.options.siteId : '');
+              m.unbindTooltip();
+              m.bindTooltip(content, { permanent: false, direction: 'top', offset: [0, -newR - 6] });
+            }
+          } catch (e) {}
+        });
+      });
+      carte._siteZoomHandlerAdded = true;
+    }
+
+    // attach hover handlers
+    attachSiteHoverHandlers();
+
+    // aplicar visibilidad inicial
+    updateVisibility();
+  }
+
+  // Ajustar vista a nodos si hay
+  try {
+    if (donnees.noeuds && donnees.noeuds.length > 0) {
+      const limites = L.latLngBounds(donnees.noeuds.map(n => [n.lat, n.lng]));
+      carte.fitBounds(limites, { padding: [50, 50] });
+    }
+  } catch (e) {}
+} // end afficherDonneesSurCarte
+
+/* ----------------- PANE / HOVER / DIM ----------------- */
+
+function ensureSitePane() {
+  if (!carte) return;
+  if (!carte.getPane('sitePane')) {
+    const p = carte.createPane('sitePane');
+    p.style.zIndex = 750;
+    p.style.pointerEvents = 'auto';
+  }
 }
 
-/* reemplaza la sección // 3) Sites — dibujamos AL FINAL para que se vean por encima
-   por el siguiente bloque completo */
-console.log('Sites reçus:', donnees.sites);
-const typeToColor = {
-  depot: '#2b6cb0',
-  pickup: '#38a169',
-  delivery: '#e53e3e',
-  livraison: '#e53e3e', // mapping para tu API (fr)
-  collecte: '#38a169'   // mapping para tu API (fr)
-};
+function attachSiteHoverHandlers() {
+  if (!Array.isArray(siteMarkers) || !carte) return;
 
-if (donnees.sites && donnees.sites.length > 0) {
-  // limpiar markers previos de sites si es necesario
-  siteMarkers.forEach(m => {
-    try { carte.removeLayer(m); } catch (e) { /* ignore */ }
+  siteMarkers.forEach(marker => {
+    if (marker._siteHandlersAttached) return;
+    marker._siteHandlersAttached = true;
+
+    // SOLO click: pan + popup
+    marker.on('click', () => {
+      try {
+        if (marker.getLatLng) carte.panTo(marker.getLatLng());
+        if (marker.openPopup) marker.openPopup();
+      } catch (e) {}
+    });
+
+    // Opcional: mostrar tooltip al pasar sin animar (no cambiar radius ni dim)
+    marker.on('mouseover', () => {
+      try {
+        if (marker.openTooltip) marker.openTooltip();
+      } catch (e) {}
+    });
+    marker.on('mouseout', () => {
+      try {
+        if (marker.closeTooltip) marker.closeTooltip();
+      } catch (e) {}
+    });
   });
-  siteMarkers.length = 0;
+}
 
-  // radio inicial según zoom actual
-  const initialRadius = computeSiteRadius(carte);
 
-  donnees.sites.forEach(site => {
-    const type = (site.type || '').toString().toLowerCase();
-    const color = typeToColor[type] || '#999999';
+function dimExcept(activeMarker) {
+  tronconLines.forEach(l => { try { if (l.setStyle) l.setStyle({ opacity: 0.12 }); } catch (e) {} });
+  noeudMarkers.forEach(m => { try { if (m.setOpacity) m.setOpacity(0.2); } catch (e) {} });
+  siteMarkers.forEach(s => {
+    try {
+      if (s === activeMarker) {
+        if (s.setStyle) s.setStyle({ fillOpacity: 1, opacity: 1 });
+      } else {
+        if (s.setStyle) s.setStyle({ fillOpacity: 0.35, opacity: 0.4 });
+      }
+    } catch (e) {}
+  });
+  const mapEl = document.querySelector('.leaflet-container');
+  if (mapEl) mapEl.classList.add('map-dim');
+}
 
-    if (site.lat != null && site.lng != null) {
-      const marker = L.circleMarker([site.lat, site.lng], {
-        radius: initialRadius,      // radius mayor para que se vean
-        fillOpacity: 1,
-        color: '#ffffff',           // borde blanco para contraste
-        weight: 2,
-        fillColor: color,
-        pane: 'markerPane'          // asegúrate que estén en un pane visible por encima
-      }).addTo(carte);
+function undimAll() {
+  tronconLines.forEach(l => { try { if (l.setStyle) l.setStyle({ opacity: 0.4 }); } catch (e) {} });
+  noeudMarkers.forEach(m => { try { if (m.setOpacity) m.setOpacity(1.0); } catch (e) {} });
+  siteMarkers.forEach(s => { try { if (s.setStyle) s.setStyle({ fillOpacity: 1, opacity: 1 }); } catch (e) {} });
+  const mapEl = document.querySelector('.leaflet-container');
+  if (mapEl) mapEl.classList.remove('map-dim');
+}
 
-      // Popup con información y tooltip compacto con id
-      marker.bindPopup(`<strong>${type} ${site.id}</strong><br>Lat: ${site.lat.toFixed(6)}<br>Lng: ${site.lng.toFixed(6)}`);
-      marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -initialRadius - 6] });
+/* ----------------- VISIBILITY CONTROLS ----------------- */
 
-      // que el site siempre quede encima
-      if (marker.bringToFront) marker.bringToFront();
-
-      siteMarkers.push(marker);
+function updateVisibility() {
+  // Sites
+  siteMarkers.forEach(marker => {
+    const type = marker.options.siteType || 'default';
+    // mapea nombres usados en visibilityState
+    const key = (type === 'entrepot' ? 'entrepot' : (type === 'collecte' ? 'collecte' : (type === 'livraison' ? 'livraison' : 'entrepot')));
+    if (visibilityState[key]) {
+      if (!carte.hasLayer(marker)) marker.addTo(carte);
     } else {
-      console.warn('Site sans coordonnées:', site);
+      if (carte.hasLayer(marker)) carte.removeLayer(marker);
     }
   });
 
-  // actualizar tamaño de los siteMarkers cuando se hace zoom para que sigan siendo visibles
-  // (Si ya añades este listener en otro lugar, evita doble-binding: aquí lo dejamos idempotente)
-  if (!carte._siteZoomHandlerAdded) {
-    carte.on('zoomend', () => {
-      const newRadius = computeSiteRadius(carte);
-      siteMarkers.forEach(m => {
-        if (m && m.setRadius) {
-          m.setRadius(newRadius);
-          // mover tooltip un poco arriba (offset) si existe
-          const tip = m.getTooltip && m.getTooltip();
-          if (tip && tip._container) {
-            // forzar rebind del tooltip para reposicionarlo
-            m.unbindTooltip();
-            m.bindTooltip(m.options && m.options.tooltipContent ? m.options.tooltipContent : (m.getPopup() ? m.getPopup().getContent() : ''), {
-              permanent: false,
-              direction: 'top',
-              offset: [0, -newRadius - 6]
-            });
-          }
-        }
+  // Nœuds
+  noeudMarkers.forEach(marker => {
+    if (visibilityState.noeuds) {
+      if (!carte.hasLayer(marker)) marker.addTo(carte);
+    } else {
+      if (carte.hasLayer(marker)) carte.removeLayer(marker);
+    }
+  });
+
+  // Tronçons
+  tronconLines.forEach(line => {
+    if (visibilityState.troncons) {
+      if (!carte.hasLayer(line)) line.addTo(carte);
+    } else {
+      if (carte.hasLayer(line)) carte.removeLayer(line);
+    }
+  });
+}
+
+function configurerControlesVisibilite() {
+  // checkbox toggles: entrepot, collecte, livraison
+  ['entrepot', 'collecte', 'livraison'].forEach(type => {
+    const cb = document.getElementById(`toggle-${type}`);
+    if (cb) {
+      cb.checked = visibilityState[type];
+      cb.addEventListener('change', (e) => {
+        visibilityState[type] = e.target.checked;
+        updateVisibility();
       });
+    }
+  });
+
+  // nodo toggle
+  const tNoeuds = document.getElementById('toggle-noeuds');
+  if (tNoeuds) {
+    tNoeuds.checked = visibilityState.noeuds;
+    tNoeuds.addEventListener('change', (e) => {
+      visibilityState.noeuds = e.target.checked;
+      updateVisibility();
     });
-    carte._siteZoomHandlerAdded = true;
   }
-} else {
-  console.log('Aucun site à afficher');
+
+  // troncons toggle
+  const tTron = document.getElementById('toggle-troncons');
+  if (tTron) {
+    tTron.checked = visibilityState.troncons;
+    tTron.addEventListener('change', (e) => {
+      visibilityState.troncons = e.target.checked;
+      updateVisibility();
+    });
+  }
+
+  // reset view
+  const btnReset = document.getElementById('btn-reset-view');
+  if (btnReset) {
+    btnReset.addEventListener('click', () => {
+      if (!donneesGlobales || (!donneesGlobales.noeuds && !donneesGlobales.sites)) return;
+      const pts = [];
+      if (donneesGlobales.noeuds) pts.push(...donneesGlobales.noeuds.map(n => [n.lat, n.lng]));
+      if (donneesGlobales.sites) pts.push(...donneesGlobales.sites.filter(s => s.lat && s.lng).map(s => [s.lat, s.lng]));
+      if (pts.length) {
+        const bounds = L.latLngBounds(pts);
+        carte.fitBounds(bounds, { padding: [40,40] });
+      }
+    });
+  }
+
+  // toggle all
+  const btnToggleAll = document.getElementById('btn-toggle-all');
+  if (btnToggleAll) {
+    btnToggleAll.addEventListener('click', () => {
+      const all = Object.values(visibilityState).every(v => v === true);
+      const newState = !all;
+      Object.keys(visibilityState).forEach(k => visibilityState[k] = newState);
+      // actualizar checkboxes visualmente
+      ['entrepot','collecte','livraison','noeuds','troncons'].forEach(k => {
+        const el = document.getElementById(`toggle-${k}`);
+        if (el) el.checked = visibilityState[k];
+      });
+      updateVisibility();
+    });
+  }
 }
-}
 
-/**
- * Configure les événements du sidebar
- * TODO ICI on doit faire le commande pattern.
- */
-function configurerSidebar() {
-  const btnCarte = document.getElementById('btn-mapa');
-  const btnFiltres = document.getElementById('btn-filtros');
-  const btnStatistiques = document.getElementById('btn-estadisticas');
+/* ----------------- CARGA SIDEBAR + INICIO ----------------- */
 
-  if (btnCarte) {
-    btnCarte.addEventListener('click', () => {
-      chargerComposantPrincipal('/components/PickupDelivery.html');
-    });
-  }
-  
-  if (btnFiltres) {
-    btnFiltres.addEventListener('click', () => {
-      document.getElementById('main-content').innerHTML = `
-        <div style="text-align: center; padding: 3rem;">
-          <h2 style="color: #667eea; margin-bottom: 1rem;">Filtres</h2>
-          <p style="color: #666;">Fonctionnalité en construction...</p>
-        </div>
-      `;
-    });
-  }
-  
-  if (btnStatistiques) {
-    btnStatistiques.addEventListener('click', () => {
-      document.getElementById('main-content').innerHTML = `
-        <div style="text-align: center; padding: 3rem;">
-          <h2 style="color: #667eea; margin-bottom: 1rem;">Statistiques</h2>
-          <p style="color: #666;">Fonctionnalité en construction...</p>
-        </div>
-      `;
-    });
-  }
-}
-
-// Initialisation au chargement de la page
-console.log('Chargement du sidebar...');
-
+// Cargar Sidebar.html y luego cargar el componente principal por defecto
 fetch('/components/Sidebar.html')
   .then(res => {
     if (!res.ok) throw new Error('Erreur lors du chargement du sidebar');
     return res.text();
   })
   .then(html => {
-    document.getElementById('sidebar').innerHTML = html;
-    configurerSidebar();
-    
-    // Charger la carte par défaut
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.innerHTML = html;
+    // enganchar botones de navegación básicos (ya están en tu HTML)
+    document.getElementById('btn-mapa')?.addEventListener('click', () => {
+      // marcado visual
+      document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-mapa')?.classList.add('active');
+      chargerComposantPrincipal('/components/PickupDelivery.html');
+    });
+    document.getElementById('btn-filtros')?.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-filtros')?.classList.add('active');
+      document.getElementById('main-content').innerHTML = `<div style="padding:2rem;"><h2>Filtres</h2><p>Fonctionnalité en construction…</p></div>`;
+    });
+    document.getElementById('btn-estadisticas')?.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-estadisticas')?.classList.add('active');
+      document.getElementById('main-content').innerHTML = `<div style="padding:2rem;"><h2>Statistiques</h2><p>Fonctionnalité en construction…</p></div>`;
+    });
+
+    // cargar componente por defecto
     chargerComposantPrincipal('/components/PickupDelivery.html');
   })
   .catch(err => {
     console.error("Erreur lors du chargement du sidebar:", err);
-    document.getElementById('sidebar').innerHTML = 
-      '<p style="color: #e74c3c;">Erreur de chargement</p>';
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.innerHTML = '<p style="color:#e74c3c;">Erreur de chargement</p>';
+    // igualmente intentar cargar mapa por defecto (por si sidebar no es crítico)
+    chargerComposantPrincipal('/components/PickupDelivery.html');
   });
+
+/* ----------------- FIN DEL ARCHIVO ----------------- */
