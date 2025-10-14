@@ -1,6 +1,7 @@
 package model;
 
-import java.util.HashMap;
+import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
 
 import tsp.Graphe;
 
@@ -14,16 +15,37 @@ public class GrapheLivraison implements Graphe {
 	 * Cree un graphe complet dont les aretes ont un cout compris entre COUT_MIN et COUT_MAX
 	 * @param nbSommets
 	 */
-	public GrapheLivraison(int nbSommets){
+	public GrapheLivraison(
+		int nbSommets, 
+		HashMap<Integer, Long> mapSommets, 
+		Map<Integer, List<SimpleEntry<Integer, Float>>> mapDistances
+	) {
+		this.mapSommets = mapSommets;
 		this.nbSommets = nbSommets;
 		cout = new int[nbSommets][nbSommets];
-		for (int i=0; i<nbSommets; i++){
-		    for (int j=0; j<nbSommets; j++){
-		        if (i == j) cout[i][j] = -1;
-		        else {
-		            
-		        }
-		    }
+		for (int i=0; i<nbSommets; i++) {
+			for (int j=0; j<nbSommets; j++) {
+				cout[i][j] = Integer.MAX_VALUE;
+			}
+		}
+
+		for (var key : mapDistances.keySet()) {
+			List<SimpleEntry<Integer, Float>> pair = mapDistances.get(key) ;
+			for (var entry : pair) {
+				cout[key][entry.getKey()] = entry.getValue().intValue();
+			}
+		}
+		printCout();
+		
+	}
+
+	private void printCout() {
+		System.out.println("Matrice des couts :");
+		for (int i=0; i<nbSommets; i++) {
+			for (int j=0; j<nbSommets; j++) {
+				System.out.print(cout[i][j] + "\t");
+			}
+			System.out.println();
 		}
 	}
 
