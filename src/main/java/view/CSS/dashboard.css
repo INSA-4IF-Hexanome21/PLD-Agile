@@ -12,73 +12,145 @@
   --light-gray: #ECF0F1;
 }
 
-/* --- dashboard.css additions --- */
-
-/* Sidebar control */
+/* --- CONTROLES DEL SIDEBAR --- */
 #sidebar {
-  width: 260px;
-  padding: 12px;
-  background: #ffffffee;
-  border-right: 1px solid rgba(0,0,0,0.05);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  width: 280px;
+  padding: 16px;
+  background: #ffffff;
+  border-right: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   overflow-y: auto;
   font-family: "Segoe UI", Arial, sans-serif;
 }
 
+.control-section {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.control-section:last-child {
+  border-bottom: none;
+}
+
 .control-title {
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #333;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+  color: var(--spie-dark-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .control-row {
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin:8px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.control-row:hover {
+  background: rgba(72, 159, 181, 0.08);
 }
 
 .control-row input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--spie-dark-teal);
 }
 
-/* Buttons */
-.control-btn {
-  display:inline-block;
-  border: none;
-  background: #667eea;
-  color: white;
-  padding: 8px 10px;
-  border-radius: 6px;
-  cursor:pointer;
+.control-row label {
+  cursor: pointer;
+  flex: 1;
   font-size: 0.95rem;
-  margin-top: 8px;
+  color: var(--dark-gray);
+  user-select: none;
 }
+
+/* Indicadores de color para tipos de sites */
+.site-indicator {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-right: 8px;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.site-indicator.entrepot { background: #2b6cb0; }
+.site-indicator.collecte { background: #38a169; }
+.site-indicator.livraison { background: #e53e3e; }
+.site-indicator.noeuds { background: #16697A; }
+
+/* Botones de control */
+.control-btn {
+  display: inline-block;
+  border: none;
+  background: var(--spie-dark-teal);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-top: 12px;
+  width: 100%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(22, 105, 122, 0.3);
+}
+
+.control-btn:hover {
+  background: var(--spie-medium-teal);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(22, 105, 122, 0.4);
+}
+
+.control-btn:active {
+  transform: translateY(0);
+}
+
 .control-btn.ghost {
   background: transparent;
-  color: #333;
-  border: 1px solid rgba(0,0,0,0.08);
+  color: var(--spie-dark-teal);
+  border: 2px solid var(--spie-dark-teal);
+  box-shadow: none;
 }
 
-/* Hover / pulse animation for site markers */
-.leaflet-marker-icon.pulse {
-  animation: pulse 1.2s infinite;
-  transform-origin: center;
+.control-btn.ghost:hover {
+  background: var(--spie-dark-teal);
+  color: white;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  60% { transform: scale(1.6); opacity: 0.35; }
-  100% { transform: scale(1); opacity: 0; }
+/* Efecto de hover en sites - dimming del resto */
+.map-container {
+  position: relative;
+  transition: filter 0.3s ease;
 }
 
-/* Dim overlay visual (applies to the map container) */
 .map-dim {
-  filter: grayscale(0.6) brightness(0.6);
-  transition: filter 180ms ease;
+  filter: brightness(0.4) grayscale(0.6);
 }
 
+/* Animación pulse para markers destacados */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 0 16px currentColor;
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px currentColor;
+    transform: scale(1.15);
+  }
+}
+
+.site-marker-highlight {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
 
 /* Reset et styles de base */
 * {
@@ -157,21 +229,7 @@ header h1 {
 }
 
 /* Sidebar professionnel */
-#sidebar {
-  background: var(--white);
-  border-radius: 8px;
-  padding: 2rem 1.5rem;
-  box-shadow: 0 2px 15px rgba(22, 105, 122, 0.15);
-  min-width: 220px;
-  max-width: 250px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  border-left: 4px solid var(--spie-dark-teal);
-}
-
-/* Boutons de navigation professionnels */
-#sidebar button {
+#sidebar button.sidebar-nav {
   background: var(--white);
   color: var(--spie-dark-teal);
   border: 2px solid var(--spie-medium-teal);
@@ -184,9 +242,11 @@ header h1 {
   text-align: left;
   position: relative;
   overflow: hidden;
+  width: 100%;
+  margin-bottom: 8px;
 }
 
-#sidebar button::before {
+#sidebar button.sidebar-nav::before {
   content: '';
   position: absolute;
   left: 0;
@@ -198,34 +258,26 @@ header h1 {
   z-index: 0;
 }
 
-#sidebar button span {
+#sidebar button.sidebar-nav span {
   position: relative;
   z-index: 1;
 }
-/* Estilos base para sidebar y botones */
-#sidebar { padding: 1rem; }
-#sidebar .sidebar-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  color: var(--text-default);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all 160ms ease;
+
+#sidebar button.sidebar-nav:hover::before {
+  width: 100%;
 }
 
+#sidebar button.sidebar-nav:hover {
+  color: var(--white);
+}
 
-
-#sidebar button:active {
+#sidebar button.sidebar-nav:active {
   transform: translateX(3px);
 }
 
-/* Bouton actif */
-#sidebar button.active {
+#sidebar button.sidebar-nav.active {
   color: var(--white);
+  background: var(--spie-dark-teal);
   border-color: var(--spie-dark-teal);
 }
 
@@ -248,6 +300,8 @@ header h1 {
   box-shadow: 0 2px 10px rgba(22, 105, 122, 0.2);
   overflow: hidden;
   border: 2px solid var(--spie-light-teal);
+  position: relative;
+  z-index: 1;
 }
 
 /* Styles pour les contrôles de Leaflet */
@@ -387,16 +441,7 @@ footer {
   
   #sidebar {
     max-width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    border-left: none;
-    border-top: 4px solid var(--spie-dark-teal);
-  }
-  
-  #sidebar button {
-    flex: 1;
-    min-width: 150px;
+    width: 100%;
   }
   
   #map {
@@ -421,11 +466,6 @@ footer {
   
   #sidebar {
     padding: 1rem;
-  }
-  
-  #sidebar button {
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
   }
   
   #main-content {
