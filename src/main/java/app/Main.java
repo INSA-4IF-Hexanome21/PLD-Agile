@@ -1,6 +1,7 @@
 package app;
 
 import controller.CarteController;
+import controller.ServeurHTTP;
 import model.Carte;
 
 
@@ -16,9 +17,11 @@ import java.io.*;
 import java.nio.file.Files;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
 
-        HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+    private static final int PORT_SERVEUR = 8000;
+    private static final String CHEMIN_BASE_VIEW = "src/main/java/view/";
+
+    public static void main(String[] args) throws IOException {
 
        // Chemin vers ton fichier XML local
         String cheminFichier = "ressources/fichiersXMLPickupDelivery/grandPlan.xml";
@@ -27,31 +30,18 @@ public class Main {
 
         Carte carte = carteController.getCarte();
 
-        // Servir HTML
-        server.createContext("/", exchange -> {
-        InputStream htmlStream = Main.class.getClassLoader().getResourceAsStream("view/PickupDelivery.html");
-        byte[] bytes = htmlStream.readAllBytes();
+            // Afficher les informations de la carte chargée
+        System.out.println("Carte chargée avec succès:");
+        System.out.println("  - Nœuds: " + carte.getNoeuds().size());
+        System.out.println("  - Tronçons: " + carte.getTroncons().size());
+        System.out.println();
 
-            exchange.getResponseHeaders().add("Content-Type", "text/html; charset=UTF-8");
-            exchange.sendResponseHeaders(200, bytes.length);
-            exchange.getResponseBody().write(bytes);
-            exchange.close();
-        });
-
-        // Servir JSON
-        server.createContext("/api/carte", exchange -> {
-            byte[] bytes = carteController.getCarteJSON().getBytes();
-            exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
-            exchange.sendResponseHeaders(200, bytes.length);
-            exchange.getResponseBody().write(bytes);
-            exchange.close();
-        });
-
-        server.start();
-        System.out.println("Serveur http://localhost:8000");
+        ServeurHTTP serveur = new ServeurHTTP(PORT_SERVEUR, CHEMIN_BASE_VIEW, carteController);
+        serveur.demarrer();
 
         
-        System.out.println("Nombre de noeuds dans la carte : " + carte.getNoeuds().size());
-        System.out.println("Nombre de tronçons dans la carte : " + carte.getTroncons().size());
+       System.out.println("Ouvrez votre navigateur à: http://localhost:" + PORT_SERVEUR);
+        System.out.println("Appuyez sur Ctrl+C pour arrêter le serveur");
+        System.out.println("===========================================");
     }
 }

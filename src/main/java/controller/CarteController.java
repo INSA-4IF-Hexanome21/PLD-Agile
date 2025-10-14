@@ -32,11 +32,13 @@ public class CarteController {
     public String getCarteJSON() {
     StringBuilder json = new StringBuilder();
     json.append("{\"noeuds\":[");
-    for (int i = 0; i < carte.getNoeuds().size(); i++) {
-        Noeud n = carte.getNoeuds().get(i);
+    int noeudCount = 0;
+    int noeudTotal = carte.getNoeuds().size();
+    for (Noeud n : carte.getNoeuds().values()) {
         json.append(String.format("{\"id\":%d,\"lat\":%f,\"lng\":%f}",
                 n.getId(), n.getLatitude(), n.getLongitude()));
-        if (i < carte.getNoeuds().size() - 1) json.append(",");
+        noeudCount++;
+        if (noeudCount < noeudTotal) json.append(",");
     }
     json.append("],\"troncons\":[");
     for (int i = 0; i < carte.getTroncons().size(); i++) {
