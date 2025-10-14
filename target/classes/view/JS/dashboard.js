@@ -1,3 +1,4 @@
+
 // Variable globale pour la carte Leaflet
 let carte = null;
 let marqueurs = [];
@@ -10,6 +11,7 @@ const COULEURS_SITES = {
   'collecte': '#FFA62B',     // Naranja - Recolección
   'default': '#667eea'       // Morado - Por defecto
 };
+
 
 /**
  * Charge un composant dans le contenu principal
@@ -136,6 +138,7 @@ function afficherDonneesSurCarte(donnees) {
       }
     });
   }
+  
 
   // 2) Nœuds (dibujamos antes de los sites para que sites queden encima)
   if (donnees.noeuds && donnees.noeuds.length > 0) {
