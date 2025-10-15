@@ -70,68 +70,159 @@ public class ServeurHTTP {
         
         System.out.println(">>> Réponse envoyée <<<");
     });
-        
 
-        serveur.createContext("/api/upload", exchange -> {
-            System.out.println(">>> Requête reçue sur /api/upload <<<");
+    // ! UPLOAD
+    // Reemplaza los dos contextos de upload en configurerRoutes()
+
+// Endpoint para subir y cargar el PLAN (carte)
+serveur.createContext("/api/upload/plan", exchange -> {
+    System.out.println(">>> Requête reçue sur /api/upload/plan <<<");
+    
+    if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+        try {
+            // Leer el cuerpo de la petición
+            byte[] bytes = exchange.getRequestBody().readAllBytes();
+            System.out.println("Bytes recibidos: " + bytes.length);
             
-            if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-                try {
-                    // Leer el cuerpo de la petición
-                    byte[] bytes = exchange.getRequestBody().readAllBytes();
-                    System.out.println("Bytes recibidos: " + bytes.length);
-                    
-                    // Obtener el nombre del archivo del header
-                    String fileName = exchange.getRequestHeaders().getFirst("X-File-Name");
-                    if (fileName != null) {
-                        fileName = java.net.URLDecoder.decode(fileName, "UTF-8");
-                        System.out.println("Nombre del archivo: " + fileName);
-                    } else {
-                        fileName = "archivo_" + System.currentTimeMillis();
-                        System.out.println("Nombre generado: " + fileName);
-                    }
-                    
-                    // Crear directorio si no existe
-                    File uploadDir = new File(cheminBaseRessources + "uploads/");
-                    if (!uploadDir.exists()) {
-                        boolean created = uploadDir.mkdirs();
-                        System.out.println("Directorio de uploads creado: " + created);
-                    }
-                    
-                    // Guardar el archivo
-                    File outFile = new File(uploadDir, fileName);
-                    Files.write(outFile.toPath(), bytes);
-                    System.out.println("Archivo guardado en: " + outFile.getAbsolutePath());
-                    
-                    // Responder al cliente
-                    String response = "{\"status\":\"ok\",\"path\":\"uploads/" + fileName + "\",\"size\":" + bytes.length + "}";
-                    byte[] responseBytes = response.getBytes("UTF-8");
-                    
-                    exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
-                    exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-                    exchange.sendResponseHeaders(200, responseBytes.length);
-                    exchange.getResponseBody().write(responseBytes);
-                    exchange.close();
-                    
-                    System.out.println(">>> Réponse envoyée: " + response + " <<<");
-                    
-                } catch (Exception e) {
-                    System.err.println("ERROR al procesar upload: " + e.getMessage());
-                    e.printStackTrace();
-                    
-                    String errorResponse = "{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}";
-                    byte[] errorBytes = errorResponse.getBytes("UTF-8");
-                    exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
-                    exchange.sendResponseHeaders(500, errorBytes.length);
-                    exchange.getResponseBody().write(errorBytes);
-                    exchange.close();
-                }
+            // Obtener el nombre del archivo del header
+            String fileName = exchange.getRequestHeaders().getFirst("X-File-Name");
+            if (fileName != null) {
+                fileName = java.net.URLDecoder.decode(fileName, "UTF-8");
+                System.out.println("Nombre del archivo: " + fileName);
             } else {
-                System.out.println("Método no permitido: " + exchange.getRequestMethod());
-                exchange.sendResponseHeaders(405, -1);
-                exchange.close();
+                fileName = "plan_" + System.currentTimeMillis() + ".xml";
+                System.out.println("Nombre generado: " + fileName);
             }
-        });
+            
+            // Validar que sea XML
+            if (!fileName.toLowerCase().endsWith(".xml")) {
+                throw new Exception("Le fichier doit être un XML");
+            }
+            
+            // Crear directorio si no existe
+            File uploadDir = new File(cheminBaseRessources + "uploads/plans/");
+            if (!uploadDir.exists()) {
+                boolean created = uploadDir.mkdirs();
+                System.out.println("Directorio de plans creado: " + created);
+            }
+            
+            // Guardar el archivo
+            File outFile = new File(uploadDir, fileName);
+            Files.write(outFile.toPath(), bytes);
+            System.out.println("Plan guardado en: " + outFile.getAbsolutePath());
+            
+            // CARGAR EL PLAN EN EL CONTROLADOR
+            System.out.println(">>> Chargement du plan dans le contrôleur <<<");
+            carteController.chargerCarteDepuisXML(outFile.getAbsolutePath());
+            System.out.println(">>> Plan chargé avec succès <<<");
+            
+            // Responder al cliente
+            String response = "{\"status\":\"ok\",\"type\":\"plan\",\"path\":\"uploads/plans/" 
+                            + fileName + "\",\"size\":" + bytes.length + ",\"message\":\"Plan chargé avec succès\"}";
+            byte[] responseBytes = response.getBytes("UTF-8");
+            
+            exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            exchange.sendResponseHeaders(200, responseBytes.length);
+            exchange.getResponseBody().write(responseBytes);
+            exchange.close();
+            
+            System.out.println(">>> Réponse envoyée: " + response + " <<<");
+            
+        } catch (Exception e) {
+            System.err.println("ERROR al procesar plan: " + e.getMessage());
+            e.printStackTrace();
+            
+            String errorResponse = "{\"status\":\"error\",\"type\":\"plan\",\"message\":\"" 
+                                  + e.getMessage().replace("\"", "'") + "\"}";
+            byte[] errorBytes = errorResponse.getBytes("UTF-8");
+            exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+            exchange.sendResponseHeaders(500, errorBytes.length);
+            exchange.getResponseBody().write(errorBytes);
+            exchange.close();
+        }
+    } else {
+        System.out.println("Método no permitido: " + exchange.getRequestMethod());
+        exchange.sendResponseHeaders(405, -1);
+        exchange.close();
+    }
+});
+
+// Endpoint para subir y cargar la DEMANDE
+serveur.createContext("/api/upload/demande", exchange -> {
+    System.out.println(">>> Requête reçue sur /api/upload/demande <<<");
+    
+    if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+        try {
+            // Leer el cuerpo de la petición
+            byte[] bytes = exchange.getRequestBody().readAllBytes();
+            System.out.println("Bytes recibidos: " + bytes.length);
+            
+            // Obtener el nombre del archivo del header
+            String fileName = exchange.getRequestHeaders().getFirst("X-File-Name");
+            if (fileName != null) {
+                fileName = java.net.URLDecoder.decode(fileName, "UTF-8");
+                System.out.println("Nombre del archivo: " + fileName);
+            } else {
+                fileName = "demande_" + System.currentTimeMillis() + ".xml";
+                System.out.println("Nombre generado: " + fileName);
+            }
+            
+            // Validar que sea XML
+            if (!fileName.toLowerCase().endsWith(".xml")) {
+                throw new Exception("Le fichier doit être un XML");
+            }
+            
+            // Crear directorio si no existe
+            File uploadDir = new File(cheminBaseRessources + "uploads/demandes/");
+            if (!uploadDir.exists()) {
+                boolean created = uploadDir.mkdirs();
+                System.out.println("Directorio de demandes creado: " + created);
+            }
+            
+            // Guardar el archivo
+            File outFile = new File(uploadDir, fileName);
+            Files.write(outFile.toPath(), bytes);
+            System.out.println("Demande guardado en: " + outFile.getAbsolutePath());
+            
+            // CARGAR LA DEMANDE EN EL CONTROLADOR
+            // Asumiendo que tienes un método para cargar demandes
+            System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
+
+            carteController.chargerDemandesDepuisXML(outFile.getAbsolutePath());
+            System.out.println(">>> Demande chargée avec succès <<<");
+            
+            // Responder al cliente
+            String response = "{\"status\":\"ok\",\"type\":\"demande\",\"path\":\"uploads/demandes/" 
+                            + fileName + "\",\"size\":" + bytes.length + ",\"message\":\"Demande chargée avec succès\"}";
+            byte[] responseBytes = response.getBytes("UTF-8");
+            
+            exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            exchange.sendResponseHeaders(200, responseBytes.length);
+            exchange.getResponseBody().write(responseBytes);
+            exchange.close();
+            
+            System.out.println(">>> Réponse envoyée: " + response + " <<<");
+            
+        } catch (Exception e) {
+            System.err.println("ERROR al procesar demande: " + e.getMessage());
+            e.printStackTrace();
+            
+            String errorResponse = "{\"status\":\"error\",\"type\":\"demande\",\"message\":\"" 
+                                  + e.getMessage().replace("\"", "'") + "\"}";
+            byte[] errorBytes = errorResponse.getBytes("UTF-8");
+            exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+            exchange.sendResponseHeaders(500, errorBytes.length);
+            exchange.getResponseBody().write(errorBytes);
+            exchange.close();
+        }
+    } else {
+        System.out.println("Método no permitido: " + exchange.getRequestMethod());
+        exchange.sendResponseHeaders(405, -1);
+        exchange.close();
+    }
+});
 
 
         // Route pour les fichiers JavaScript

@@ -419,7 +419,8 @@ fetch('/components/Sidebar.html')
     document.getElementById('btn-filtros')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-filtros')?.classList.add('active');
-      document.getElementById('main-content').innerHTML = `<div style="padding:2rem;"><h2>Filtres</h2><p>Fonctionnalité en construction…</p></div>`;
+      chargerComposantPrincipal('/components/Import.html');
+      //TODO Import
     });
     document.getElementById('btn-estadisticas')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
