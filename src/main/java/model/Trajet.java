@@ -9,17 +9,39 @@ public class Trajet {
     // Attributs
     private Livreur livreur;
     private List<Site> sites;
+<<<<<<< HEAD
+=======
+    private List<Site> nonAccessibles;
+>>>>>>> 785a18d5834ff9f222bdc65d4e5e25e05819b4a2
     private List<Troncon> troncons;
     private Float dureeTrajet;
     private LocalTime heureDebut;
     private LocalTime heureFin;
 
 
+<<<<<<< HEAD
     // Constructeur
+=======
+    // Constructeur complet
+>>>>>>> 785a18d5834ff9f222bdc65d4e5e25e05819b4a2
     public Trajet(Livreur livreur) {
         this.livreur = livreur;
         this.sites = new ArrayList<>();
         this.troncons = new ArrayList<>();
+<<<<<<< HEAD
+=======
+        this.nonAccessibles = new ArrayList<>();
+        this.dureeTrajet = null;
+        this.heureDebut = LocalTime.of(8, 00); //On part toujours de l'entrpôt à 8h
+        this.heureFin = null;
+    }
+    // Constructeur incomplet
+    public Trajet() {
+        this.livreur = null;
+        this.sites = new ArrayList<>();
+        this.troncons = new ArrayList<>();
+        this.nonAccessibles = new ArrayList<>();
+>>>>>>> 785a18d5834ff9f222bdc65d4e5e25e05819b4a2
         this.dureeTrajet = null;
         this.heureDebut = LocalTime.of(8, 00); //On part toujours de l'entrpôt à 8h
         this.heureFin = null;
@@ -31,7 +53,11 @@ public class Trajet {
         return this.livreur;
     }
 
+<<<<<<< HEAD
     public void setIdLivreur(Livreur new_livreur){
+=======
+    public void setLivreur(Livreur new_livreur){
+>>>>>>> 785a18d5834ff9f222bdc65d4e5e25e05819b4a2
         this.livreur = new_livreur;
     }
 
@@ -51,6 +77,13 @@ public class Trajet {
         return sites;
     }
 
+<<<<<<< HEAD
+=======
+    public List<Site> getSitesNonAccessibles(){
+        return nonAccessibles;
+    }
+
+>>>>>>> 785a18d5834ff9f222bdc65d4e5e25e05819b4a2
     public List<Troncon> getTroncons() {
         return troncons;
     }
