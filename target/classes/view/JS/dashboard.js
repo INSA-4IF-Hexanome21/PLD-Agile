@@ -1,0 +1,439 @@
+// Variables globales
+let carte = null;
+let marqueurs = [];
+let lignes = [];
+let siteMarkers = [];
+let noeudMarkers = [];
+let tronconLines = [];
+let donneesGlobales = null;
+
+// Configuración de colores para cada tipo de site
+const COULEURS_SITES = {
+  'depot': '#2b6cb0',
+  'pickup': '#38a169',
+  'collecte': '#38a169',
+  'delivery': '#e53e3e',
+  'livraison': '#e53e3e',
+  'entrepot': '#2b6cb0',
+  'default': '#999999'
+};
+
+// Estado de visibilidad
+const visibilityState = {
+  entrepot: true,
+  collecte: true,
+  livraison: true,
+  noeuds: true,
+  troncons: true
+};
+
+
+/* //! ----------------- UTILIDADES / INIT ----------------- */
+
+function chargerComposantPrincipal(url) {
+  console.log('Chargement du composant:', url);
+  const main = document.getElementById('main-content');
+  if (!main) return;
+  main.innerHTML = '<p>Chargement en cours...</p>';
+
+  fetch(url)
+    .then(res => {
+      if (!res.ok) throw new Error('Erreur de chargement: ' + url);
+      return res.text();
+    })
+    .then(html => {
+      main.innerHTML = html;
+      if (url.includes('Map.html')) {
+        // dejamos un timeout corto para que el DOM dentro de main se renderice
+        setTimeout(initialiserCarte, 100);
+      }
+    })
+    .catch(err => {
+      console.error("Erreur lors du chargement du composant:", err);
+      main.innerHTML = '<p style="color: #e74c3c;">Erreur lors du chargement du composant</p>';
+    });
+}
+
+function computeSiteRadius(map) {
+  const zoom = map && map.getZoom ? map.getZoom() : 13;
+  // Ajusta la escala nodos sites: cuanto mayor el zoom, mayor el radio (pero protegemos con min/max)
+  return Math.max(4, Math.min(12, Math.round(zoom * 1.2)));
+}
+
+/* //! ----------------- MAP INITIALIZATION ----------------- */
+
+function initialiserCarte() {
+  console.log('Initialisation de la carte...');
+
+  // Remove previous map if exists
+  if (carte !== null) {
+    try { carte.off(); carte.remove(); } catch (e) {}
+    marqueurs = [];
+    lignes = [];
+    siteMarkers = [];
+    noeudMarkers = [];
+    tronconLines = [];
+    donneesGlobales = null;
+  }
+
+  const elementCarte = document.getElementById('map');
+
+  if (!elementCarte) {
+    console.error('Élément #map non trouvé dans le DOM');
+    document.getElementById('main-content').innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable</p>';
+    return;
+  }
+
+  // Crear mapa
+  carte = L.map('map', {
+    center: [45.7578137, 4.8320114],
+    zoom: 15,
+    zoomControl: true,
+    preferCanvas: true
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap',
+    maxZoom: 19
+  }).addTo(carte);
+
+  // Cargar datos
+  fetch("/api/carte")
+    .then(res => {
+      if (!res.ok) throw new Error('Erreur API: ' + res.status);
+      return res.json();
+    })
+    .then(donnees => {
+      console.log('Données reçues:', donnees);
+      donneesGlobales = donnees;
+      afficherDonneesSurCarte(donnees);
+      configurerControlesVisibilite(); // engancha los controles
+    })
+    .catch(err => {
+      console.error('Erreur lors du chargement des données de la carte:', err);
+      alert('Impossible de charger les données de la carte. Vérifiez la console pour plus de détails.');
+    });
+}
+
+/* //! ----------------- RENDER DATOS EN MAPA ----------------- */
+
+function afficherDonneesSurCarte(donnees) {
+  if (!carte) {
+    console.error('Carte no inicializada');
+    return;
+  }
+
+  // Asegurarse pane para sites (z-index alto)
+  ensureSitePane();
+
+  // 1) Tronçons (fondo)
+  if (donnees.troncons && donnees.troncons.length > 0) {
+    console.log('Affichage de', donnees.troncons.length, 'tronçons');
+    donnees.troncons.forEach(troncon => {
+      const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === troncon.from);
+      const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === troncon.to);
+      if (depart && arrivee) {
+        const ligne = L.polyline(
+          [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
+          { color: '#667eea', weight: 3, opacity: 0.4, smoothFactor: 1 }
+        ).addTo(carte);
+        ligne.bindPopup(`<strong>Tronçon</strong><br>De: ${troncon.from}<br>À: ${troncon.to}`);
+        tronconLines.push(ligne);
+      }
+    });
+  }
+
+  // 2) Nœuds (medio)
+  if (donnees.noeuds && donnees.noeuds.length > 0) {
+    console.log('Affichage de', donnees.noeuds.length, 'nœuds');
+    donnees.noeuds.forEach(noeud => {
+      const icone = L.divIcon({
+        className: 'marqueur-personnalise',
+        html: `<div class="marqueur-noeud" style="background:#16697A;width:10px;height:10px;border-radius:50%;border:2px solid white;"></div>`,
+        iconSize: [10,10], iconAnchor: [5,5]
+      });
+      const marker = L.marker([noeud.lat, noeud.lng], { icon: icone, zIndexOffset: 100 }).addTo(carte);
+      marker.bindPopup(`<strong>Nœud ${noeud.id}</strong><br>Lat: ${noeud.lat.toFixed(6)}<br>Lng: ${noeud.lng.toFixed(6)}`);
+      noeudMarkers.push(marker);
+    });
+  }
+
+  // 3) Sites (encima)
+  console.log('Sites reçus:', donnees.sites);
+  if (donnees.sites && donnees.sites.length > 0) {
+    // limpiar previos
+    siteMarkers.forEach(m => { try { carte.removeLayer(m); } catch (e) {} });
+    siteMarkers.length = 0;
+
+    const initialRadius = computeSiteRadius(carte);
+
+    donnees.sites.forEach(site => {
+      const rawType = (site.type || '').toString().toLowerCase();
+      let normalizedType = rawType;
+      if (rawType === 'livraison' || rawType === 'delivery') normalizedType = 'livraison';
+      else if (rawType === 'collecte' || rawType === 'pickup' || rawType === 'pick-up') normalizedType = 'collecte';
+      else if (rawType === 'entrepot' || rawType === 'depot' || rawType === 'warehouse') normalizedType = 'entrepot';
+
+      const color = COULEURS_SITES[normalizedType] || COULEURS_SITES['default'];
+
+      if (site.lat != null && site.lng != null) {
+        const marker = L.circleMarker([site.lat, site.lng], {
+          radius: initialRadius,
+          fillOpacity: 1,
+          color: '#ffffff',
+          weight: 2,
+          fillColor: color,
+          pane: 'sitePane'
+        });
+
+        // metadata para filtros
+        marker.options.siteType = normalizedType;
+        marker.options.siteId = site.id;
+
+        marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -initialRadius - 6] });
+        marker.bindPopup(`<strong style="color:${color}">${normalizedType} ${site.id}</strong><br>Lat: ${site.lat.toFixed(6)}<br>Lng: ${site.lng.toFixed(6)}`);
+
+        marker.addTo(carte);
+        siteMarkers.push(marker);
+      }
+    });
+
+    // resize al zoom (solo una vez)
+    if (!carte._siteZoomHandlerAdded) {
+      carte.on('zoomend', () => {
+        const newR = computeSiteRadius(carte);
+        siteMarkers.forEach(m => {
+          try {
+            if (m && m.setRadius) m.setRadius(newR);
+            // actualizar tooltip offset
+            const tip = m.getTooltip && m.getTooltip();
+            if (tip) {
+              const content = tip.getContent ? tip.getContent() : (m.options && m.options.siteId ? m.options.siteId : '');
+              m.unbindTooltip();
+              m.bindTooltip(content, { permanent: false, direction: 'top', offset: [0, -newR - 6] });
+            }
+          } catch (e) {}
+        });
+      });
+      carte._siteZoomHandlerAdded = true;
+    }
+
+    // attach hover handlers
+    attachSiteHoverHandlers();
+
+    // aplicar visibilidad inicial
+    updateVisibility();
+  }
+
+  // Ajustar vista a nodos si hay
+  try {
+    if (donnees.noeuds && donnees.noeuds.length > 0) {
+      const limites = L.latLngBounds(donnees.noeuds.map(n => [n.lat, n.lng]));
+      carte.fitBounds(limites, { padding: [50, 50] });
+    }
+  } catch (e) {}
+} // end afficherDonneesSurCarte
+
+/* //! ----------------- PANE / HOVER / DIM ----------------- */
+
+function ensureSitePane() {
+  if (!carte) return;
+  if (!carte.getPane('sitePane')) {
+    const p = carte.createPane('sitePane');
+    p.style.zIndex = 750;
+    p.style.pointerEvents = 'auto';
+  }
+}
+
+function attachSiteHoverHandlers() {
+  if (!Array.isArray(siteMarkers) || !carte) return;
+
+  siteMarkers.forEach(marker => {
+    if (marker._siteHandlersAttached) return;
+    marker._siteHandlersAttached = true;
+
+    // SOLO click: pan + popup
+    marker.on('click', () => {
+      try {
+        if (marker.getLatLng) carte.panTo(marker.getLatLng());
+        if (marker.openPopup) marker.openPopup();
+      } catch (e) {}
+    });
+
+    // Opcional: mostrar tooltip al pasar sin animar (no cambiar radius ni dim)
+    marker.on('mouseover', () => {
+      try {
+        if (marker.openTooltip) marker.openTooltip();
+      } catch (e) {}
+    });
+    marker.on('mouseout', () => {
+      try {
+        if (marker.closeTooltip) marker.closeTooltip();
+      } catch (e) {}
+    });
+  });
+}
+
+
+function dimExcept(activeMarker) {
+  tronconLines.forEach(l => { try { if (l.setStyle) l.setStyle({ opacity: 0.12 }); } catch (e) {} });
+  noeudMarkers.forEach(m => { try { if (m.setOpacity) m.setOpacity(0.2); } catch (e) {} });
+  siteMarkers.forEach(s => {
+    try {
+      if (s === activeMarker) {
+        if (s.setStyle) s.setStyle({ fillOpacity: 1, opacity: 1 });
+      } else {
+        if (s.setStyle) s.setStyle({ fillOpacity: 0.35, opacity: 0.4 });
+      }
+    } catch (e) {}
+  });
+  const mapEl = document.querySelector('.leaflet-container');
+  if (mapEl) mapEl.classList.add('map-dim');
+}
+
+function undimAll() {
+  tronconLines.forEach(l => { try { if (l.setStyle) l.setStyle({ opacity: 0.4 }); } catch (e) {} });
+  noeudMarkers.forEach(m => { try { if (m.setOpacity) m.setOpacity(1.0); } catch (e) {} });
+  siteMarkers.forEach(s => { try { if (s.setStyle) s.setStyle({ fillOpacity: 1, opacity: 1 }); } catch (e) {} });
+  const mapEl = document.querySelector('.leaflet-container');
+  if (mapEl) mapEl.classList.remove('map-dim');
+}
+
+/* //! ----------------- VISIBILITY CONTROLS ----------------- */
+
+function updateVisibility() {
+  // Sites
+  siteMarkers.forEach(marker => {
+    const type = marker.options.siteType || 'default';
+    // mapea nombres usados en visibilityState
+    const key = (type === 'entrepot' ? 'entrepot' : (type === 'collecte' ? 'collecte' : (type === 'livraison' ? 'livraison' : 'entrepot')));
+    if (visibilityState[key]) {
+      if (!carte.hasLayer(marker)) marker.addTo(carte);
+    } else {
+      if (carte.hasLayer(marker)) carte.removeLayer(marker);
+    }
+  });
+
+  // Nœuds
+  noeudMarkers.forEach(marker => {
+    if (visibilityState.noeuds) {
+      if (!carte.hasLayer(marker)) marker.addTo(carte);
+    } else {
+      if (carte.hasLayer(marker)) carte.removeLayer(marker);
+    }
+  });
+
+  // Tronçons
+  tronconLines.forEach(line => {
+    if (visibilityState.troncons) {
+      if (!carte.hasLayer(line)) line.addTo(carte);
+    } else {
+      if (carte.hasLayer(line)) carte.removeLayer(line);
+    }
+  });
+}
+
+function configurerControlesVisibilite() {
+  // checkbox toggles: entrepot, collecte, livraison
+  ['entrepot', 'collecte', 'livraison'].forEach(type => {
+    const cb = document.getElementById(`toggle-${type}`);
+    if (cb) {
+      cb.checked = visibilityState[type];
+      cb.addEventListener('change', (e) => {
+        visibilityState[type] = e.target.checked;
+        updateVisibility();
+      });
+    }
+  });
+
+  // nodo toggle
+  const tNoeuds = document.getElementById('toggle-noeuds');
+  if (tNoeuds) {
+    tNoeuds.checked = visibilityState.noeuds;
+    tNoeuds.addEventListener('change', (e) => {
+      visibilityState.noeuds = e.target.checked;
+      updateVisibility();
+    });
+  }
+
+  // troncons toggle
+  const tTron = document.getElementById('toggle-troncons');
+  if (tTron) {
+    tTron.checked = visibilityState.troncons;
+    tTron.addEventListener('change', (e) => {
+      visibilityState.troncons = e.target.checked;
+      updateVisibility();
+    });
+  }
+
+  // reset view
+  const btnReset = document.getElementById('btn-reset-view');
+  if (btnReset) {
+    btnReset.addEventListener('click', () => {
+      if (!donneesGlobales || (!donneesGlobales.noeuds && !donneesGlobales.sites)) return;
+      const pts = [];
+      if (donneesGlobales.noeuds) pts.push(...donneesGlobales.noeuds.map(n => [n.lat, n.lng]));
+      if (donneesGlobales.sites) pts.push(...donneesGlobales.sites.filter(s => s.lat && s.lng).map(s => [s.lat, s.lng]));
+      if (pts.length) {
+        const bounds = L.latLngBounds(pts);
+        carte.fitBounds(bounds, { padding: [40,40] });
+      }
+    });
+  }
+
+  // toggle all
+  const btnToggleAll = document.getElementById('btn-toggle-all');
+  if (btnToggleAll) {
+    btnToggleAll.addEventListener('click', () => {
+      const all = Object.values(visibilityState).every(v => v === true);
+      const newState = !all;
+      Object.keys(visibilityState).forEach(k => visibilityState[k] = newState);
+      // actualizar checkboxes visualmente
+      ['entrepot','collecte','livraison','noeuds','troncons'].forEach(k => {
+        const el = document.getElementById(`toggle-${k}`);
+        if (el) el.checked = visibilityState[k];
+      });
+      updateVisibility();
+    });
+  }
+}
+
+/* //! ----------------- CARGA SIDEBAR + INICIO ----------------- */
+
+// Cargar Sidebar.html y luego cargar el componente principal por defecto
+fetch('/components/Sidebar.html')
+  .then(res => {
+    if (!res.ok) throw new Error('Erreur lors du chargement du sidebar');
+    return res.text();
+  })
+  .then(html => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.innerHTML = html;
+    // enganchar botones de navegación básicos (ya están en tu HTML)
+    document.getElementById('btn-mapa')?.addEventListener('click', () => {
+      // marcado visual
+      document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-mapa')?.classList.add('active');
+      chargerComposantPrincipal('/components/Map.html');
+    });
+    document.getElementById('btn-filtros')?.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-filtros')?.classList.add('active');
+      document.getElementById('main-content').innerHTML = `<div style="padding:2rem;"><h2>Filtres</h2><p>Fonctionnalité en construction…</p></div>`;
+    });
+    document.getElementById('btn-estadisticas')?.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-estadisticas')?.classList.add('active');
+      document.getElementById('main-content').innerHTML = `<div style="padding:2rem;"><h2>Statistiques</h2><p>Fonctionnalité en construction…</p></div>`;
+    });
+
+    // cargar componente por defecto
+    chargerComposantPrincipal('/components/Map.html');
+  })
+  .catch(err => {
+    console.error("Erreur lors du chargement du sidebar:", err);
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.innerHTML = '<p style="color:#e74c3c;">Erreur de chargement</p>';
+    // igualmente intentar cargar mapa por defecto (por si sidebar no es crítico)
+    chargerComposantPrincipal('/components/Map.html');
+  });

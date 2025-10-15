@@ -3,7 +3,7 @@ package model;
 public class Entrepot extends Site {
     
     // Constructeur minimal (lat/lng null)
-    public Entrepot(long id, Integer numLivraison, Integer dureeRecup) {
+    public Entrepot(long id) {
         super(id); // lat/lng null
     }
 
@@ -12,4 +12,8 @@ public class Entrepot extends Site {
         super(id, lat, lng);
     }
 
+    @Override
+    public String getTypeSite() {
+        return "entrepot";
+    }
 }
