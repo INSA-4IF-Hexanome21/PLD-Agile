@@ -9,17 +9,29 @@ public class Trajet {
     // Attributs
     private Livreur livreur;
     private List<Site> sites;
+    private List<Site> nonAccessibles;
     private List<Troncon> troncons;
     private Float dureeTrajet;
     private LocalTime heureDebut;
     private LocalTime heureFin;
 
 
-    // Constructeur
+    // Constructeur complet
     public Trajet(Livreur livreur) {
         this.livreur = livreur;
         this.sites = new ArrayList<>();
         this.troncons = new ArrayList<>();
+        this.nonAccessibles = new ArrayList<>();
+        this.dureeTrajet = null;
+        this.heureDebut = LocalTime.of(8, 00); //On part toujours de l'entrpôt à 8h
+        this.heureFin = null;
+    }
+    // Constructeur incomplet
+    public Trajet() {
+        this.livreur = null;
+        this.sites = new ArrayList<>();
+        this.troncons = new ArrayList<>();
+        this.nonAccessibles = new ArrayList<>();
         this.dureeTrajet = null;
         this.heureDebut = LocalTime.of(8, 00); //On part toujours de l'entrpôt à 8h
         this.heureFin = null;
@@ -49,6 +61,10 @@ public class Trajet {
 
     public List<Site> getSites(){
         return sites;
+    }
+
+    public List<Site> getSitesNonAccessibles(){
+        return nonAccessibles;
     }
 
     public List<Troncon> getTroncons() {
