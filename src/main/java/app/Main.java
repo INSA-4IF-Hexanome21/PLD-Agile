@@ -2,19 +2,8 @@ package app;
 
 import controller.CarteController;
 import controller.ServeurHTTP;
-import model.Carte;
-
-
-import com.sun.net.httpserver.HttpServer;
-import java.net.InetSocketAddress;
-
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpExchange;
-
-import controller.CarteController;
-import model.Carte;
 import java.io.*;
-import java.nio.file.Files;
+import model.Carte;
 
 public class Main {
 
@@ -31,7 +20,7 @@ public class Main {
 
             // Afficher les informations de la carte chargée
         System.out.println("Carte chargée avec succès:");
-        System.out.println("  - Nœuds: " + carte.getNoeuds().size());
+        System.out.println("  - Noeuds: " + carte.getNoeuds().size());
         System.out.println("  - Tronçons: " + carte.getTroncons().size());
         System.out.println();
 

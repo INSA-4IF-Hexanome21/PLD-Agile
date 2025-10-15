@@ -1,26 +1,25 @@
 package model;
 
-public class Pickup extends Site {
+public class Depot extends Site {
 
-    //Attributs
     protected Integer numLivraison;
-    protected Integer dureeRecup;
+    protected Integer dureeLivraison;
 
     // Constructeur minimal (lat/lng null)
-    public Pickup(long id, Integer numLivraison, Integer dureeRecup) {
+    public Depot(long id, Integer numLivraison, Integer dureeRecup) {
         super(id); // lat/lng null
         this.numLivraison = numLivraison;
-        this.dureeRecup = dureeRecup;
+        this.dureeLivraison = dureeRecup;
     }
 
     // Constructeur complet (lat/lng fournis)
-    public Pickup(long id, Float lat, Float lng, Integer numLivraison, Integer dureeRecup) {
+    public Depot(long id, Float lat, Float lng, Integer numLivraison, Integer dureeLivraison) {
         super(id, lat, lng);
         this.numLivraison = numLivraison;
-        this.dureeRecup = dureeRecup;
+        this.dureeLivraison = dureeLivraison;
     }
 
-    // Getters / Setters 
+    //Getters / Setters
     public Integer getNumLivraison() {
         return numLivraison;
     }
@@ -30,16 +29,16 @@ public class Pickup extends Site {
     }
 
     public Integer getDureeRecup() {
-        return dureeRecup;
+        return dureeLivraison;
     }
 
-    public void setDureeRecup(Integer dureeRecup) {
-        this.dureeRecup = dureeRecup;
+    public void setDureeRecup(Integer dureeLivraison) {
+        this.dureeLivraison = dureeLivraison;
     }
 
     @Override
     public String getTypeSite() {
-        return "collecte";
+        return "livraison";
     }
-}
 
+}
