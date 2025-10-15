@@ -1,17 +1,28 @@
 package model;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
+
 public class CarteTest {
 
-    public static void main(String[] args) {
-         System.out.println("===== TEST Carte =====");
-        Carte carte =new Carte();
+    @Test
+    public void testAjouterEtSupprimerTrajet() {
+        Carte carte = new Carte();
         Livreur livreur = new Livreur(0, "Petit", "Bobert");
         Trajet trajet = new Trajet(livreur);
-        
+
+        // initialement vide
+        assertEquals(0, carte.getTrajets().size());
+
+        // après ajout
         carte.ajouterTrajet(trajet);
-        System.out.println("Nombre de trajets dans la carte : " + carte.getTrajets().size());
+        assertEquals(1, carte.getTrajets().size());
+        assertTrue(carte.getTrajets().contains(trajet));
+
+        // après suppression
         carte.supprimerTrajet(trajet);
-        System.out.println("Nombre de trajets dans la carte : " + carte.getTrajets().size());
-    
+        assertEquals(0, carte.getTrajets().size());
+        assertFalse(carte.getTrajets().contains(trajet));
     }
+
 }
