@@ -25,14 +25,6 @@ public abstract class Site extends Noeud  {
     public long getId() {
         return id;
     }
-
-    public Float getLat() {
-        return lat;
-    }
-    
-    public Float getLng() {
-        return lng;
-    }
     
     public LocalTime getDepartHeure() {
         return depart_heure;
@@ -41,15 +33,7 @@ public abstract class Site extends Noeud  {
     public LocalTime getArriveeHeure() {
         return arrivee_heure;
     }
-
-    public void setLat(Float lat) {
-        this.lat = lat;
-    }
-
-    public void setLng(Float lng) {
-        this.lng = lng;
-    }    
-
+   
     public void setDepartHeure(LocalTime depart_heure) {
         this.depart_heure = depart_heure;
     }

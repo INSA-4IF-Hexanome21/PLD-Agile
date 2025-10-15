@@ -18,7 +18,7 @@ public class Main {
         carteController.chargerCarteDepuisXML(cheminFichier);
             
         // 2. demandes 
-        String cheminDemandes = "ressources/fichiersXMLCollecteDepot/demandeGrand9.xml";
+        String cheminDemandes = "ressources/fichiersXMLCollecteDepot/demandeMoyen3.xml";
         carteController.chargerDemandesDepuisXML(cheminDemandes);
 
         Carte carte = carteController.getCarte();
