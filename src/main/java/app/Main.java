@@ -24,12 +24,12 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
        // 1. carte
-        String cheminFichier = "ressources/fichiersXMLPickupDelivery/moyenPlan.xml";
+        String cheminFichier = "ressources/fichiersXMLCollecteDepot/moyenPlan.xml";
         CarteController carteController = new CarteController();
         carteController.chargerCarteDepuisXML(cheminFichier);
             
         // 2. demandes 
-        String cheminDemandes = "ressources/fichiersXMLPickupDelivery/demandeGrand9.xml";
+        String cheminDemandes = "ressources/fichiersXMLCollecteDepot/demandeGrand9.xml";
         carteController.chargerDemandesDepuisXML(cheminDemandes);
 
         Carte carte = carteController.getCarte();

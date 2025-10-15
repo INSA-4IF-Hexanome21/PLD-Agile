@@ -10,9 +10,9 @@ let donneesGlobales = null;
 // Configuración de colores para cada tipo de site
 const COULEURS_SITES = {
   'depot': '#2b6cb0',
-  'pickup': '#38a169',
   'collecte': '#38a169',
-  'delivery': '#e53e3e',
+  'collecte': '#38a169',
+  'depot': '#e53e3e',
   'livraison': '#e53e3e',
   'entrepot': '#2b6cb0',
   'default': '#999999'
@@ -170,8 +170,8 @@ function afficherDonneesSurCarte(donnees) {
     donnees.sites.forEach(site => {
       const rawType = (site.type || '').toString().toLowerCase();
       let normalizedType = rawType;
-      if (rawType === 'livraison' || rawType === 'delivery') normalizedType = 'livraison';
-      else if (rawType === 'collecte' || rawType === 'pickup' || rawType === 'pick-up') normalizedType = 'collecte';
+      if (rawType === 'livraison' || rawType === 'depot') normalizedType = 'livraison';
+      else if (rawType === 'collecte' || rawType === 'collecte' || rawType === 'pick-up') normalizedType = 'collecte';
       else if (rawType === 'entrepot' || rawType === 'depot' || rawType === 'warehouse') normalizedType = 'entrepot';
 
       const color = COULEURS_SITES[normalizedType] || COULEURS_SITES['default'];
