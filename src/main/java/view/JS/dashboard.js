@@ -1,5 +1,3 @@
-// /js/dashboard.js - completo
-
 // Variables globales
 let carte = null;
 let marqueurs = [];
@@ -29,7 +27,8 @@ const visibilityState = {
   troncons: true
 };
 
-/* ----------------- UTILIDADES / INIT ----------------- */
+
+/* //! ----------------- UTILIDADES / INIT ----------------- */
 
 function chargerComposantPrincipal(url) {
   console.log('Chargement du composant:', url);
@@ -44,7 +43,7 @@ function chargerComposantPrincipal(url) {
     })
     .then(html => {
       main.innerHTML = html;
-      if (url.includes('PickupDelivery.html')) {
+      if (url.includes('Map.html')) {
         // dejamos un timeout corto para que el DOM dentro de main se renderice
         setTimeout(initialiserCarte, 100);
       }
@@ -57,11 +56,11 @@ function chargerComposantPrincipal(url) {
 
 function computeSiteRadius(map) {
   const zoom = map && map.getZoom ? map.getZoom() : 13;
-  // Ajusta la escala: cuanto mayor el zoom, mayor el radio (pero protegemos con min/max)
+  // Ajusta la escala nodos sites: cuanto mayor el zoom, mayor el radio (pero protegemos con min/max)
   return Math.max(4, Math.min(12, Math.round(zoom * 1.2)));
 }
 
-/* ----------------- MAP INITIALIZATION ----------------- */
+/* //! ----------------- MAP INITIALIZATION ----------------- */
 
 function initialiserCarte() {
   console.log('Initialisation de la carte...');
@@ -78,6 +77,7 @@ function initialiserCarte() {
   }
 
   const elementCarte = document.getElementById('map');
+
   if (!elementCarte) {
     console.error('Élément #map non trouvé dans le DOM');
     document.getElementById('main-content').innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable</p>';
@@ -115,7 +115,7 @@ function initialiserCarte() {
     });
 }
 
-/* ----------------- RENDER DATOS EN MAPA ----------------- */
+/* //! ----------------- RENDER DATOS EN MAPA ----------------- */
 
 function afficherDonneesSurCarte(donnees) {
   if (!carte) {
@@ -234,7 +234,7 @@ function afficherDonneesSurCarte(donnees) {
   } catch (e) {}
 } // end afficherDonneesSurCarte
 
-/* ----------------- PANE / HOVER / DIM ----------------- */
+/* //! ----------------- PANE / HOVER / DIM ----------------- */
 
 function ensureSitePane() {
   if (!carte) return;
@@ -299,7 +299,7 @@ function undimAll() {
   if (mapEl) mapEl.classList.remove('map-dim');
 }
 
-/* ----------------- VISIBILITY CONTROLS ----------------- */
+/* //! ----------------- VISIBILITY CONTROLS ----------------- */
 
 function updateVisibility() {
   // Sites
@@ -398,7 +398,7 @@ function configurerControlesVisibilite() {
   }
 }
 
-/* ----------------- CARGA SIDEBAR + INICIO ----------------- */
+/* //! ----------------- CARGA SIDEBAR + INICIO ----------------- */
 
 // Cargar Sidebar.html y luego cargar el componente principal por defecto
 fetch('/components/Sidebar.html')
@@ -414,7 +414,7 @@ fetch('/components/Sidebar.html')
       // marcado visual
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-mapa')?.classList.add('active');
-      chargerComposantPrincipal('/components/PickupDelivery.html');
+      chargerComposantPrincipal('/components/Map.html');
     });
     document.getElementById('btn-filtros')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
@@ -428,14 +428,12 @@ fetch('/components/Sidebar.html')
     });
 
     // cargar componente por defecto
-    chargerComposantPrincipal('/components/PickupDelivery.html');
+    chargerComposantPrincipal('/components/Map.html');
   })
   .catch(err => {
     console.error("Erreur lors du chargement du sidebar:", err);
     const sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.innerHTML = '<p style="color:#e74c3c;">Erreur de chargement</p>';
     // igualmente intentar cargar mapa por defecto (por si sidebar no es crítico)
-    chargerComposantPrincipal('/components/PickupDelivery.html');
+    chargerComposantPrincipal('/components/Map.html');
   });
-
-/* ----------------- FIN DEL ARCHIVO ----------------- */

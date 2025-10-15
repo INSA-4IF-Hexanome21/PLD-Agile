@@ -1,4 +1,4 @@
-/* Palette Carteboard */
+/* //! Palette Carteboard */
 :root {
   --spie-dark-teal: #16697A;
   --spie-medium-teal: #489FB5;
@@ -12,7 +12,7 @@
   --light-gray: #ECF0F1;
 }
 
-/* --- CONTROLES DEL SIDEBAR --- */
+/* //! --- CONTROLES DEL SIDEBAR --- */
 #sidebar {
   width: 280px;
   padding: 16px;
@@ -71,7 +71,7 @@
   user-select: none;
 }
 
-/* Indicadores de color para tipos de sites */
+/* //! Indicadores de color para tipos de sites */
 .site-indicator {
   display: inline-block;
   width: 7px;
@@ -87,7 +87,7 @@
 .site-indicator.livraison { background: #e53e3e; }
 .site-indicator.noeuds { background: #16697A; }
 
-/* Botones de control */
+/* //! Botones de control */
 .control-btn {
   display: inline-block;
   border: none;
@@ -126,7 +126,7 @@
   color: white;
 }
 
-/* Efecto de hover en sites - dimming del resto */
+/* //! Efecto de hover en sites - dimming del resto */
 .map-container {
   position: relative;
   transition: filter 0.3s ease;
@@ -136,7 +136,7 @@
   filter: brightness(0.4) grayscale(0.6);
 }
 
-/* Animación pulse para markers destacados */
+/* //! Animación pulse para markers destacados */
 @keyframes pulse-glow {
   0%, 100% {
     box-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 0 16px currentColor;
@@ -152,7 +152,7 @@
   animation: pulse-glow 1.5s ease-in-out infinite;
 }
 
-/* Reset et styles de base */
+/* //! Reset et styles de base */
 * {
   margin: 0;
   padding: 0;
@@ -168,7 +168,7 @@ body {
   flex-direction: column;
 }
 
-/* Header professionnel avec logo */
+/* //! Header professionnel avec logo */
 header {
   background: var(--white);
   border-bottom: 3px solid var(--spie-dark-teal);
@@ -217,7 +217,7 @@ header h1 {
   flex: 1;
 }
 
-/* Dashboard principal */
+/* //! Dashboard principal */
 #dashboard {
   display: flex;
   flex: 1;
@@ -228,7 +228,7 @@ header h1 {
   width: 100%;
 }
 
-/* Sidebar professionnel */
+/* //! Sidebar professionnel */
 #sidebar button.sidebar-nav {
   background: var(--white);
   color: var(--spie-dark-teal);
@@ -281,7 +281,7 @@ header h1 {
   border-color: var(--spie-dark-teal);
 }
 
-/* Zone de contenu principal */
+/* //! Zone de contenu principal */
 #main-content {
   flex: 1;
   background: var(--white);
@@ -292,7 +292,7 @@ header h1 {
   border-top: 4px solid var(--spie-dark-teal);
 }
 
-/* Container du mapa */
+/*//! Container du mapa */
 #map {
   width: 100%;
   height: calc(100vh - 250px);
@@ -304,7 +304,7 @@ header h1 {
   z-index: 1;
 }
 
-/* Styles pour les contrôles de Leaflet */
+/* //! Styles pour les contrôles de Leaflet */
 .leaflet-control-zoom a {
   background: var(--spie-dark-teal) !important;
   color: var(--white) !important;
@@ -318,7 +318,7 @@ header h1 {
   transform: scale(1.05);
 }
 
-/* Personnalisation des popups Leaflet */
+/* //! Personnalisation des popups Leaflet */
 .leaflet-popup-content-wrapper {
   background: var(--white);
   border-radius: 6px;
@@ -335,7 +335,7 @@ header h1 {
   font-family: 'Segoe UI', sans-serif;
 }
 
-/* Marqueurs personnalisés */
+/* //! Marqueurs personnalisés */
 .marqueur-noeud {
   background: var(--spie-dark-teal);
   border: 3px solid var(--white);
@@ -350,7 +350,7 @@ header h1 {
   box-shadow: 0 4px 12px rgba(255, 166, 43, 0.6);
 }
 
-/* Footer professionnel */
+/*//!  Footer professionnel */
 footer {
   background: var(--white);
   border-top: 3px solid var(--spie-dark-teal);
@@ -370,7 +370,7 @@ footer {
   opacity: 0.7;
 }
 
-/* Messages de chargement */
+/* //! Messages de chargement */
 #main-content > p {
   text-align: center;
   color: var(--spie-medium-teal);
@@ -379,7 +379,7 @@ footer {
   padding: 3rem;
 }
 
-/* Animation de chargement */
+/* //! Animation de chargement */
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -393,7 +393,7 @@ footer {
   animation: pulse 1.5s ease-in-out infinite;
 }
 
-/* Section d'info */
+/* //! Section d'info */
 .info-section {
   background: var(--spie-beige);
   border-left: 4px solid var(--spie-orange);
@@ -413,7 +413,7 @@ footer {
   line-height: 1.6;
 }
 
-/* Badges et tags */
+/* //! Badges et tags */
 .badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
@@ -424,7 +424,7 @@ footer {
   font-weight: 600;
 }
 
-/* Responsive design */
+/* //! Responsive design */
 @media (max-width: 1024px) {
   #dashboard {
     flex-direction: column;
@@ -493,14 +493,14 @@ footer {
   background: var(--spie-dark-teal);
 }
 
-/* Effet de focus pour l'accessibilité */
+/* //! Effet de focus pour l'accessibilité */
 button:focus,
 a:focus {
   outline: 2px solid var(--spie-orange);
   outline-offset: 2px;
 }
 
-/* Indicadores de color en el sidebar */
+/* //! Indicadores de color en el sidebar */
 .site-indicator {
   display:inline-block;
   width: 12px;
@@ -514,13 +514,13 @@ a:focus {
 .site-indicator.livraison { background: #e53e3e; }
 .site-indicator.noeuds { background: #16697A; }
 
-/* Map dim class */
+/* //! Map dim class */
 .leaflet-container.map-dim {
   filter: grayscale(0.6) brightness(0.6);
   transition: filter 180ms ease;
 }
 
-/* small visual for sidebar buttons (ajusta según tu tema) */
+/* //! small visual for sidebar buttons (ajusta según tu tema) */
 .sidebar-nav { display:block; width:100%; padding:8px 10px; text-align:left; border:none; background:transparent; cursor:pointer; margin-bottom:6px; border-radius:6px; }
 .sidebar-nav.active { background: rgba(102,126,234,0.12); color:#2a2a2a; }
 .control-btn { padding:8px 10px; border-radius:6px; border:none; cursor:pointer; background:#667eea; color:#fff; margin:6px 4px; }
