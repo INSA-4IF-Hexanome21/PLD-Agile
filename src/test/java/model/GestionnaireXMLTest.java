@@ -11,7 +11,7 @@ public class GestionnaireXMLTest {
         System.out.println("===== TEST Gestionnaire XML =====");
 
         // Chemin vers le fichier plan
-        String cheminPlan = "ressources/fichiersXMLPickupDelivery/petitPlan.xml";
+        String cheminPlan = "ressources/fichiersXMLCollecteDepot/petitPlan.xml";
 
         //Charger la HashMap de noeuds
         HashMap<Long, Noeud> mapNoeuds = GestionnaireXML.chargerPlanNoeuds(cheminPlan);
@@ -28,7 +28,7 @@ public class GestionnaireXMLTest {
         }
 
         //Charger un trajet de livraison
-        String cheminLivraison = "ressources/fichiersXMLPickupDelivery/myDeliverRequest.xml";
+        String cheminLivraison = "ressources/fichiersXMLCollecteDepot/myDeliverRequest.xml";
         Trajet trajet = GestionnaireXML.chargerDemandeLivraisons(cheminLivraison, mapNoeuds);
 
         //  Afficher le trajet 
@@ -49,7 +49,7 @@ public class GestionnaireXMLTest {
             }
         }
 
-        cheminLivraison = "ressources/fichiersXMLPickupDelivery/demandePetit1.xml";
+        cheminLivraison = "ressources/fichiersXMLCollecteDepot/demandePetit1.xml";
         trajet = GestionnaireXML.chargerDemandeLivraisons(cheminLivraison, mapNoeuds);
 
         //  Afficher le trajet
