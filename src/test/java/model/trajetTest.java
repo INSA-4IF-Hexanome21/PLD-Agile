@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import java.time.LocalTime;
 import org.junit.Test;
 
-public class trajetTest {
+public class TrajetTest {
 
     @Test
     public void constructeurAvecLivreur_defautsCorrects() {
