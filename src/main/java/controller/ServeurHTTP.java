@@ -15,6 +15,7 @@ public class ServeurHTTP {
     
     private final HttpServer serveur;
     private final String cheminBase;
+    private final String cheminBaseRessources;
     private final CarteController carteController;
     
     /**
@@ -25,9 +26,10 @@ public class ServeurHTTP {
      * @param carteController Le contrôleur de carte pour l'API
      * @throws IOException Si le serveur ne peut pas être créé
      */
-    public ServeurHTTP(int port, String cheminBase, CarteController carteController) throws IOException {
+    public ServeurHTTP(int port, String cheminBase, String cheminBaseRessources, CarteController carteController) throws IOException {
         this.serveur = HttpServer.create(new InetSocketAddress(port), 0);
         this.cheminBase = cheminBase;
+        this.cheminBaseRessources = cheminBaseRessources;
         this.carteController = carteController;
         configurerRoutes();
     }
@@ -69,6 +71,69 @@ public class ServeurHTTP {
         System.out.println(">>> Réponse envoyée <<<");
     });
         
+
+        serveur.createContext("/api/upload", exchange -> {
+            System.out.println(">>> Requête reçue sur /api/upload <<<");
+            
+            if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                try {
+                    // Leer el cuerpo de la petición
+                    byte[] bytes = exchange.getRequestBody().readAllBytes();
+                    System.out.println("Bytes recibidos: " + bytes.length);
+                    
+                    // Obtener el nombre del archivo del header
+                    String fileName = exchange.getRequestHeaders().getFirst("X-File-Name");
+                    if (fileName != null) {
+                        fileName = java.net.URLDecoder.decode(fileName, "UTF-8");
+                        System.out.println("Nombre del archivo: " + fileName);
+                    } else {
+                        fileName = "archivo_" + System.currentTimeMillis();
+                        System.out.println("Nombre generado: " + fileName);
+                    }
+                    
+                    // Crear directorio si no existe
+                    File uploadDir = new File(cheminBaseRessources + "uploads/");
+                    if (!uploadDir.exists()) {
+                        boolean created = uploadDir.mkdirs();
+                        System.out.println("Directorio de uploads creado: " + created);
+                    }
+                    
+                    // Guardar el archivo
+                    File outFile = new File(uploadDir, fileName);
+                    Files.write(outFile.toPath(), bytes);
+                    System.out.println("Archivo guardado en: " + outFile.getAbsolutePath());
+                    
+                    // Responder al cliente
+                    String response = "{\"status\":\"ok\",\"path\":\"uploads/" + fileName + "\",\"size\":" + bytes.length + "}";
+                    byte[] responseBytes = response.getBytes("UTF-8");
+                    
+                    exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                    exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                    exchange.sendResponseHeaders(200, responseBytes.length);
+                    exchange.getResponseBody().write(responseBytes);
+                    exchange.close();
+                    
+                    System.out.println(">>> Réponse envoyée: " + response + " <<<");
+                    
+                } catch (Exception e) {
+                    System.err.println("ERROR al procesar upload: " + e.getMessage());
+                    e.printStackTrace();
+                    
+                    String errorResponse = "{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}";
+                    byte[] errorBytes = errorResponse.getBytes("UTF-8");
+                    exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                    exchange.sendResponseHeaders(500, errorBytes.length);
+                    exchange.getResponseBody().write(errorBytes);
+                    exchange.close();
+                }
+            } else {
+                System.out.println("Método no permitido: " + exchange.getRequestMethod());
+                exchange.sendResponseHeaders(405, -1);
+                exchange.close();
+            }
+        });
+
+
         // Route pour les fichiers JavaScript
         serveur.createContext("/js/", exchange -> {
             String chemin = exchange.getRequestURI().getPath().replaceFirst("/js/", "");

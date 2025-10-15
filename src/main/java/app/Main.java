@@ -20,6 +20,8 @@ public class Main {
 
     private static final int PORT_SERVEUR = 8000;
     private static final String CHEMIN_BASE_VIEW = "src/main/java/view/";
+    private static final String CHEMIN_BASE_RESSOURCES = "ressources/";
+
 
     public static void main(String[] args) throws IOException {
 
@@ -40,7 +42,7 @@ public class Main {
         System.out.println("  - Tronçons: " + carte.getTroncons().size());
         System.out.println();
 
-        ServeurHTTP serveur = new ServeurHTTP(PORT_SERVEUR, CHEMIN_BASE_VIEW, carteController);
+        ServeurHTTP serveur = new ServeurHTTP(PORT_SERVEUR, CHEMIN_BASE_VIEW, CHEMIN_BASE_RESSOURCES, carteController);
         serveur.demarrer();
 
         
