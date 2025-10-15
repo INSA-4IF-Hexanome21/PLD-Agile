@@ -2,7 +2,7 @@ package model;
 
 import java.time.LocalTime;
 
-public abstract class Site {
+public abstract class Site extends Noeud  {
 
     //Attributs
     protected long id;
@@ -13,16 +13,12 @@ public abstract class Site {
 
     // Constructeur minimal
     public Site(long id) {
-        this.id = id;
-        this.lat = null;
-        this.lng = null;
+        super(id,null,null);
     }
 
     // Constructeur complet
     public Site(long id, Float lat, Float lng) {
-        this.id = id;
-        this.lat = lat;
-        this.lng = lng;
+        super(id,lat,lng);
     }
 
     //Getters / Setters
