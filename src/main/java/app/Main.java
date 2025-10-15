@@ -2,19 +2,8 @@ package app;
 
 import controller.CarteController;
 import controller.ServeurHTTP;
-import model.Carte;
-
-
-import com.sun.net.httpserver.HttpServer;
-import java.net.InetSocketAddress;
-
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpExchange;
-
-import controller.CarteController;
-import model.Carte;
 import java.io.*;
-import java.nio.file.Files;
+import model.Carte;
 
 public class Main {
 
@@ -24,19 +13,19 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
        // 1. carte
-        String cheminFichier = "ressources/fichiersXMLPickupDelivery/moyenPlan.xml";
+        String cheminFichier = "ressources/fichiersXMLCollecteDepot/moyenPlan.xml";
         CarteController carteController = new CarteController();
         carteController.chargerCarteDepuisXML(cheminFichier);
             
         // 2. demandes 
-        String cheminDemandes = "ressources/fichiersXMLPickupDelivery/demandeGrand9.xml";
+        String cheminDemandes = "ressources/fichiersXMLCollecteDepot/demandeGrand9.xml";
         carteController.chargerDemandesDepuisXML(cheminDemandes);
 
         Carte carte = carteController.getCarte();
 
             // Afficher les informations de la carte chargée
         System.out.println("Carte chargée avec succès:");
-        System.out.println("  - Nœuds: " + carte.getNoeuds().size());
+        System.out.println("  - Noeuds: " + carte.getNoeuds().size());
         System.out.println("  - Tronçons: " + carte.getTroncons().size());
         System.out.println();
 
