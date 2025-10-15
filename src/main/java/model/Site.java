@@ -61,4 +61,9 @@ public abstract class Site {
     public void setArriveeHeure(LocalTime arrivee_heure) {
         this.arrivee_heure = arrivee_heure;
     }
+
+    /**
+     * Retourne le type de site ("entrepot", "livraison", "collecte", etc.)
+     */
+    public abstract String getTypeSite();
 }

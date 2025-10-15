@@ -36,4 +36,10 @@ public class Pickup extends Site {
     public void setDureeRecup(Integer dureeRecup) {
         this.dureeRecup = dureeRecup;
     }
+
+    @Override
+    public String getTypeSite() {
+        return "collecte";
+    }
 }
+
