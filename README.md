@@ -4,10 +4,17 @@
 
 ## Utilisation
 
+Exécuter le code principal :
+```bash
+java -cp target/classes app.Main
+```
+
 Compiler le code principal :
 ```bash
-javac -d target/classes src/main/java/model/*.java
+javac -d target/classes $(find src/main/java -name '*.java')
 ```
+
+## Tests
 
 Compiler les tests :
 ```bash
