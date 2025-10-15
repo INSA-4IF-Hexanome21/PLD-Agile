@@ -1,15 +1,33 @@
 package model;
 
+import static org.junit.Assert.*;
+
+import java.time.LocalTime;
+import org.junit.Test;
 
 public class trajetTest {
-    public static void main(String[] args) {
-        System.out.println("===== TEST Trajet =====");
+
+    @Test
+    public void constructeurAvecLivreur_defautsCorrects() {
         Livreur livreur = new Livreur(0, "Petit", "Bobert");
         Trajet trajet = new Trajet(livreur);
-        System.out.println("Livreur : " + trajet.getLivreur());
-        System.out.println("Heure début : " + trajet.getHeureDebut());
-        System.out.println("Sites : " + trajet.getSites());
-        System.out.println("Durée trajet : " + trajet.getdureeTrajet());
-        System.out.println("Heure fin : " + trajet.getHeureFin());
+        assertEquals(livreur, trajet.getLivreur());
+        assertEquals(LocalTime.of(8, 0), trajet.getHeureDebut());
+        assertNull(trajet.getHeureFin());
+        assertNotNull(trajet.getSites());
+        assertTrue(trajet.getSites().isEmpty());
+        assertNotNull(trajet.getTroncons());
+        assertTrue(trajet.getTroncons().isEmpty());
+        assertNotNull(trajet.getSitesNonAccessibles());
+        assertTrue(trajet.getSitesNonAccessibles().isEmpty());
     }
+
+    @Test
+    public void constructeurSansLivreur_defautsCorrects() {
+        Trajet trajet = new Trajet();
+        assertNull(trajet.getLivreur());
+        assertEquals(LocalTime.of(8, 0), trajet.getHeureDebut());
+        assertNull(trajet.getHeureFin());
+    }
+
 }
