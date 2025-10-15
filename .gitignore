@@ -103,5 +103,5 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-#Exclusion Elie
-Commande git.txt
+# Exclusions
+*.txt
