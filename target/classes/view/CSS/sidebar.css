@@ -1,0 +1,50 @@
+/* sidebar.css */
+
+/* .control-section {
+    padding: 20px;
+    background: #f5f6fa;
+    border-radius: 8px;
+    width: 300px;
+    margin: 20px auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+} */
+
+.file-area {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+input[type="file"] {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.file-dummy {
+    padding: 30px 20px;
+    border: 2px dashed #dcdde1;
+    border-radius: 6px;
+    background: #fff;
+    text-align: center;
+    color: #636e72;
+    font-size: 16px;
+    transition: border-color 0.2s;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.file-area:hover .file-dummy {
+    border-color: #00a8ff;
+}
+
+.file-dummy .selected {
+    color: #00a8ff;
+    font-weight: bold;
+    display: none;
+}
