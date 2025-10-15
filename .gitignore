@@ -102,3 +102,9 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+
+
+# EXCLUSIONS
+# -------------------------------
+*.txt
