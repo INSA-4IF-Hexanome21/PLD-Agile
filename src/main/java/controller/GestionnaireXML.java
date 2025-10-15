@@ -2,10 +2,10 @@ package controller;
 
 import org.w3c.dom.*;
 
-import model.Delivery;
+import model.Depot;
 import model.Entrepot;
 import model.Noeud;
-import model.Pickup;
+import model.Collecte;
 import model.Trajet;
 import model.Troncon;
 
@@ -128,43 +128,43 @@ public class GestionnaireXML {
                 int dureeLivraison = Integer.parseInt(elem.getAttribute("dureeLivraison"));
                 int numLivraison = i;
 
-                // Pickup
-                Noeud noeudPickup = trouverNoeud(adresseEnlevement, mapNoeuds);
-                Pickup pickup;
-                if (noeudPickup == null) {
-                    pickup = new Pickup(idLivraison, numLivraison, dureeEnlevement);  
+                // Collecte
+                Noeud noeudCollecte = trouverNoeud(adresseEnlevement, mapNoeuds);
+                Collecte collecte;
+                if (noeudCollecte == null) {
+                    collecte = new Collecte(idLivraison, numLivraison, dureeEnlevement);  
                 } else {
-                    pickup = new Pickup(
+                    collecte = new Collecte(
                             idLivraison,
-                            noeudPickup.getLatitude(),
-                            noeudPickup.getLongitude(),
+                            noeudCollecte.getLatitude(),
+                            noeudCollecte.getLongitude(),
                             numLivraison,
                             dureeEnlevement
                     );
                 }
 
-                // Delivery
-                Noeud noeudDelivery = trouverNoeud(adresseLivraison, mapNoeuds);
-                Delivery delivery;
-                if (noeudDelivery == null) {
-                    delivery = new Delivery(idEnlevement, numLivraison, dureeLivraison);
-                    trajet.getSitesNonAccessibles().add(delivery);
+                // Depot
+                Noeud noeudDepot = trouverNoeud(adresseLivraison, mapNoeuds);
+                Depot depot;
+                if (noeudDepot == null) {
+                    depot = new Depot(idEnlevement, numLivraison, dureeLivraison);
+                    trajet.getSitesNonAccessibles().add(depot);
                 } else {
-                    delivery = new Delivery(
+                    depot = new Depot(
                             idEnlevement,
-                            noeudDelivery.getLatitude(),
-                            noeudDelivery.getLongitude(),
+                            noeudDepot.getLatitude(),
+                            noeudDepot.getLongitude(),
                             numLivraison,
                             dureeLivraison
                     );
                 }
-                if( noeudDelivery == null || noeudPickup == null) {
-                    trajet.getSitesNonAccessibles().add(pickup);
-                    trajet.getSitesNonAccessibles().add(delivery);
+                if( noeudDepot == null || noeudCollecte == null) {
+                    trajet.getSitesNonAccessibles().add(collecte);
+                    trajet.getSitesNonAccessibles().add(depot);
                 }
                 else{
-                    trajet.getSites().add(pickup);
-                    trajet.getSites().add(delivery);
+                    trajet.getSites().add(collecte);
+                    trajet.getSites().add(depot);
                 }
             }
 
