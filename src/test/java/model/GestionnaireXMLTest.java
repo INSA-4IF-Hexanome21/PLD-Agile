@@ -38,8 +38,8 @@ public class GestionnaireXMLTest {
             for (Site site : trajet.getSites()) {
                 System.out.println(site.getClass().getSimpleName() +
                                    " | ID = " + site.getId() +
-                                   " | Lat = " + site.getLat() +
-                                   " | Lng = " + site.getLng());
+                                   " | Lat = " + site.getLatitude() +
+                                   " | Lng = " + site.getLongitude());
             }
 
             System.out.println("\nSites non accessibles : " + trajet.getSitesNonAccessibles().size());
@@ -59,8 +59,8 @@ public class GestionnaireXMLTest {
             for (Site site : trajet.getSites()) {
                 System.out.println(site.getClass().getSimpleName() +
                                    " | ID = " + site.getId() +
-                                   " | Lat = " + site.getLat() +
-                                   " | Lng = " + site.getLng());
+                                   " | Lat = " + site.getLatitude() +
+                                   " | Lng = " + site.getLongitude());
             }
 
             System.out.println("\nSites non accessibles : " + trajet.getSitesNonAccessibles().size());
