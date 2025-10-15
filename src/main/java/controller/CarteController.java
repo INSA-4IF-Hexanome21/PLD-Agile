@@ -1,26 +1,5 @@
 package controller;
 
-<<<<<<< HEAD
-import model.Carte;
-import model.GestionnaireXML;
-
-public class CarteController {
-    private Carte carte;
-    private GestionnaireXML gestionnaireXML;
-
-    public CarteController(String cheminFichier) {
-        this.carte = new Carte();
-        this.gestionnaireXML = new GestionnaireXML(cheminFichier);
-    }
-
-    public void chargerCarteDepuisXML() {
-        for (var n : gestionnaireXML.getNoeuds()) {
-            carte.ajouterNoeud(n);
-        }
-        for (var t : gestionnaireXML.getTroncons()) {
-            carte.ajouterTroncon(t);
-        }
-=======
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -151,15 +130,9 @@ public class CarteController {
         json.append("]}");
         System.out.println(">>> JSON généré avec succès - Longueur: " + json.length() + " caractères <<<");
         return json.toString();
->>>>>>> 785a18d5834ff9f222bdc65d4e5e25e05819b4a2
     }
 
     public Carte getCarte() {
         return carte;
     }
-<<<<<<< HEAD
-    
 }
-=======
-}
->>>>>>> 785a18d5834ff9f222bdc65d4e5e25e05819b4a2

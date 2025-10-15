@@ -1,13 +1,6 @@
 package model;
 
 public class Entrepot extends Site {
-<<<<<<< HEAD
-
-    public Entrepot(String id, String lat, String lng) {
-        super(id, lat, lng);
-    }
-
-=======
     
     // Constructeur minimal (lat/lng null)
     public Entrepot(long id) {
@@ -23,5 +16,4 @@ public class Entrepot extends Site {
     public String getTypeSite() {
         return "entrepot";
     }
->>>>>>> 785a18d5834ff9f222bdc65d4e5e25e05819b4a2
 }

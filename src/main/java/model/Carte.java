@@ -37,8 +37,6 @@ public class Carte {
         return trajets;
     }
 
-<<<<<<< HEAD
-=======
     public void setNoeuds(HashMap<Long, Noeud> noeuds) {
         this.noeuds = noeuds;
     }
@@ -47,7 +45,6 @@ public class Carte {
         this.troncons = troncons;
     }
 
->>>>>>> 785a18d5834ff9f222bdc65d4e5e25e05819b4a2
     // Méthodes 
     public void ajouterNoeud(Noeud noeud) {
         if (!noeuds.containsKey(noeud.getId())) this.noeuds.put(noeud.getId(), noeud);
