@@ -32,6 +32,7 @@ public class GrapheTotal implements Graphe {
 		this.idToIndex = new HashMap<>();
 		this.indexToId = new HashMap<>();
 		this.mapAllSommets = new HashMap<>();
+		this.tronconHashMap = new HashMap<>();
 		Integer compteur = 1;
 
 
@@ -66,6 +67,15 @@ public class GrapheTotal implements Graphe {
 			//Ajout des troncons à la liste d'adjacence
 			mapAllSommets.get(indexNoeud1).add(new SimpleEntry<>(indexNoeud2, troncon.getLongueur()));
 			mapAllSommets.get(indexNoeud2).add(new SimpleEntry<>(indexNoeud1, troncon.getLongueur()));
+
+			//Ajout des tronçon dans la table de conversion
+			if(idNoeud1 < idNoeud2){
+				tronconHashMap.put(new SimpleEntry<>(idNoeud1, idNoeud2), troncon);
+			}
+			else{
+				tronconHashMap.put(new SimpleEntry<>(idNoeud2, idNoeud1), troncon);
+			}
+			
 		}
 	}
 
@@ -216,5 +226,14 @@ public class GrapheTotal implements Graphe {
 			cheminCompletConverti.add(getIdFromIndex(index));
 		}
 		return cheminCompletConverti;
+	}
+
+	public Troncon NoeudstoTroncon(long idNoeud1,long idNoeud2){
+		if(idNoeud1 < idNoeud2){
+			return tronconHashMap.get(new SimpleEntry<>(idNoeud1, idNoeud2));
+		}
+		else{
+			return tronconHashMap.get(new SimpleEntry<>(idNoeud2, idNoeud1));
+		}
 	}
 }
