@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 
 import model.Carte;
+import model.GrapheTotal;
 import model.Noeud;
 import model.Site;
 import model.Trajet;
@@ -134,5 +135,14 @@ public class CarteController {
 
     public Carte getCarte() {
         return carte;
+    }
+
+    public GrapheTotal creerGrapheTotal(Carte carte, long idEntrepot){
+        HashMap<Long, Noeud> noeuds = carte.getNoeuds();
+        List<Troncon> troncons = carte.getTroncons();
+        int nbSommets = noeuds.size();
+
+        GrapheTotal gt = new GrapheTotal(nbSommets, troncons, noeuds, idEntrepot);
+        return gt;
     }
 }

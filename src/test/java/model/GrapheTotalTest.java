@@ -15,10 +15,11 @@ public class GrapheTotalTest {
 		Troncon t2 = new Troncon("test2", 32, n2, n3);
 
 		System.out.println("Initialisation Noeuds");
-		List<Noeud> noeuds = new ArrayList<Noeud>();
-		noeuds.add(n1);
-		noeuds.add(n2);
-		noeuds.add(n3);
+		HashMap<Long,Noeud> noeuds = new HashMap<Long,Noeud>();
+		noeuds.put(n1.getId(),n1);
+		noeuds.put(n2.getId(),n2);
+		noeuds.put(n3.getId(),n3);
+		
 
 		System.out.println("Initialisation Troncons");
 		List<Troncon> troncons = new ArrayList<Troncon>();

@@ -19,7 +19,7 @@ public class GrapheTotal implements Graphe {
 	public GrapheTotal(
 		int nbSommets, 
 		List<Troncon> troncons,
-		List<Noeud> noeuds,
+		HashMap<Long, Noeud> noeuds,
 		long idEntrepot
 	) {
 		this.nbSommets = nbSommets;
@@ -29,8 +29,7 @@ public class GrapheTotal implements Graphe {
 		Integer compteur = 1;
 
 
-		for (Noeud noeud : noeuds) {
-			long idNoeud = noeud.getId();
+		for (long idNoeud : noeuds.keySet()) {
 			Integer valeurSommet;
 			if(idNoeud == idEntrepot){
 				valeurSommet = 0;
