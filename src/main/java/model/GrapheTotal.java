@@ -65,7 +65,7 @@ public class GrapheTotal implements Graphe {
 
 	@Override
 	public int getNbSommets() {
-		return nbSommets;
+		return mapAllSommets.size();
 	}
 
 	@Override
@@ -91,6 +91,25 @@ public class GrapheTotal implements Graphe {
 		return false;
 	}
 
+	public void printGraphe() {
+		System.out.println("===================================");
+		System.out.println("Graphe : {");
+		for (var entry : mapAllSommets.entrySet()) {
+			System.out.printf("%d = [", entry.getKey());
+			for (var voisin : entry.getValue()) {
+				System.out.printf(" (%d,%.1f), ", voisin.getKey(), voisin.getValue());
+			}
+			System.out.print("],");
+			System.out.println();
+		}
+		System.out.println("}");
+		System.out.println("mapAllSommets keys: " + mapAllSommets.keySet());
+		System.out.println("idToIndex: " + idToIndex);
+		System.out.println("indexToId: " + indexToId);
+		System.out.println("getNbSommets(): " + getNbSommets());
+		System.out.println("===================================");
+	}
+
     public Long getIdFromIndex(Integer index) {
         return indexToId.get(index);
     }
@@ -99,32 +118,37 @@ public class GrapheTotal implements Graphe {
 		return this.mapAllSommets;
 	}
 	
-	public void RechercheDijkstra(GrapheTotal gt, List<Site> sites) {
-        Map<SimpleEntry<Integer, Integer>, List<Integer>> cheminsMin = new HashMap<>();
-        Map<Integer, List<SimpleEntry<Integer, Float>>> mapDistances = new HashMap<>();
+	public void RechercheDijkstra(List<Site> sites) {
+		Map<SimpleEntry<Integer, Integer>, List<Integer>> cheminsMin = new HashMap<>(); 
+		Map<Integer, List<SimpleEntry<Integer, Float>>> mapDistances = new HashMap<>();  
 
-        for (Site siteDepart : sites) {
-            Map<Integer, Float> distancesDepuisDepart = Dijsktra.dijkstra(gt, siteDepart.getId(), cheminsMin);
-            
-            //Stocker les couts vers les autres sites
-            List<SimpleEntry<Integer, Float>> voisins = new ArrayList<>();
-            for (Site siteArrivee : sites) {
-                if (siteDepart != siteArrivee) {
-                    Float cout = distancesDepuisDepart.get(gt.idToIndex.get(siteArrivee.getId()));
-                    if (cout != null) {
-                        voisins.add(new SimpleEntry<>(gt.idToIndex.get(siteArrivee.getId()), cout));
-                    }
-                }
-            }
-            mapDistances.put(gt.idToIndex.get(siteDepart.getId()), voisins);
-        }
-        System.out.println("=== Distances minimales entre sites ===");
-		for (var entry : mapDistances.entrySet()) {
-			System.out.printf("Depuis %d : ", entry.getKey());
-			for (var voisin : entry.getValue()) {
-				System.out.printf("→ %d (%.1f) ", voisin.getKey(), voisin.getValue());
+		for (Site siteDepart : sites) { 
+			int indexDepart = this.idToIndex.get(siteDepart.getId()); 
+			Map<Integer, Float> distancesDepuisDepart = Dijsktra.dijkstra(this, siteDepart.getId(), cheminsMin);  
+
+			List<SimpleEntry<Integer, Float>> voisins = new ArrayList<>(); 
+			
+			// CORRECTION: Parcourir toutes les entrées de distancesDepuisDepart
+			for (Map.Entry<Integer, Float> entry : distancesDepuisDepart.entrySet()) {
+				int indexArrivee = entry.getKey();
+				Float cout = entry.getValue();
+				
+				// Exclure le nœud lui-même et les distances infinies
+				if (indexDepart != indexArrivee && cout != null && cout != Float.MAX_VALUE) {
+					voisins.add(new SimpleEntry<>(indexArrivee, cout));
+				}
 			}
-			System.out.println();
+			
+			mapDistances.put(indexDepart, voisins); 
+		}  
+
+		System.out.println("=== Distances minimales entre sites ==="); 
+		for (var entry : mapDistances.entrySet()) { 
+			System.out.printf("Depuis %d : ", entry.getKey()); 
+			for (var voisin : entry.getValue()) { 
+				System.out.printf("→ %d (%.1f) ", voisin.getKey(), voisin.getValue()); 
+			} 
+			System.out.println(); 
+		} 
 		}
-    }
 }

@@ -43,5 +43,14 @@ public class GrapheTotalTest {
 		System.out.println(gt.estArc(0,1));
 		System.out.println(gt.estArc(1,2));
 
+		List<Site> sites = new ArrayList<Site>();
+		Entrepot e = new Entrepot(idEntrepot);
+		Collecte c = new Collecte(5678,n1.getLatitude(),n1.getLongitude(), 1, 10);
+		Depot l = new Depot(5678,n2.getLatitude(),n2.getLongitude(), 1, 10);
+		sites.add(e);
+		sites.add(l);
+		sites.add(c);
+		gt.printGraphe();
+		gt.RechercheDijkstra( sites);
     }
 }

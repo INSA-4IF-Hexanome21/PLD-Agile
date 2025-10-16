@@ -16,13 +16,14 @@ public class Dijsktra {
     ) {
         int indexNoeudDepart = gt.idToIndex.get(idNoeudDepart);
         int nbSommets = gt.getNbSommets();
+        System.out.println("Nombre de sommets dans le graphe : " + nbSommets);
         
-        int[] predecesseurs = new int[nbSommets];
-        float[] distances = new float[nbSommets];
+        int[] predecesseurs = new int[nbSommets+1];
+        float[] distances = new float[nbSommets+1];
         List<Integer> sommetsVisites = new ArrayList<>();
 
         // Initialisation
-        for (int i = 0; i < nbSommets; i++) {
+        for (int i = 0; i < nbSommets + 1; i++) {
             distances[i] = Float.MAX_VALUE;
             predecesseurs[i] = -1;
         }
@@ -32,13 +33,16 @@ public class Dijsktra {
         int s = indexNoeudDepart;
         while (sommetsVisites.size() < nbSommets) {
             s = getSommetLePlusProche(distances, sommetsVisites);
+            System.out.println("Sommet le plus proche : " + s + " avec distance " + distances[s]);
             if (s == -1) break; // Tous les sommets accessibles ont été visités
 
             List<SimpleEntry<Integer,Float>> voisins = gt.mapAllSommets.get(s);
             for (SimpleEntry<Integer, Float> voisin : voisins) {
-                float cout = gt.getCout(s, voisin.getKey());
-                if (!sommetsVisites.contains(voisin.getKey())) {
-                    calculeDistanceMin(gt, s, voisin, predecesseurs, distances, cout);   
+                System.out.println("Voisin : " + voisin.getKey() + " avec cout " + voisin.getValue());
+                int indexVoisin = voisin.getKey();
+                float cout = gt.getCout(s, indexVoisin);
+                if (!sommetsVisites.contains(indexVoisin)) {
+                    calculeDistanceMin(gt, s, indexVoisin, predecesseurs, distances, cout);   
                 }
             }
             sommetsVisites.add(s);
@@ -54,10 +58,12 @@ public class Dijsktra {
                 cheminsMin.put(new SimpleEntry<>(indexNoeudDepart, dest), chemin);
             }
         }
+        System.out.println("Chemins minimaux depuis le noeud " + indexNoeudDepart + " : " + cheminsMin);
 
         // Conversion des distances en map
         Map<Integer, Float> resultat = new HashMap<>();
         for (int i = 0; i < nbSommets; i++) {
+            System.out.println("Distance du noeud " + indexNoeudDepart + " au noeud " + i + " : " + distances[i]);
             resultat.put(i, distances[i]);
         }
         return resultat;
@@ -79,14 +85,14 @@ public class Dijsktra {
     private static void calculeDistanceMin(
         GrapheTotal gt, 
         int s, 
-        SimpleEntry<Integer, Float> voisin, 
+        int indexVoisin, 
         int[] predecesseurs, 
         float[] distances, 
         float cout
     ) {
-        if (distances[s] + cout < distances[voisin.getKey()]) {
-            distances[voisin.getKey()] = distances[s] + cout;
-            predecesseurs[voisin.getKey()] = s;
+        if (distances[s] + cout < distances[indexVoisin]) {
+            distances[indexVoisin] = distances[s] + cout;
+            predecesseurs[indexVoisin] = s;
         }
     }
 }
