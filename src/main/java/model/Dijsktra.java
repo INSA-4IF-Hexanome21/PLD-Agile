@@ -22,6 +22,7 @@ public class Dijsktra {
         int[] predecesseurs = new int[nbSommets+1];
         float[] distances = new float[nbSommets+1];
         List<Integer> sommetsVisites = new ArrayList<>();
+        boolean[] visites = new boolean[nbSommets+1];
 
         // Initialisation
         for (int i = 0; i < nbSommets + 1; i++) {
@@ -33,7 +34,7 @@ public class Dijsktra {
         // Tant qu'il reste des sommets non visités
         int s = indexNoeudDepart;
         while (sommetsVisites.size() < nbSommets) {
-            s = getSommetLePlusProche(distances, sommetsVisites);
+            s = getSommetLePlusProche(distances, visites);
             if (s == -1) break; // Tous les sommets accessibles ont été visités
             //System.out.println("Sommet le plus proche : " + s + " avec distance " + distances[s]);
 
@@ -43,11 +44,12 @@ public class Dijsktra {
                 //System.out.println("Voisin : " + voisin.getKey() + " avec cout " + voisin.getValue());
                 int indexVoisin = voisin.getKey();
                 float cout = gt.getCout(s, indexVoisin);
-                if (!sommetsVisites.contains(indexVoisin)) {
+                if (!visites[indexVoisin]) {
                     calculeDistanceMin(gt, s, indexVoisin, predecesseurs, distances, cout);   
                 }
             }
             sommetsVisites.add(s);
+            visites[s] = true;
         }
         
         // Construire les chemins minimaux
@@ -72,11 +74,11 @@ public class Dijsktra {
     }
 
     
-    private static int getSommetLePlusProche(float[] distances, List<Integer> sommetsVisites) {
+    private static int getSommetLePlusProche(float[] distances, boolean[] visites) {
         float minDistance = Float.MAX_VALUE;
         int minIndex = -1;
         for (int i = 0; i < distances.length; i++) {
-            if (!sommetsVisites.contains(i) && distances[i] < minDistance) {
+            if (!visites[i] && distances[i] < minDistance) {
                 minDistance = distances[i];
                 minIndex = i;
             }

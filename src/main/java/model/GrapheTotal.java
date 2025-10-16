@@ -60,8 +60,8 @@ public class GrapheTotal implements Graphe {
 			Integer indexNoeud1 = idToIndex.get(idNoeud1);
 			Integer indexNoeud2 = idToIndex.get(idNoeud2);
 
-			System.out.println(indexNoeud1);
-			System.out.println(indexNoeud2);
+/* 			System.out.println(indexNoeud1);
+			System.out.println(indexNoeud2); */
 
 
 			//Ajout des troncons à la liste d'adjacence
