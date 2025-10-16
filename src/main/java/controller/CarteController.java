@@ -159,7 +159,7 @@ public class CarteController {
             solution.add(gl.getIdFromIndex(tsp.getSolution(i)));
 		   
         }
-        solution.add(solution.getFirst());
+        solution.add(solution.get(0));
         System.out.println(solution);
         List<Integer> cheminComplet = gt.getCheminComplet(solution);
         System.out.println("Chemin complet avec noeuds intermédiaires : " + cheminComplet);
