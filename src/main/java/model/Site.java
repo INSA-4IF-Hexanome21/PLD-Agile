@@ -5,7 +5,6 @@ import java.time.LocalTime;
 public abstract class Site extends Noeud  {
 
     //Attributs
-    protected long id;
     protected Float lat; 
     protected Float lng; 
     protected LocalTime depart_heure = null;
@@ -22,9 +21,6 @@ public abstract class Site extends Noeud  {
     }
 
     //Getters / Setters
-    public long getId() {
-        return id;
-    }
     
     public LocalTime getDepartHeure() {
         return depart_heure;
