@@ -5,6 +5,7 @@ import controller.ServeurHTTP;
 import java.io.*;
 import model.*;
 import tsp.Graphe;
+import java.util.*;
 
 public class Main {
 
@@ -37,12 +38,12 @@ public class Main {
             }
         }
         GrapheTotal gt = carteController.creerGrapheTotal(carte, e.getId());
-        carteController.chercherCheminsMin(gt, carte.getSites());
+        List<Long> cheminMin = carteController.chercherCheminsMin(gt, carte.getSites());
         ServeurHTTP serveur = new ServeurHTTP(PORT_SERVEUR, CHEMIN_BASE_VIEW, carteController);
         serveur.demarrer();
 
         
-       System.out.println("Ouvrez votre navigateur à: http://localhost:" + PORT_SERVEUR);
+        System.out.println("Ouvrez votre navigateur à: http://localhost:" + PORT_SERVEUR);
         System.out.println("Appuyez sur Ctrl+C pour arrêter le serveur");
         System.out.println("===========================================");
     }

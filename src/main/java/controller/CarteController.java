@@ -146,7 +146,7 @@ public class CarteController {
         return gt;
     }
 
-    public void chercherCheminsMin(GrapheTotal gt, List<Site> sites){
+    public List<Long> chercherCheminsMin(GrapheTotal gt, List<Site> sites){
         long tempsDebut = System.currentTimeMillis();
         gt.RechercheDijkstra(sites);
         GrapheLivraison gl = new GrapheLivraison(carte.getSites().size(), gt.getMapDistances());
@@ -165,5 +165,6 @@ public class CarteController {
         System.out.println("Chemin complet avec noeuds intermédiaires : " + cheminComplet);
         List<Long> cheminCompletConverti = gt.convertirCheminComplet(cheminComplet);
         System.out.println("Chemin complet avec noeuds intermédiaires convertis: " + cheminCompletConverti);
+        return cheminCompletConverti;
     }
 }
