@@ -9,7 +9,6 @@ public class GrapheLivraison implements Graphe {
 
 	int nbSommets;
 	int[][] cout;
-	HashMap<Integer, Long> mapSommets;
 
 	/**
 	 * Cree un graphe complet dont les aretes ont un cout compris entre COUT_MIN et COUT_MAX
@@ -17,10 +16,8 @@ public class GrapheLivraison implements Graphe {
 	 */
 	public GrapheLivraison(
 		int nbSommets, 
-		HashMap<Integer, Long> mapSommets, 
 		Map<Integer, List<SimpleEntry<Integer, Float>>> mapDistances
 	) {
-		this.mapSommets = mapSommets;
 		this.nbSommets = nbSommets;
 		cout = new int[nbSommets][nbSommets];
 		for (int i=0; i<nbSommets; i++) {
@@ -68,11 +65,4 @@ public class GrapheLivraison implements Graphe {
 		return i != j;
 	}
 
-    public HashMap<Integer, Long> getMapSommets() {
-        return mapSommets;
-    }
-
-    public Long getIdFromIndex(int index) {
-        return mapSommets.get(index);
-    }
 }

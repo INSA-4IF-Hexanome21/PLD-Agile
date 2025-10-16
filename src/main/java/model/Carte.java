@@ -1,8 +1,9 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
+
+import tsp.Graphe;
 
 public class Carte {
 
@@ -70,5 +71,25 @@ public class Carte {
         this.trajets.remove(trajet);
     }
 
+    public void RechercheDijkstra(GrapheTotal gt) {
+        Map<SimpleEntry<Integer, Integer>, List<Integer>> cheminsMin = new HashMap<>();
+        Map<Integer, List<SimpleEntry<Integer, Float>>> mapDistances = new HashMap<>();
 
+        for (Site siteDepart : sites) {
+            Map<Integer, Float> distancesDepuisDepart = Dijsktra.dijkstra(gt, siteDepart.getId(), cheminsMin);
+            
+            //Stocker les couts vers les autres sites
+            List<SimpleEntry<Integer, Float>> voisins = new ArrayList<>();
+            for (Site siteArrivee : sites) {
+                if (siteDepart != siteArrivee) {
+                    Float cout = distancesDepuisDepart.get(gt.idToIndex.get(siteArrivee.getId()));
+                    if (cout != null) {
+                        voisins.add(new SimpleEntry<>(gt.idToIndex.get(siteArrivee.getId()), cout));
+                    }
+                }
+            }
+            mapDistances.put(gt.idToIndex.get(siteDepart.getId()), voisins);
+        }
+        System.out.println("Map Distances entre sites : " + mapDistances);
+    }
 }

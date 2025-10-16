@@ -31,7 +31,7 @@ public class GrapheLivraisonTest {
 		for (var key : mapDistances.keySet()) {
 			System.out.println("Key: " + key + " -> Value: " + mapDistances.get(key));
 		}
-        GrapheLivraison graphe = new GrapheLivraison(3, new HashMap<Integer, Long>(), mapDistances);
+        GrapheLivraison graphe = new GrapheLivraison(3, mapDistances);
         TSP tsp = new TSP1();
         long tempsDebut = System.currentTimeMillis();
         tsp.chercheSolution(60000, graphe);
