@@ -229,11 +229,10 @@ public class GrapheTotal implements Graphe {
 	}
 
 	public Troncon NoeudstoTroncon(long idNoeud1,long idNoeud2){
-		if(idNoeud1 < idNoeud2){
-			return tronconHashMap.get(new SimpleEntry<>(idNoeud1, idNoeud2));
+		Troncon troncon = tronconHashMap.get(new SimpleEntry<>(idNoeud1, idNoeud2));
+		if(troncon == null){
+			troncon =  tronconHashMap.get(new SimpleEntry<>(idNoeud2, idNoeud1));
 		}
-		else{
-			return tronconHashMap.get(new SimpleEntry<>(idNoeud2, idNoeud1));
-		}
+		return troncon;
 	}
 }

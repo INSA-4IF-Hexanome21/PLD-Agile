@@ -167,4 +167,9 @@ public class CarteController {
         System.out.println("Chemin complet avec noeuds intermédiaires convertis: " + cheminCompletConverti);
         return cheminCompletConverti;
     }
+
+    public void majTrajet(Carte carte, GrapheTotal gt, List<Long> chemin){
+        carte.majTrajetDepuisChemin(gt,chemin,carte.getTrajets().get(0));
+        System.out.println(carte.getTrajets().get(0));
+    }
 }

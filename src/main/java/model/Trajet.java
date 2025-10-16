@@ -59,6 +59,12 @@ public class Trajet {
         return dureeTrajet;
     }
 
+    public void setdureeTrajet(float duree) {
+        this.dureeTrajet = duree;
+        float heure_fin = 8 + duree;
+        this.heureFin = LocalTime.of((int)heure_fin,(int)duree%1*60);
+    }
+
     public List<Site> getSites(){
         return sites;
     }
@@ -73,5 +79,26 @@ public class Trajet {
 
     public void setTroncons(List<Troncon> troncons) {
         this.troncons = troncons;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Trajet{\n");
+        
+        // Informations de base
+        sb.append("  Livreur: ").append(livreur != null ? livreur : "Non assigné").append("\n");
+        sb.append("  Heure de début: ").append(heureDebut).append("\n");
+        sb.append("  Heure de fin: ").append(heureFin != null ? heureFin : "Non calculée").append("\n");
+        sb.append("  Durée du trajet: ").append(dureeTrajet != null ? String.format("%.2f heures", dureeTrajet) : "Non calculée").append("\n");
+        
+        // Nombre de sites
+        sb.append("  Nombre de sites : ").append(sites.size()+ "\n");
+        
+        // Nombre de Troncons
+        sb.append(troncons);
+        
+        sb.append("\n}");
+        return sb.toString();
     }
 }

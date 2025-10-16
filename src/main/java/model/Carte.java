@@ -71,4 +71,20 @@ public class Carte {
         this.trajets.remove(trajet);
     }
 
+    public void majTrajetDepuisChemin(GrapheTotal gt, List<Long> chemin, Trajet trajet){
+        List<Troncon> troncons = new ArrayList<Troncon>();
+        float dureeTrajet = 0;
+        for (int i= 0; i<chemin.size()-1; ++i){
+            long idNoeud1 = chemin.get(i);
+            long idNoeud2 = chemin.get(i+1);
+            if (idNoeud1 != idNoeud2) {
+                Troncon troncon = gt.NoeudstoTroncon(idNoeud1, idNoeud2);
+                dureeTrajet += (troncon.getLongueur()/1000)/15;
+                troncons.add(troncon);
+            }
+            
+        }
+        trajet.setTroncons(troncons);
+        trajet.setdureeTrajet(dureeTrajet);
+    }
 }
