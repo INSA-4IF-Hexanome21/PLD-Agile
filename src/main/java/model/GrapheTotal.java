@@ -7,13 +7,17 @@ import tsp.Graphe;
 
 public class GrapheTotal implements Graphe {
 
-	int nbSommets;
-	Map<Integer, List<SimpleEntry<Integer, Float>>> mapAllSommets;
-	HashMap<Integer, Long> indexToId;
-	HashMap<Long, Integer> idToIndex;
-	Map<Integer, List<SimpleEntry<Integer, Float>>> mapDistances;
-	Map<SimpleEntry<Integer, Integer>, List<Integer>> cheminsMin;
+	private int nbSommets;
+	private Map<Integer, List<SimpleEntry<Integer, Float>>> mapAllSommets;
+	
+	private Map<Integer, List<SimpleEntry<Integer, Float>>> mapDistances;
+	private Map<SimpleEntry<Integer, Integer>, List<Integer>> cheminsMin;
 
+	//Tables de conversion
+	private HashMap<Integer, Long> indexToId;
+	private HashMap<Long, Integer> idToIndex;
+	private HashMap<SimpleEntry<Long, Long>, Troncon> tronconHashMap;
+	
 	/**
 	 * Cree un graphe complet dont les aretes ont un cout compris entre COUT_MIN et COUT_MAX
 	 * @param nbSommets
@@ -120,6 +124,10 @@ public class GrapheTotal implements Graphe {
 
     public Long getIdFromIndex(Integer index) {
         return indexToId.get(index);
+    }
+
+	public Integer getIndexFromId(Long id) {
+        return idToIndex.get(id);
     }
 
 	public Map<Integer, List<SimpleEntry<Integer, Float>>> getMapAllSommets(){

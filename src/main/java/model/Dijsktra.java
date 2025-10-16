@@ -14,7 +14,8 @@ public class Dijsktra {
         Long idNoeudDepart, 
         Map<SimpleEntry<Integer, Integer>, List<Integer>> cheminsMin
     ) {
-        int indexNoeudDepart = gt.idToIndex.get(idNoeudDepart);
+        // int indexNoeudDepart = gt.idToIndex.get(idNoeudDepart);
+        int indexNoeudDepart = gt.getIndexFromId(idNoeudDepart);
         int nbSommets = gt.getNbSommets();
         System.out.println("Nombre de sommets dans le graphe : " + nbSommets);
         
@@ -36,7 +37,8 @@ public class Dijsktra {
             if (s == -1) break; // Tous les sommets accessibles ont été visités
             //System.out.println("Sommet le plus proche : " + s + " avec distance " + distances[s]);
 
-            List<SimpleEntry<Integer,Float>> voisins = gt.mapAllSommets.get(s);
+            // List<SimpleEntry<Integer,Float>> voisins = gt.mapAllSommets.get(s);
+            List<SimpleEntry<Integer,Float>> voisins = gt.getMapAllSommets().get(s);
             for (SimpleEntry<Integer, Float> voisin : voisins) {
                 //System.out.println("Voisin : " + voisin.getKey() + " avec cout " + voisin.getValue());
                 int indexVoisin = voisin.getKey();
