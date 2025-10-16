@@ -201,4 +201,12 @@ public class GrapheTotal implements Graphe {
 		}
 		return cheminComplet;
 	}
+
+	public List<Long> convertirCheminComplet(List<Integer> chemin){
+		List<Long> cheminCompletConverti = new ArrayList<>();
+		for(Integer index : chemin) {
+			cheminCompletConverti.add(getIdFromIndex(index));
+		}
+		return cheminCompletConverti;
+	}
 }

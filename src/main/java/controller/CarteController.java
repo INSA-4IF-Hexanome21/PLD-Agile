@@ -163,5 +163,7 @@ public class CarteController {
         System.out.println(solution);
         List<Integer> cheminComplet = gt.getCheminComplet(solution);
         System.out.println("Chemin complet avec noeuds intermédiaires : " + cheminComplet);
+        List<Long> cheminCompletConverti = gt.convertirCheminComplet(cheminComplet);
+        System.out.println("Chemin complet avec noeuds intermédiaires convertis: " + cheminCompletConverti);
     }
 }
