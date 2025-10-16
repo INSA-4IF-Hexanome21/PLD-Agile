@@ -100,4 +100,32 @@ public class GrapheTotal implements Graphe {
 		return this.mapAllSommets;
 	}
 	
+	public void RechercheDijkstra(GrapheTotal gt, List<Site> sites) {
+        Map<SimpleEntry<Integer, Integer>, List<Integer>> cheminsMin = new HashMap<>();
+        Map<Integer, List<SimpleEntry<Integer, Float>>> mapDistances = new HashMap<>();
+
+        for (Site siteDepart : sites) {
+            Map<Integer, Float> distancesDepuisDepart = Dijsktra.dijkstra(gt, siteDepart.getId(), cheminsMin);
+            
+            //Stocker les couts vers les autres sites
+            List<SimpleEntry<Integer, Float>> voisins = new ArrayList<>();
+            for (Site siteArrivee : sites) {
+                if (siteDepart != siteArrivee) {
+                    Float cout = distancesDepuisDepart.get(gt.idToIndex.get(siteArrivee.getId()));
+                    if (cout != null) {
+                        voisins.add(new SimpleEntry<>(gt.idToIndex.get(siteArrivee.getId()), cout));
+                    }
+                }
+            }
+            mapDistances.put(gt.idToIndex.get(siteDepart.getId()), voisins);
+        }
+        System.out.println("=== Distances minimales entre sites ===");
+		for (var entry : mapDistances.entrySet()) {
+			System.out.printf("Depuis %d : ", entry.getKey());
+			for (var voisin : entry.getValue()) {
+				System.out.printf("→ %d (%.1f) ", voisin.getKey(), voisin.getValue());
+			}
+			System.out.println();
+		}
+    }
 }
