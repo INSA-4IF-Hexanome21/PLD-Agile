@@ -3,7 +3,8 @@ package app;
 import controller.CarteController;
 import controller.ServeurHTTP;
 import java.io.*;
-import model.Carte;
+import model.*;
+import tsp.Graphe;
 
 public class Main {
 
@@ -13,12 +14,12 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
        // 1. carte
-        String cheminFichier = "ressources/fichiersXMLCollecteDepot/moyenPlan.xml";
+        String cheminFichier = "ressources/fichiersXMLCollecteDepot/petitPlan.xml";
         CarteController carteController = new CarteController();
         carteController.chargerCarteDepuisXML(cheminFichier);
             
         // 2. demandes 
-        String cheminDemandes = "ressources/fichiersXMLCollecteDepot/demandeGrand9.xml";
+        String cheminDemandes = "ressources/fichiersXMLCollecteDepot/demandePetit1.xml";
         carteController.chargerDemandesDepuisXML(cheminDemandes);
 
         Carte carte = carteController.getCarte();
@@ -29,6 +30,14 @@ public class Main {
         System.out.println("  - Tronçons: " + carte.getTroncons().size());
         System.out.println();
 
+        Entrepot e = null;
+        for (Site site : carte.getSites()) {
+            if (site instanceof Entrepot) {
+                e = (Entrepot) site;
+            }
+        }
+        GrapheTotal gt = carteController.creerGrapheTotal(carte, e.getId());
+        carteController.chercherCheminsMin(gt, carte.getSites());
         ServeurHTTP serveur = new ServeurHTTP(PORT_SERVEUR, CHEMIN_BASE_VIEW, carteController);
         serveur.demarrer();
 

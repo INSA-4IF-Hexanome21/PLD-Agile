@@ -9,6 +9,8 @@ public class GrapheLivraison implements Graphe {
 
 	int nbSommets;
 	int[][] cout;
+	HashMap<Integer, Integer> indexToId;
+	HashMap<Integer, Integer> idToIndex;
 
 	/**
 	 * Cree un graphe complet dont les aretes ont un cout compris entre COUT_MIN et COUT_MAX
@@ -18,6 +20,20 @@ public class GrapheLivraison implements Graphe {
 		int nbSommets, 
 		Map<Integer, List<SimpleEntry<Integer, Float>>> mapDistances
 	) {
+		// Init table hash
+		this.indexToId = new HashMap<>();
+		this.idToIndex = new HashMap<>();
+		int compteur = 0;
+		for (var key : mapDistances.keySet()) {
+			indexToId.put(compteur, key);
+			idToIndex.put(key, compteur);
+			compteur += 1;
+		}
+		System.out.println("Table de conversion ID <-> Index :");
+		for (var entry : indexToId.entrySet()) {
+			System.out.println("Index: " + entry.getKey() + " <-> ID: " + entry.getValue());
+		}
+
 		this.nbSommets = nbSommets;
 		cout = new int[nbSommets][nbSommets];
 		for (int i=0; i<nbSommets; i++) {
@@ -29,7 +45,7 @@ public class GrapheLivraison implements Graphe {
 		for (var key : mapDistances.keySet()) {
 			List<SimpleEntry<Integer, Float>> pair = mapDistances.get(key) ;
 			for (var entry : pair) {
-				cout[key][entry.getKey()] = entry.getValue().intValue();
+				cout[idToIndex.get(key)][idToIndex.get(entry.getKey())] = entry.getValue().intValue();
 			}
 		}
 		printCout();
@@ -65,4 +81,7 @@ public class GrapheLivraison implements Graphe {
 		return i != j;
 	}
 
+	public Integer getIdFromIndex(Integer index) {
+        return indexToId.get(index);
+    }
 }

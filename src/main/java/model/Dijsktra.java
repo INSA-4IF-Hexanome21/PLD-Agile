@@ -33,12 +33,12 @@ public class Dijsktra {
         int s = indexNoeudDepart;
         while (sommetsVisites.size() < nbSommets) {
             s = getSommetLePlusProche(distances, sommetsVisites);
-            System.out.println("Sommet le plus proche : " + s + " avec distance " + distances[s]);
             if (s == -1) break; // Tous les sommets accessibles ont été visités
+            //System.out.println("Sommet le plus proche : " + s + " avec distance " + distances[s]);
 
             List<SimpleEntry<Integer,Float>> voisins = gt.mapAllSommets.get(s);
             for (SimpleEntry<Integer, Float> voisin : voisins) {
-                System.out.println("Voisin : " + voisin.getKey() + " avec cout " + voisin.getValue());
+                //System.out.println("Voisin : " + voisin.getKey() + " avec cout " + voisin.getValue());
                 int indexVoisin = voisin.getKey();
                 float cout = gt.getCout(s, indexVoisin);
                 if (!sommetsVisites.contains(indexVoisin)) {
@@ -58,12 +58,12 @@ public class Dijsktra {
                 cheminsMin.put(new SimpleEntry<>(indexNoeudDepart, dest), chemin);
             }
         }
-        System.out.println("Chemins minimaux depuis le noeud " + indexNoeudDepart + " : " + cheminsMin);
+        //System.out.println("Chemins minimaux depuis le noeud " + indexNoeudDepart + " : " + cheminsMin);
 
         // Conversion des distances en map
         Map<Integer, Float> resultat = new HashMap<>();
         for (int i = 0; i < nbSommets; i++) {
-            System.out.println("Distance du noeud " + indexNoeudDepart + " au noeud " + i + " : " + distances[i]);
+            //System.out.println("Distance du noeud " + indexNoeudDepart + " au noeud " + i + " : " + distances[i]);
             resultat.put(i, distances[i]);
         }
         return resultat;

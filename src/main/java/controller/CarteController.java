@@ -1,15 +1,14 @@
 package controller;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import tsp.*;
 
-import model.Carte;
-import model.GrapheTotal;
-import model.Noeud;
-import model.Site;
-import model.Trajet;
-import model.Troncon;
+import model.*;
 
 public class CarteController {
     private Carte carte;
@@ -143,6 +142,26 @@ public class CarteController {
         int nbSommets = noeuds.size();
 
         GrapheTotal gt = new GrapheTotal(nbSommets, troncons, noeuds, idEntrepot);
+        gt.printGraphe();
         return gt;
+    }
+
+    public void chercherCheminsMin(GrapheTotal gt, List<Site> sites){
+        long tempsDebut = System.currentTimeMillis();
+        gt.RechercheDijkstra(sites);
+        GrapheLivraison gl = new GrapheLivraison(carte.getSites().size(), gt.getMapDistances());
+        TSP tsp = new TSP1();
+        tsp.chercheSolution(60000, gl);
+        System.out.print("Solution de longueur "+tsp.getCoutSolution()+" trouvee en "
+					+(System.currentTimeMillis() - tempsDebut)+"ms : ");
+        List<Integer> solution = new ArrayList<Integer>();
+        for (int i=0; i<gl.getNbSommets(); i++) {
+            solution.add(gl.getIdFromIndex(tsp.getSolution(i)));
+		   
+        }
+        solution.add(solution.getFirst());
+        System.out.println(solution);
+        List<Integer> cheminComplet = gt.getCheminComplet(solution);
+        System.out.println("Chemin complet avec noeuds intermédiaires : " + cheminComplet);
     }
 }
