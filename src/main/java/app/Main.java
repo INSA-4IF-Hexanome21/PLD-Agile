@@ -18,18 +18,11 @@ public class Main {
        // 1. carte
         
         CarteController carteController = new CarteController();
-        //Carte carte = carteController.getCarte();
+        Controller controller = new Controller(carteController);
 
-        /*    // Afficher les informations de la carte chargée
-        System.out.println("Carte chargée avec succès:");
-        System.out.println("  - Noeuds: " + carte.getNoeuds().size());
-        System.out.println("  - Tronçons: " + carte.getTroncons().size());
-        System.out.println();*/
-
-        ServeurHTTP serveur = new ServeurHTTP(PORT_SERVEUR, CHEMIN_BASE_VIEW, CHEMIN_BASE_RESSOURCES, carteController);
+        ServeurHTTP serveur = new ServeurHTTP(PORT_SERVEUR, CHEMIN_BASE_VIEW, CHEMIN_BASE_RESSOURCES, controller);
         serveur.demarrer();
 
-        Controller controller = new Controller(carteController, serveur);
 
         
        System.out.println("Ouvrez votre navigateur à: http://localhost:" + PORT_SERVEUR);

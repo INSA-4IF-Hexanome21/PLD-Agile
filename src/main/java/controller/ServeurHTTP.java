@@ -1,10 +1,14 @@
-package controller;
 
+package controller;
 import com.sun.net.httpserver.HttpServer;
+
+import controller.state.Controller;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
+import model.Carte;
 
 /**
  * Serveur HTTP pour servir les fichiers statiques et l'API
@@ -16,21 +20,21 @@ public class ServeurHTTP {
     private final HttpServer serveur;
     private final String cheminBase;
     private final String cheminBaseRessources;
-    private final CarteController carteController;
-    
+    private final Controller controller;
+
     /**
      * Constructeur du serveur HTTP
      * 
      * @param port Le port sur lequel le serveur écoute
      * @param cheminBase Le chemin de base des fichiers à servir
-     * @param carteController Le contrôleur de carte pour l'API
+     * @para Le contrôleur de carte pour l'API
      * @throws IOException Si le serveur ne peut pas être créé
      */
-    public ServeurHTTP(int port, String cheminBase, String cheminBaseRessources, CarteController carteController) throws IOException {
+    public ServeurHTTP(int port, String cheminBase, String cheminBaseRessources, Controller controller) throws IOException {
         this.serveur = HttpServer.create(new InetSocketAddress(port), 0);
         this.cheminBase = cheminBase;
         this.cheminBaseRessources = cheminBaseRessources;
-        this.carteController = carteController;
+        this.controller = controller;
         configurerRoutes();
     }
     
@@ -55,109 +59,12 @@ public class ServeurHTTP {
             exchange.getResponseBody().write(octets);
             exchange.close();
         });
-        
-       serveur.createContext("/api/carte", exchange -> {
-        System.out.println(">>> Requête reçue sur /api/carte <<<");
-        
-        String jsonResponse = carteController.getCarteJSON();
-        byte[] octets = jsonResponse.getBytes("UTF-8");
-        
-        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
-        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        exchange.sendResponseHeaders(200, octets.length);
-        exchange.getResponseBody().write(octets);
-        exchange.close();
-        
-        System.out.println(">>> Réponse envoyée <<<");
-    });
-        // Route pour les fichiers JavaScript
-        serveur.createContext("/js/", exchange -> {
-            String chemin = exchange.getRequestURI().getPath().replaceFirst("/js/", "");
-            File fichier = new File(cheminBase + "JS/" + chemin);
-            if (!fichier.exists()) {
-                System.out.println("JS non trouvé: " + fichier.getAbsolutePath());
-                exchange.sendResponseHeaders(404, -1);
-                exchange.close();
-                return;
-            }
-            byte[] octets = Files.readAllBytes(fichier.toPath());
-            exchange.getResponseHeaders().add("Content-Type", "application/javascript; charset=UTF-8");
-            exchange.sendResponseHeaders(200, octets.length);
-            exchange.getResponseBody().write(octets);
-            exchange.close();
-        });
-        
-        // Route pour les fichiers CSS
-        serveur.createContext("/css/", exchange -> {
-            String chemin = exchange.getRequestURI().getPath().replaceFirst("/css/", "");
-            File fichier = new File(cheminBase + "CSS/" + chemin);
-            if (!fichier.exists()) {
-                System.out.println("CSS non trouvé: " + fichier.getAbsolutePath());
-                exchange.sendResponseHeaders(404, -1);
-                exchange.close();
-                return;
-            }
-            byte[] octets = Files.readAllBytes(fichier.toPath());
-            exchange.getResponseHeaders().add("Content-Type", "text/css; charset=UTF-8");
-            exchange.sendResponseHeaders(200, octets.length);
-            exchange.getResponseBody().write(octets);
-            exchange.close();
-        });
-        
-        // Route pour les composants HTML
-        serveur.createContext("/components/", exchange -> {
-            String chemin = exchange.getRequestURI().getPath().replaceFirst("/components/", "");
-            File fichier = new File(cheminBase + "components/" + chemin);
-            if (!fichier.exists()) {
-                System.out.println("Composant non trouvé: " + fichier.getAbsolutePath());
-                exchange.sendResponseHeaders(404, -1);
-                exchange.close();
-                return;
-            }
-            byte[] octets = Files.readAllBytes(fichier.toPath());
-            exchange.getResponseHeaders().add("Content-Type", "text/html; charset=UTF-8");
-            exchange.sendResponseHeaders(200, octets.length);
-            exchange.getResponseBody().write(octets);
-            exchange.close();
-        });
-        
-        // Route pour les images (logos, favicon, etc.)
-        serveur.createContext("/images/", exchange -> {
-            String chemin = exchange.getRequestURI().getPath().replaceFirst("/images/", "");
-            File fichier = new File(cheminBase + "images/" + chemin);
-            if (!fichier.exists()) {
-                System.out.println("Image non trouvée: " + fichier.getAbsolutePath());
-                exchange.sendResponseHeaders(404, -1);
-                exchange.close();
-                return;
-            }
-            byte[] octets = Files.readAllBytes(fichier.toPath());
-            
-            // Déterminer le type MIME selon l'extension
-            String contentType = "image/png";
-            if (chemin.endsWith(".jpg") || chemin.endsWith(".jpeg")) {
-                contentType = "image/jpeg";
-            } else if (chemin.endsWith(".svg")) {
-                contentType = "image/svg+xml";
-            } else if (chemin.endsWith(".gif")) {
-                contentType = "image/gif";
-            } else if (chemin.endsWith(".ico")) {
-                contentType = "image/x-icon";
-            }
-            
-            exchange.getResponseHeaders().add("Content-Type", contentType);
-            exchange.sendResponseHeaders(200, octets.length);
-            exchange.getResponseBody().write(octets);
-            exchange.close();
-        });
-    }
-    
-    /**
-     * Charger une carte
-     */
 
-     public void chargerCarte(){
-        // Endpoint pour charger la carte (plan)
+    /**
+     * ! Charger une carte
+    */
+
+      // Endpoint pour charger la carte (plan)
         serveur.createContext("/api/upload/plan", exchange -> {
             System.out.println(">>> Requête reçue sur /api/upload/plan <<<");
             
@@ -196,8 +103,11 @@ public class ServeurHTTP {
                     
                     // Charger le plan dans le controleur
                     System.out.println(">>> Chargement du plan dans le contrôleur <<<");
-                    carteController.chargerCarteDepuisXML(outFile.getAbsolutePath());
-                    System.out.println(">>> Plan chargé avec succès <<<");
+
+                    controller.chargerCarte(outFile.getAbsolutePath());
+
+                    // carteController.chargerCarteDepuisXML(outFile.getAbsolutePath());
+                    // System.out.println(">>> Plan chargé avec succès <<<");
                     
                     // Rrépondre au client
                     String response = "{\"status\":\"ok\",\"type\":\"plan\",\"path\":\"uploads/plans/" 
@@ -230,15 +140,12 @@ public class ServeurHTTP {
                 exchange.close();
             }
         });
-     }
 
 
     /**
-     * Charger une livraison
+     * ! Charger une livraison
      */
-     
-    public void chargerLivraison(){
-        // Endpoint pour charger la livraison (demande)
+             // Endpoint pour charger la livraison (demande)
     serveur.createContext("/api/upload/demande", exchange -> {
         System.out.println(">>> Requête reçue sur /api/upload/demande <<<");
         
@@ -279,8 +186,10 @@ public class ServeurHTTP {
                 // Asumiendo que tienes un método para cargar demandes
                 System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
 
-                carteController.chargerDemandesDepuisXML(outFile.getAbsolutePath());
-                System.out.println(">>> Demande chargée avec succès <<<");
+                controller.chargerLivraison();
+
+                // carteController.chargerDemandesDepuisXML(outFile.getAbsolutePath());
+                // System.out.println(">>> Demande chargée avec succès <<<");
                 
                 // Responder al cliente
                 String response = "{\"status\":\"ok\",\"type\":\"demande\",\"path\":\"uploads/demandes/" 
@@ -313,7 +222,104 @@ public class ServeurHTTP {
             exchange.close();
         }
     });
+        
+    //    serveur.createContext("/api/carte", exchange -> {
+    //     System.out.println(">>> Requête reçue sur /api/carte <<<");
+        
+    //     //   String jsonResponse = controller.getCarteJSON();
+    //     String jsonResponse = carteController.getCarteJSON();
+    //     byte[] octets = jsonResponse.getBytes("UTF-8");
+        
+    //     exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+    //     exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+    //     exchange.sendResponseHeaders(200, octets.length);
+    //     exchange.getResponseBody().write(octets);
+    //     exchange.close();
+        
+    //     System.out.println(">>> Réponse envoyée <<<");
+    // });
+        // ! Route pour les fichiers JavaScript
+        serveur.createContext("/js/", exchange -> {
+            String chemin = exchange.getRequestURI().getPath().replaceFirst("/js/", "");
+            File fichier = new File(cheminBase + "JS/" + chemin);
+            if (!fichier.exists()) {
+                System.out.println("JS non trouvé: " + fichier.getAbsolutePath());
+                exchange.sendResponseHeaders(404, -1);
+                exchange.close();
+                return;
+            }
+            byte[] octets = Files.readAllBytes(fichier.toPath());
+            exchange.getResponseHeaders().add("Content-Type", "application/javascript; charset=UTF-8");
+            exchange.sendResponseHeaders(200, octets.length);
+            exchange.getResponseBody().write(octets);
+            exchange.close();
+        });
+        
+        // ! Route pour les fichiers CSS
+        serveur.createContext("/css/", exchange -> {
+            String chemin = exchange.getRequestURI().getPath().replaceFirst("/css/", "");
+            File fichier = new File(cheminBase + "CSS/" + chemin);
+            if (!fichier.exists()) {
+                System.out.println("CSS non trouvé: " + fichier.getAbsolutePath());
+                exchange.sendResponseHeaders(404, -1);
+                exchange.close();
+                return;
+            }
+            byte[] octets = Files.readAllBytes(fichier.toPath());
+            exchange.getResponseHeaders().add("Content-Type", "text/css; charset=UTF-8");
+            exchange.sendResponseHeaders(200, octets.length);
+            exchange.getResponseBody().write(octets);
+            exchange.close();
+        });
+        
+        // Route pour les composants HTML
+        serveur.createContext("/components/", exchange -> {
+            String chemin = exchange.getRequestURI().getPath().replaceFirst("/components/", "");
+            File fichier = new File(cheminBase + "components/" + chemin);
+            if (!fichier.exists()) {
+                System.out.println("Composant non trouvé: " + fichier.getAbsolutePath());
+                exchange.sendResponseHeaders(404, -1);
+                exchange.close();
+                return;
+            }
+            byte[] octets = Files.readAllBytes(fichier.toPath());
+            exchange.getResponseHeaders().add("Content-Type", "text/html; charset=UTF-8");
+            exchange.sendResponseHeaders(200, octets.length);
+            exchange.getResponseBody().write(octets);
+            exchange.close();
+        });
+        
+        // ! Route pour les images (logos, favicon, etc.)
+        serveur.createContext("/images/", exchange -> {
+            String chemin = exchange.getRequestURI().getPath().replaceFirst("/images/", "");
+            File fichier = new File(cheminBase + "images/" + chemin);
+            if (!fichier.exists()) {
+                System.out.println("Image non trouvée: " + fichier.getAbsolutePath());
+                exchange.sendResponseHeaders(404, -1);
+                exchange.close();
+                return;
+            }
+            byte[] octets = Files.readAllBytes(fichier.toPath());
+            
+            // Déterminer le type MIME selon l'extension
+            String contentType = "image/png";
+            if (chemin.endsWith(".jpg") || chemin.endsWith(".jpeg")) {
+                contentType = "image/jpeg";
+            } else if (chemin.endsWith(".svg")) {
+                contentType = "image/svg+xml";
+            } else if (chemin.endsWith(".gif")) {
+                contentType = "image/gif";
+            } else if (chemin.endsWith(".ico")) {
+                contentType = "image/x-icon";
+            }
+            
+            exchange.getResponseHeaders().add("Content-Type", contentType);
+            exchange.sendResponseHeaders(200, octets.length);
+            exchange.getResponseBody().write(octets);
+            exchange.close();
+        });
     }
+    
 
 
     /**
