@@ -1,21 +1,21 @@
 package controller.state;
 
-import controller.ServeurHTTP;
+import controller.CarteController;
 
 public interface State {
     /**
 	 * Méthode appelée par le controlleur pour charger la carte
 	 * @param c le controlleur
-	 * @param serveur le serveur
+	 * @param carteC le controlleur de carte (CarteController)
 	 */
-	public default void chargerCarte(Controller c, ServeurHTTP serveur){};
+	public default void chargerCarte(Controller c, CarteController carteC, String cheminFichier){};
 	
 	/**
 	 * Méthode appelée par le controlleur pour charger une livraison
 	 * @param c le controlleur
 	 * @param serveur le serveur
 	 */
-	public default void chargerLivraison(Controller c, ServeurHTTP serveur){};
+	public default void chargerLivraison(Controller c){};
 
 	
 	/**
