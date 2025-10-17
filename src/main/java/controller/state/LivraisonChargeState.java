@@ -18,4 +18,12 @@ public class LivraisonChargeState implements State {
 		c.setCurrentState(c.livraisonChargeState);
 
     }
+
+	@Override
+    public void calculerLivraison(Controller c){
+
+        //lancer calcul
+		c.setCurrentState(c.livraisonChargeState);
+
+    }
 }

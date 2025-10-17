@@ -8,14 +8,14 @@ public class Controller{
 	private CarteController carteController;
 	private ServeurHTTP serveur;
 
-    // Instances associated with each possible state of the controller
+     // Instances associées avec chaque état possible du controlleur 
 	protected final InitialState initialState = new InitialState();
 	protected final CarteChargeState carteChargeState = new CarteChargeState();
 	protected final LivraisonChargeState livraisonChargeState = new LivraisonChargeState();
 	protected final LivraisonCalculeState livraisonCalculeState = new LivraisonCalculeState();
 
     /**
-	 * Create the controller of the application
+	 * Constructeur du controlleur
 	 * 
 	 */
 	public Controller(CarteController carteController, ServeurHTTP serveur) {
@@ -25,36 +25,39 @@ public class Controller{
 	}
 
     /**
-	 * Change the current state of the controller
-	 * @param state the new current state
+	 * Change l'état courant du controlleur
+	 * @param state le nouvel état
 	 */
 	protected void setCurrentState(State state){
 		currentState = state;
 	}
 
-	// Methods corresponding to user events 
+	// Méthode des évenements
 	/**
-	 * Method called after using "chargerCarte"
+	 * Méthode pour charger la carte
 	 */
 	public void chargerCarte() {
 		currentState.chargerCarte(this, serveur);
 	}
 
 	/**
-	 * Method called after using "chargerLivraison"
+	 *Méthode pour charger une livraison
 	 */
 	public void chargerLivraison() {
 		currentState.chargerLivraison(this, serveur);
 	}
 
     /**
-	 * Method called after after using  "CalculerLivraison"
+	 * Méthode pour calculer une livraison
 	 */
     public void calculerLivraison() {
         currentState.calculerLivraison(this);
     }
 
-	public CarteController getCarteController() {
-        return carteController;
+	/**
+	 * Méthode pour changer une livraison d'un trajet
+	 */
+	public void changerLivraison() {
+        currentState.calculerLivraison(this);
     }
 }
