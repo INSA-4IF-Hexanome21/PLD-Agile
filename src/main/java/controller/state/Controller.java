@@ -1,12 +1,10 @@
 package controller.state;
 
 import controller.CarteController;
-import controller.ServeurHTTP;
 
 public class Controller{
 	private State currentState;
 	private CarteController carteController;
-	private ServeurHTTP serveur;
 
      // Instances associées avec chaque état possible du controlleur 
 	protected final InitialState initialState = new InitialState();
@@ -18,10 +16,9 @@ public class Controller{
 	 * Constructeur du controlleur
 	 * 
 	 */
-	public Controller(CarteController carteController, ServeurHTTP serveur) {
+	public Controller() {
 		currentState = initialState;
-		this.carteController = carteController;
-		this.serveur = serveur;
+		carteController = new CarteController();
 	}
 
     /**
@@ -36,15 +33,15 @@ public class Controller{
 	/**
 	 * Méthode pour charger la carte
 	 */
-	public void chargerCarte() {
-		currentState.chargerCarte(this, serveur);
+	public void chargerCarte(String cheminFichier) {
+		currentState.chargerCarte(this, carteController, cheminFichier);
 	}
 
 	/**
 	 *Méthode pour charger une livraison
 	 */
 	public void chargerLivraison() {
-		currentState.chargerLivraison(this, serveur);
+		currentState.chargerLivraison(this);
 	}
 
     /**

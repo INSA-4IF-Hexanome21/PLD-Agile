@@ -1,14 +1,13 @@
 package controller.state;
 
-import controller.ServeurHTTP;
+import controller.CarteController;
 
 public class InitialState implements State {
 // Etat initial 
 	@Override
-	public void chargerCarte(Controller c, ServeurHTTP serveur) {
+	public void chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
 
-		//lancer charger carte
-		serveur.chargerCarte();
+		carteC.chargerCarteDepuisXML(cheminFichier);
 		c.setCurrentState(c.carteChargeState);
 	}
 }
