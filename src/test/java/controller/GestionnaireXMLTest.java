@@ -2,7 +2,6 @@ package controller;
 
 import static org.junit.Assert.*;
 
-import controller.GestionnaireXML;
 import model.Noeud;
 import model.Trajet;
 import model.Troncon;
