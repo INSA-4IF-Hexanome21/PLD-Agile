@@ -17,6 +17,7 @@ public class GrapheTotal implements Graphe {
 	private HashMap<Integer, Long> indexToId;
 	private HashMap<Long, Integer> idToIndex;
 	private HashMap<SimpleEntry<Long, Long>, Troncon> tronconHashMap;
+	private HashMap<Long, Noeud> noeudsHashMap;
 	
 	/**
 	 * Cree un graphe complet dont les aretes ont un cout compris entre COUT_MIN et COUT_MAX
@@ -33,6 +34,7 @@ public class GrapheTotal implements Graphe {
 		this.indexToId = new HashMap<>();
 		this.mapAllSommets = new HashMap<>();
 		this.tronconHashMap = new HashMap<>();
+		this.noeudsHashMap = noeuds;
 		Integer compteur = 1;
 
 
@@ -234,5 +236,9 @@ public class GrapheTotal implements Graphe {
 			troncon =  tronconHashMap.get(new SimpleEntry<>(idNoeud2, idNoeud1));
 		}
 		return troncon;
+	}
+
+	public Noeud trouverNoeud(long idNoeud){
+		return this.noeudsHashMap.get(idNoeud);
 	}
 }
