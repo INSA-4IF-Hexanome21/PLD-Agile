@@ -160,14 +160,41 @@ public class GrapheTotal implements Graphe {
 
 		// Créer un Set des indices correspondant aux sites
 		Set<Integer> indicesSites = new HashSet<>();
+
+		HashMap<Integer,Integer> numLivraisonEtSite = new HashMap<Integer,Integer>();
+		HashMap<Integer,Integer> depotCollecteHashMap = new HashMap<Integer,Integer>();
+
 		for (Site site : sites) {
-			indicesSites.add(this.idToIndex.get(site.getId()));
+			Integer indexSite = this.idToIndex.get(site.getId());
+			indicesSites.add(indexSite);
+			String type = site.getTypeSite();
+			if(type == "depot"){
+				Integer numlivraison = ((Depot)site).getNumLivraison();
+				Integer indexCollecte = numLivraisonEtSite.get(numlivraison);
+				if(indexCollecte == null){
+					numLivraisonEtSite.put(numlivraison,indexSite);
+				}
+				else{
+					depotCollecteHashMap.put(indexSite,indexCollecte);
+				}
+			}
+
+			else if(type == "collecte"){
+				Integer numlivraison = ((Collecte)site).getNumLivraison();
+				Integer indexDepot = numLivraisonEtSite.get(numlivraison);
+				if(indexDepot == null){
+					numLivraisonEtSite.put(numlivraison,indexSite);
+				}
+				else{
+					depotCollecteHashMap.put(indexDepot,indexSite);
+				}
+			}
 		}
 
 		for (Site siteDepart : sites) { 
 			int indexDepart = this.idToIndex.get(siteDepart.getId()); 
 			// Calculer les distances minimales depuis le site de départ vers tous les autres sommets du gt
-			Map<Integer, Float> distancesDepuisDepart = Dijsktra.dijkstra(this, siteDepart.getId(), cheminsMin);  
+			Map<Integer, Float> distancesDepuisDepart = Dijsktra.dijkstra(this, siteDepart.getId(), cheminsMin, depotCollecteHashMap);  
 
 			List<SimpleEntry<Integer, Float>> voisins = new ArrayList<>(); 
 			
