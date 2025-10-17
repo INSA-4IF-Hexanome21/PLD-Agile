@@ -1,8 +1,9 @@
-package controller;
+package controller.state;
 
+import controller.ServeurHTTP;
 
-public class CarteChargeState implements State {
-    @Override
+public class LivraisonChargeState implements State {
+     @Override
 	public void chargerCarte(Controller c, ServeurHTTP serveur) {
 
 		//lancer charger carte

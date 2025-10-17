@@ -1,4 +1,6 @@
-package controller;
+package controller.state;
+
+import controller.ServeurHTTP;
 
 public interface State {
     /**

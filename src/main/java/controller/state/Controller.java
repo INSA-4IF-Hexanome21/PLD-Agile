@@ -1,4 +1,7 @@
-package controller;
+package controller.state;
+
+import controller.CarteController;
+import controller.ServeurHTTP;
 
 public class Controller{
 	private State currentState;
@@ -41,7 +44,7 @@ public class Controller{
 	 * Method called after using "chargerLivraison"
 	 */
 	public void chargerLivraison() {
-		currentState.chargerLivraison(this);
+		currentState.chargerLivraison(this, serveur);
 	}
 
     /**
