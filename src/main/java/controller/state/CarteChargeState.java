@@ -1,21 +1,20 @@
 package controller.state;
 
-import controller.ServeurHTTP;
+import controller.CarteController;
 
 public class CarteChargeState implements State {
     @Override
-	public void chargerCarte(Controller c, ServeurHTTP serveur) {
+	public void chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
 
-		//lancer charger carte
-		serveur.chargerCarte();
+		carteC.chargerCarteDepuisXML(cheminFichier);
 		c.setCurrentState(c.carteChargeState);
 	}
 
+
     @Override
-    public void chargerLivraison(Controller c, ServeurHTTP serveur){
+    public void chargerLivraison(Controller c, CarteController carteC, String cheminFichier){
 
-        serveur.chargerLivraison();
+		carteC.chargerDemandesDepuisXML(cheminFichier);
 		c.setCurrentState(c.livraisonChargeState);
-
     }
 }

@@ -40,8 +40,8 @@ public class Controller{
 	/**
 	 *Méthode pour charger une livraison
 	 */
-	public void chargerLivraison() {
-		currentState.chargerLivraison(this);
+	public void chargerLivraison(String cheminFichier) {
+		currentState.chargerLivraison(this, carteController, cheminFichier);
 	}
 
     /**
@@ -55,6 +55,6 @@ public class Controller{
 	 * Méthode pour changer une livraison d'un trajet
 	 */
 	public void changerLivraison() {
-        currentState.calculerLivraison(this);
+        currentState.changerLivraison(this);
     }
 }

@@ -15,7 +15,7 @@ public interface State {
 	 * @param c le controlleur
 	 * @param serveur le serveur
 	 */
-	public default void chargerLivraison(Controller c){};
+	public default void chargerLivraison(Controller c, CarteController carteC, String cheminFichier){};
 
 	
 	/**
