@@ -98,8 +98,8 @@ public class CarteController {
             
             try {
                 // Utiliser getLat() et getLng() directement (types primitifs)
-                double lat = s.getLat();
-                double lng = s.getLng();
+                double lat = s.getLatitude();
+                double lng = s.getLongitude();
                 
                 json.append(String.format(Locale.US, 
                     "{\"id\":%d,\"lat\":%f,\"lng\":%f,\"type\":\"%s\"",
