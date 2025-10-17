@@ -57,4 +57,8 @@ public class Controller{
 	public void changerLivraison() {
         currentState.changerLivraison(this);
     }
+
+	 public String getCarteJSON() {
+		return carteController.getCarteJSON();
+	 }
 }

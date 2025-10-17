@@ -1,9 +1,7 @@
 package app;
 
-import controller.CarteController;
 import controller.ServeurHTTP;
 import controller.state.Controller;
-
 import java.io.*;
 
 public class Main {
@@ -17,8 +15,7 @@ public class Main {
 
        // 1. carte
         
-        CarteController carteController = new CarteController();
-        Controller controller = new Controller(carteController);
+        Controller controller = new Controller();
 
         ServeurHTTP serveur = new ServeurHTTP(PORT_SERVEUR, CHEMIN_BASE_VIEW, CHEMIN_BASE_RESSOURCES, controller);
         serveur.demarrer();

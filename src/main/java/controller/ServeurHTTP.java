@@ -1,14 +1,11 @@
 
 package controller;
 import com.sun.net.httpserver.HttpServer;
-
 import controller.state.Controller;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
-import model.Carte;
 
 /**
  * Serveur HTTP pour servir les fichiers statiques et l'API
@@ -186,10 +183,10 @@ public class ServeurHTTP {
                 // Asumiendo que tienes un método para cargar demandes
                 System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
 
-                controller.chargerLivraison();
+                controller.chargerLivraison(outFile.getAbsolutePath());
 
                 // carteController.chargerDemandesDepuisXML(outFile.getAbsolutePath());
-                // System.out.println(">>> Demande chargée avec succès <<<");
+                System.out.println(">>> Demande chargée avec succès <<<");
                 
                 // Responder al cliente
                 String response = "{\"status\":\"ok\",\"type\":\"demande\",\"path\":\"uploads/demandes/" 
@@ -223,21 +220,21 @@ public class ServeurHTTP {
         }
     });
         
-    //    serveur.createContext("/api/carte", exchange -> {
-    //     System.out.println(">>> Requête reçue sur /api/carte <<<");
+    serveur.createContext("/api/carte", exchange -> {
+        System.out.println(">>> Requête reçue sur /api/carte <<<");
         
-    //     //   String jsonResponse = controller.getCarteJSON();
-    //     String jsonResponse = carteController.getCarteJSON();
-    //     byte[] octets = jsonResponse.getBytes("UTF-8");
+        String jsonResponse = controller.getCarteJSON();
+        //String jsonResponse = carteController.getCarteJSON();
+        byte[] octets = jsonResponse.getBytes("UTF-8");
         
-    //     exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
-    //     exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-    //     exchange.sendResponseHeaders(200, octets.length);
-    //     exchange.getResponseBody().write(octets);
-    //     exchange.close();
+        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.sendResponseHeaders(200, octets.length);
+        exchange.getResponseBody().write(octets);
+        exchange.close();
         
-    //     System.out.println(">>> Réponse envoyée <<<");
-    // });
+        System.out.println(">>> Réponse envoyée <<<");
+    });
         // ! Route pour les fichiers JavaScript
         serveur.createContext("/js/", exchange -> {
             String chemin = exchange.getRequestURI().getPath().replaceFirst("/js/", "");
