@@ -95,7 +95,9 @@ public class CarteController {
         for (int i = 0; i < sites.size(); i++) {
             Site s = sites.get(i);
             System.out.println("Traitement site " + (i+1) + "/" + sites.size() + " - ID: " + s.getId());
-            
+            Integer numLivraison = null;
+            if (s instanceof Depot ) numLivraison = ((Depot) s).getNumLivraison();
+            else if (s instanceof Collecte ) numLivraison = ((Collecte) s).getNumLivraison();
             try {
                 // Utiliser getLat() et getLng() directement (types primitifs)
                 double lat = s.getLatitude();
@@ -112,6 +114,9 @@ public class CarteController {
                 if (s.getArriveeHeure() != null) {
                     json.append(String.format(",\"arrivee\":\"%s\"", s.getArriveeHeure().toString()));
                 }
+                if (numLivraison != null) {
+                    json.append(String.format(",\"numLivraison\":%d", numLivraison));
+                }
                 
                 json.append("}");
                 
@@ -124,6 +129,22 @@ public class CarteController {
             } catch (Exception e) {
                 System.err.println("Erreur lors du traitement du site " + s.getId() + ": " + e.getMessage());
                 e.printStackTrace();
+            }
+        }
+
+        // Trajets
+        json.append("],\"trajets\":[");
+        List<Trajet> trajets = carte.getTrajets();
+        System.out.println("Génération JSON pour " + trajets.size() + " trajets");
+        for (int i = 0; i < trajets.size(); i++) {
+            Trajet t = trajets.get(i);
+            for (int j = 0; j < t.getTroncons().size(); j++) {
+                Troncon tr = t.getTroncons().get(j);
+                json.append(String.format("{\"from\":%d,\"to\":%d}",
+                        tr.getOrigine().getId(), tr.getDestination().getId()));
+                if (i < trajets.size() - 1 || j < t.getTroncons().size() - 1) {
+                    json.append(",");
+                }
             }
         }
         

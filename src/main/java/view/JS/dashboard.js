@@ -5,15 +5,13 @@ let lignes = [];
 let siteMarkers = [];
 let noeudMarkers = [];
 let tronconLines = [];
+let trajetLines = [];
 let donneesGlobales = null;
 
 // Configuración de colores para cada tipo de site
 const COULEURS_SITES = {
-  'depot': '#2b6cb0',
-  'collecte': '#38a169',
   'collecte': '#38a169',
   'depot': '#e53e3e',
-  'livraison': '#e53e3e',
   'entrepot': '#2b6cb0',
   'default': '#999999'
 };
@@ -22,7 +20,7 @@ const COULEURS_SITES = {
 const visibilityState = {
   entrepot: true,
   collecte: true,
-  livraison: true,
+  depot: true,
   noeuds: true,
   troncons: true
 };
@@ -170,7 +168,7 @@ function afficherDonneesSurCarte(donnees) {
     donnees.sites.forEach(site => {
       const rawType = (site.type || '').toString().toLowerCase();
       let normalizedType = rawType;
-      if (rawType === 'livraison' || rawType === 'depot') normalizedType = 'livraison';
+      if (rawType === 'livraison' || rawType === 'depot') normalizedType = 'depot';
       else if (rawType === 'collecte' || rawType === 'collecte' || rawType === 'pick-up') normalizedType = 'collecte';
       else if (rawType === 'entrepot' || rawType === 'depot' || rawType === 'warehouse') normalizedType = 'entrepot';
 
@@ -189,15 +187,32 @@ function afficherDonneesSurCarte(donnees) {
         // metadata para filtros
         marker.options.siteType = normalizedType;
         marker.options.siteId = site.id;
+        marker.options.numLivraison = site.numLivraison;
 
         marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -initialRadius - 6] });
-        marker.bindPopup(`<strong style="color:${color}">${normalizedType} ${site.id}</strong><br>Lat: ${site.lat.toFixed(6)}<br>Lng: ${site.lng.toFixed(6)}`);
+        marker.bindPopup(`<strong style="color:${color}">${normalizedType} ${site.id}</strong><br>N° livraison: ${site.numLivraison || 'N/A'}<br>Lat: ${site.lat.toFixed(6)}<br>Lng: ${site.lng.toFixed(6)}`);
 
         marker.addTo(carte);
         siteMarkers.push(marker);
       }
     });
 
+    // 4.trajets (si hay)
+    console.log('Trajets reçus:', donnees.trajets);
+    if (donnees.trajets && donnees.trajets.length > 0) {
+      donnees.trajets.forEach((trajet) => {
+        const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.from);
+        const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.to);
+        if (depart && arrivee) {
+          const ligne = L.polyline(
+            [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
+            { color: '#3ce861ff', weight: 3, opacity: 0.8, smoothFactor: 1 }
+          ).addTo(carte);
+          ligne.bindPopup(`<strong>Trajet</strong><br>De: ${trajet.from}<br>À: ${trajet.to}`);
+          trajetLines.push(ligne);
+        }
+      })
+    }
     // resize al zoom (solo una vez)
     if (!carte._siteZoomHandlerAdded) {
       carte.on('zoomend', () => {
@@ -252,26 +267,41 @@ function attachSiteHoverHandlers() {
     if (marker._siteHandlersAttached) return;
     marker._siteHandlersAttached = true;
 
-    // SOLO click: pan + popup
     marker.on('click', () => {
-      try {
-        if (marker.getLatLng) carte.panTo(marker.getLatLng());
-        if (marker.openPopup) marker.openPopup();
-      } catch (e) {}
-    });
+      var numLivraison = marker.options.numLivraison;
 
-    // Opcional: mostrar tooltip al pasar sin animar (no cambiar radius ni dim)
-    marker.on('mouseover', () => {
-      try {
-        if (marker.openTooltip) marker.openTooltip();
-      } catch (e) {}
-    });
-    marker.on('mouseout', () => {
-      try {
-        if (marker.closeTooltip) marker.closeTooltip();
-      } catch (e) {}
+      // Pan et popup
+      if (marker.getLatLng) carte.panTo(marker.getLatLng());
+      if (marker.openPopup) marker.openPopup();
+
+      // Trouver le jumeau
+      const jumeau = siteMarkers.find(m => 
+        m !== marker && m.options.numLivraison === numLivraison
+      );
+      if (!jumeau) return;
+
+      // Sauver les propriétés d'origine
+      const originalRadius = jumeau.options.radius || 8;
+      const originalColor = jumeau.options.color || '#3388ff';
+
+      // Grossir et surligner
+      jumeau.setStyle({
+        radius: originalRadius * 1.8,
+        color: '#ff6600',
+        weight: 4
+      });
+
+      // Revenir à la normale après 1 seconde
+      setTimeout(() => {
+        jumeau.setStyle({
+          radius: originalRadius,
+          color: originalColor,
+          weight: 2
+        });
+      }, 1000);
     });
   });
+
 }
 
 
@@ -306,7 +336,7 @@ function updateVisibility() {
   siteMarkers.forEach(marker => {
     const type = marker.options.siteType || 'default';
     // mapea nombres usados en visibilityState
-    const key = (type === 'entrepot' ? 'entrepot' : (type === 'collecte' ? 'collecte' : (type === 'livraison' ? 'livraison' : 'entrepot')));
+    const key = (type === 'entrepot' ? 'entrepot' : (type === 'collecte' ? 'collecte' : (type === 'depot' ? 'depot' : 'entrepot')));
     if (visibilityState[key]) {
       if (!carte.hasLayer(marker)) marker.addTo(carte);
     } else {
@@ -334,8 +364,8 @@ function updateVisibility() {
 }
 
 function configurerControlesVisibilite() {
-  // checkbox toggles: entrepot, collecte, livraison
-  ['entrepot', 'collecte', 'livraison'].forEach(type => {
+  // checkbox toggles: entrepot, collecte, depot
+  ['entrepot', 'collecte', 'depot'].forEach(type => {
     const cb = document.getElementById(`toggle-${type}`);
     if (cb) {
       cb.checked = visibilityState[type];
@@ -389,7 +419,7 @@ function configurerControlesVisibilite() {
       const newState = !all;
       Object.keys(visibilityState).forEach(k => visibilityState[k] = newState);
       // actualizar checkboxes visualmente
-      ['entrepot','collecte','livraison','noeuds','troncons'].forEach(k => {
+      ['entrepot','collecte','depot','noeuds','troncons'].forEach(k => {
         const el = document.getElementById(`toggle-${k}`);
         if (el) el.checked = visibilityState[k];
       });
