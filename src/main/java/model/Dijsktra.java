@@ -1,10 +1,7 @@
 package model;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class Dijsktra {
@@ -23,6 +20,9 @@ public class Dijsktra {
         float[] distances = new float[nbSommets+1];
         List<Integer> sommetsVisites = new ArrayList<>();
         boolean[] visites = new boolean[nbSommets+1];
+        PriorityQueue<SimpleEntry<Integer, Float>> p = new PriorityQueue<>(
+            Comparator.comparing(SimpleEntry::getValue)
+        );
 
         // Initialisation
         for (int i = 0; i < nbSommets + 1; i++) {
@@ -30,22 +30,21 @@ public class Dijsktra {
             predecesseurs[i] = -1;
         }
         distances[indexNoeudDepart] = 0.0f;
+        p.add(new SimpleEntry<>(indexNoeudDepart, 0.0f));
 
         // Tant qu'il reste des sommets non visités
         int s = indexNoeudDepart;
-        while (sommetsVisites.size() < nbSommets) {
-            s = getSommetLePlusProche(distances, visites);
-            if (s == -1) break; // Tous les sommets accessibles ont été visités
+        while (!p.isEmpty()) {
+            s = p.poll().getKey();
             //System.out.println("Sommet le plus proche : " + s + " avec distance " + distances[s]);
 
-            // List<SimpleEntry<Integer,Float>> voisins = gt.mapAllSommets.get(s);
             List<SimpleEntry<Integer,Float>> voisins = gt.getMapAllSommets().get(s);
             for (SimpleEntry<Integer, Float> voisin : voisins) {
                 //System.out.println("Voisin : " + voisin.getKey() + " avec cout " + voisin.getValue());
                 int indexVoisin = voisin.getKey();
-                float cout = gt.getCout(s, indexVoisin);
+                float cout = voisin.getValue();
                 if (!visites[indexVoisin]) {
-                    calculeDistanceMin(gt, s, indexVoisin, predecesseurs, distances, cout);   
+                    calculeDistanceMin(gt, s, indexVoisin, predecesseurs, distances, cout, p);   
                 }
             }
             sommetsVisites.add(s);
@@ -92,11 +91,13 @@ public class Dijsktra {
         int indexVoisin, 
         int[] predecesseurs, 
         float[] distances, 
-        float cout
+        float cout,
+        PriorityQueue<SimpleEntry<Integer, Float>> p
     ) {
         if (distances[s] + cout < distances[indexVoisin]) {
             distances[indexVoisin] = distances[s] + cout;
             predecesseurs[indexVoisin] = s;
+            p.add(new SimpleEntry<>(indexVoisin, distances[indexVoisin]));
         }
     }
 }
