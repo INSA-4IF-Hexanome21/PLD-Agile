@@ -32,7 +32,7 @@ public class GrapheLivraisonTest {
 			System.out.println("Key: " + key + " -> Value: " + mapDistances.get(key));
 		}
         GrapheLivraison graphe = new GrapheLivraison(3, mapDistances);
-        TSP tsp = new TSP1();
+        TSP tsp = new TSP2();
         long tempsDebut = System.currentTimeMillis();
         tsp.chercheSolution(60000, graphe);
         System.out.print("Solution de longueur "+tsp.getCoutSolution()+" trouvee en "

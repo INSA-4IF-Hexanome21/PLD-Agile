@@ -18,6 +18,7 @@ public class GrapheTotal implements Graphe {
 	private HashMap<Long, Integer> idToIndex;
 	private HashMap<SimpleEntry<Long, Long>, Troncon> tronconHashMap;
 	private HashMap<Long, Noeud> noeudsHashMap;
+	private HashMap<Integer,Integer> contrainteHashMap = new HashMap<Integer,Integer>();
 	
 	/**
 	 * Cree un graphe complet dont les aretes ont un cout compris entre COUT_MIN et COUT_MAX
@@ -154,6 +155,15 @@ public class GrapheTotal implements Graphe {
 		return this.cheminsMin;
 	}
 	
+	private void setContrainteHashMap(HashMap<Integer,Integer> contrainteHashMap) {
+		this.contrainteHashMap = contrainteHashMap;
+		System.out.println("Contrainte HashMap définie : " + this.contrainteHashMap);
+	}
+
+	public HashMap<Integer,Integer> getContrainteHashMap(){
+		return this.contrainteHashMap;
+	}
+
 	public void RechercheDijkstra(List<Site> sites) {
 		this.cheminsMin = new HashMap<>(); 
 		this.mapDistances = new HashMap<>();  
@@ -190,11 +200,12 @@ public class GrapheTotal implements Graphe {
 				}
 			}
 		}
+		this.setContrainteHashMap(depotCollecteHashMap);
 
 		for (Site siteDepart : sites) { 
 			int indexDepart = this.idToIndex.get(siteDepart.getId()); 
 			// Calculer les distances minimales depuis le site de départ vers tous les autres sommets du gt
-			Map<Integer, Float> distancesDepuisDepart = Dijsktra.dijkstra(this, siteDepart.getId(), cheminsMin, depotCollecteHashMap);  
+			Map<Integer, Float> distancesDepuisDepart = Dijsktra.dijkstra(this, siteDepart.getId(), cheminsMin);  
 
 			List<SimpleEntry<Integer, Float>> voisins = new ArrayList<>(); 
 			
@@ -215,6 +226,10 @@ public class GrapheTotal implements Graphe {
 			mapDistances.put(indexDepart, voisins); 
 		}  
 
+		//printCheminsEtDistances(sites);
+	}
+
+	private void printCheminsEtDistances(List<Site> sites) {
 		System.out.println("\n=== Chemins et distances minimales entre sites ==="); 
 		for (var entry : mapDistances.entrySet()) { 
 			int depart = entry.getKey();
@@ -240,12 +255,29 @@ public class GrapheTotal implements Graphe {
 	}
 
 	public List<Integer> getCheminComplet(List<Integer> solution) {
+		/* System.out.println("=== Reconstruction du chemin complet ===");
+		System.out.println("Solution : " + solution); */
+		
 		List<Integer> cheminComplet = new ArrayList<>();
-		for(int i = 0; i < solution.size() - 1; i++) {
+		
+		for(int i = solution.size() -1 ; i > 0; i--) {
 			int indexDepart = solution.get(i);
-			int indexArrivee = solution.get(i + 1);
-			cheminComplet.addAll(cheminsMin.get(new SimpleEntry<>(indexDepart, indexArrivee))); 
+			int indexArrivee = solution.get(i - 1);
+			
+			SimpleEntry<Integer, Integer> cle = new SimpleEntry<>(indexDepart, indexArrivee);
+			List<Integer> chemin = cheminsMin.get(cle);
+			
+			/* System.out.printf("Étape %d : %d -> %d : %s%n", 
+				i, indexDepart, indexArrivee, 
+				(chemin == null ? "PAS DE CHEMIN" : "OK"));
+			 */
+			if (chemin == null) return null;
+			
+			if (i == 0) cheminComplet.addAll(chemin);
+			else cheminComplet.addAll(chemin.subList(1, chemin.size()));
+			
 		}
+		
 		return cheminComplet;
 	}
 

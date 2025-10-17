@@ -4,7 +4,6 @@ import controller.CarteController;
 import controller.ServeurHTTP;
 import java.io.*;
 import model.*;
-import tsp.Graphe;
 import java.util.*;
 
 public class Main {
@@ -15,12 +14,12 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
        // 1. carte
-        String cheminFichier = "ressources/fichiersXMLCollecteDepot/petitPlan.xml";
+        String cheminFichier = "ressources/fichiersXMLCollecteDepot/moyenPlan.xml";
         CarteController carteController = new CarteController();
         carteController.chargerCarteDepuisXML(cheminFichier);
             
         // 2. demandes 
-        String cheminDemandes = "ressources/fichiersXMLCollecteDepot/demandePetit1.xml";
+        String cheminDemandes = "ressources/fichiersXMLCollecteDepot/demandeMoyen5.xml";
         carteController.chargerDemandesDepuisXML(cheminDemandes);
 
         Carte carte = carteController.getCarte();

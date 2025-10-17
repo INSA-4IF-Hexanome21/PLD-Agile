@@ -1,9 +1,6 @@
 package model;
 
 import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
-
-import tsp.Graphe;
 
 public class Carte {
 

@@ -9,8 +9,7 @@ public class Dijsktra {
     public static Map<Integer, Float> dijkstra(
         GrapheTotal gt, 
         Long idNoeudDepart, 
-        Map<SimpleEntry<Integer, Integer>, List<Integer>> cheminsMin,
-        HashMap<Integer, Integer> depotCollecteHashMap
+        Map<SimpleEntry<Integer, Integer>, List<Integer>> cheminsMin
     ) {
         // int indexNoeudDepart = gt.idToIndex.get(idNoeudDepart);
         int indexNoeudDepart = gt.getIndexFromId(idNoeudDepart);
@@ -37,17 +36,16 @@ public class Dijsktra {
         while (!p.isEmpty()) {
             s = p.poll().getKey();
             //System.out.println("Sommet le plus proche : " + s + " avec distance " + distances[s]);
+            if (visites[s]) {
+                continue; // Déjà visité
+            }
 
             List<SimpleEntry<Integer,Float>> voisins = gt.getMapAllSommets().get(s);
             for (SimpleEntry<Integer, Float> voisin : voisins) {
                 //System.out.println("Voisin : " + voisin.getKey() + " avec cout " + voisin.getValue());
                 int indexVoisin = voisin.getKey();
                 float cout = voisin.getValue();
-                Integer indexCollecte = depotCollecteHashMap.get(indexVoisin);
-                // Condition :
-                // - Si ce n'est pas un dépôt (indexCollecte == null) : on peut y aller normalement
-                // - Si c'est un dépôt : on ne peut y aller QUE si sa collecte a déjà été visitée
-                if (!visites[indexVoisin] && (indexCollecte == null || visites[indexCollecte])) {
+                if (!visites[indexVoisin]) {
                     calculeDistanceMin(gt, s, indexVoisin, predecesseurs, distances, cout, p);  
                 } 
             }

@@ -1,11 +1,9 @@
 package controller;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import tsp.*;
 
 import model.*;
@@ -171,7 +169,8 @@ public class CarteController {
         long tempsDebut = System.currentTimeMillis();
         gt.RechercheDijkstra(sites);
         GrapheLivraison gl = new GrapheLivraison(carte.getSites().size(), gt.getMapDistances());
-        TSP tsp = new TSP1();
+        gl.setContrainteHashMap(gt.getContrainteHashMap());
+        TSP tsp = new TSP2();
         tsp.chercheSolution(60000, gl);
         System.out.print("Solution de longueur "+tsp.getCoutSolution()+" trouvee en "
 					+(System.currentTimeMillis() - tempsDebut)+"ms : ");
@@ -183,14 +182,14 @@ public class CarteController {
         solution.add(solution.get(0));
         System.out.println(solution);
         List<Integer> cheminComplet = gt.getCheminComplet(solution);
-        System.out.println("Chemin complet avec noeuds intermédiaires : " + cheminComplet);
+        //System.out.println("Chemin complet avec noeuds intermédiaires : " + cheminComplet);
         List<Long> cheminCompletConverti = gt.convertirCheminComplet(cheminComplet);
-        System.out.println("Chemin complet avec noeuds intermédiaires convertis: " + cheminCompletConverti);
+        //System.out.println("Chemin complet avec noeuds intermédiaires convertis: " + cheminCompletConverti);
         return cheminCompletConverti;
     }
 
     public void majTrajet(Carte carte, GrapheTotal gt, List<Long> chemin){
         carte.majTrajetDepuisChemin(gt,chemin,carte.getTrajets().get(0));
-        System.out.println(carte.getTrajets().get(0));
+        //System.out.println(carte.getTrajets().get(0));
     }
 }

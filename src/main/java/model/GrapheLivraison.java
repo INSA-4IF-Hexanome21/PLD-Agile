@@ -11,6 +11,7 @@ public class GrapheLivraison implements Graphe {
 	int[][] cout;
 	HashMap<Integer, Integer> indexToId;
 	HashMap<Integer, Integer> idToIndex;
+	HashMap<Integer,Integer> contrainteHashMap;
 
 	/**
 	 * Cree un graphe complet dont les aretes ont un cout compris entre COUT_MIN et COUT_MAX
@@ -29,8 +30,8 @@ public class GrapheLivraison implements Graphe {
 			idToIndex.put(key, compteur);
 			compteur += 1;
 		}
-		/* System.out.println("Table de conversion ID <-> Index :");
-		for (var entry : indexToId.entrySet()) {
+		//System.out.println("Table de conversion ID <-> Index :");
+		/* for (var entry : indexToId.entrySet()) {
 			System.out.println("Index: " + entry.getKey() + " <-> ID: " + entry.getValue());
 		} */
 
@@ -38,7 +39,7 @@ public class GrapheLivraison implements Graphe {
 		cout = new int[nbSommets][nbSommets];
 		for (int i=0; i<nbSommets; i++) {
 			for (int j=0; j<nbSommets; j++) {
-				cout[i][j] = Integer.MAX_VALUE;
+				cout[i][j] = -1;
 			}
 		}
 
@@ -48,7 +49,7 @@ public class GrapheLivraison implements Graphe {
 				cout[idToIndex.get(key)][idToIndex.get(entry.getKey())] = entry.getValue().intValue();
 			}
 		}
-		printCout();
+		//printCout();
 		
 	}
 
@@ -60,6 +61,29 @@ public class GrapheLivraison implements Graphe {
 			}
 			System.out.println();
 		}
+	}
+
+	public void setContrainteHashMap(HashMap<Integer,Integer> contrainteHashMap) {
+		this.contrainteHashMap = new HashMap<Integer,Integer>();
+		for (var entry : contrainteHashMap.entrySet()) {
+			var indexA = idToIndex.get(entry.getKey());
+			var indexB = idToIndex.get(entry.getValue());
+			this.contrainteHashMap.put(indexA, indexB);
+		}
+		
+		System.out.println("Contrainte HashMap définie : " + this.contrainteHashMap);
+	}
+
+	public boolean estAccessible(int dest, ArrayList<Integer> nonVisites) {
+		Integer contrainte = contrainteHashMap.get(dest);
+		
+		// Si pas de contrainte, toujours accessible
+		if (contrainte == null ) {
+			return true;
+		} 
+		//System.out.println("Vérification accessibilité du noeud " + dest + " avec contrainte " + contrainte);
+		// Sinon, vérifier si la collecte a été visitée
+		return !nonVisites.contains(contrainte);
 	}
 
 	@Override
