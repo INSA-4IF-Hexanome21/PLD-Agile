@@ -7,7 +7,7 @@ let noeudMarkers = [];
 let tronconLines = [];
 let donneesGlobales = null;
 
-// Configuración de colores para cada tipo de site
+// Couleurs par type de site
 const COULEURS_SITES = {
   'depot': '#2b6cb0',
   'collecte': '#38a169',
@@ -129,13 +129,22 @@ function afficherDonneesSurCarte(donnees) {
   // 1) Tronçons (fondo)
   if (donnees.troncons && donnees.troncons.length > 0) {
     console.log('Affichage de', donnees.troncons.length, 'tronçons');
+    // Construire un index des noeuds par ID pour accélérer la recherche
+    const noeudIndex = new Map();
+    if (Array.isArray(donnees.noeuds)) {
+      for (let i = 0; i < donnees.noeuds.length; i++) {
+        const n = donnees.noeuds[i];
+        noeudIndex.set(n.id, n);
+      }
+    }
+
     donnees.troncons.forEach(troncon => {
-      const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === troncon.from);
-      const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === troncon.to);
+      const depart = noeudIndex.get(troncon.from);
+      const arrivee = noeudIndex.get(troncon.to);
       if (depart && arrivee) {
         const ligne = L.polyline(
           [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
-          { color: '#667eea', weight: 3, opacity: 0.4, smoothFactor: 1 }
+          { color: '#667eea', weight: 3, opacity: 0.45, smoothFactor: 1 }
         ).addTo(carte);
         ligne.bindPopup(`<strong>Tronçon</strong><br>De: ${troncon.from}<br>À: ${troncon.to}`);
         tronconLines.push(ligne);

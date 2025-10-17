@@ -1,6 +1,6 @@
 package controller;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import model.Noeud;
 import model.Trajet;
@@ -8,7 +8,7 @@ import model.Troncon;
 
 import java.util.HashMap;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class GestionnaireXMLTest {
 
@@ -18,11 +18,11 @@ public class GestionnaireXMLTest {
 
         HashMap<Long, Noeud> mapNoeuds = GestionnaireXML.chargerPlanNoeuds(cheminPlan);
         assertNotNull(mapNoeuds);
-        assertFalse("La carte doit contenir des noeuds", mapNoeuds.isEmpty());
+        assertFalse(mapNoeuds.isEmpty(), "La carte doit contenir des noeuds");
 
         List<Troncon> troncons = GestionnaireXML.chargerPlanTroncons(cheminPlan, mapNoeuds);
         assertNotNull(troncons);
-        assertFalse("Le plan doit contenir des tronçons", troncons.isEmpty());
+        assertFalse(troncons.isEmpty(), "Le plan doit contenir des tronçons");
     }
 
     @Test
