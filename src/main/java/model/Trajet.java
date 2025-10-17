@@ -62,7 +62,7 @@ public class Trajet {
     public void setdureeTrajet(float duree) {
         this.dureeTrajet = duree;
         float heure_fin = 8 + duree;
-        this.heureFin = LocalTime.of((int)heure_fin,(int)duree%1*60);
+        this.heureFin = LocalTime.of((int)heure_fin,(int)((duree%1)*60));
     }
 
     public List<Site> getSites(){
