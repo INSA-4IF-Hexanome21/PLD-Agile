@@ -2,38 +2,48 @@ package model;
 
 import java.time.LocalTime;
 
-public abstract class Site {
+public abstract class Site extends Noeud  {
 
+    //Attributs
     protected long id;
-    protected float lat;
-    protected float lng;
+    protected Float lat; 
+    protected Float lng; 
     protected LocalTime depart_heure = null;
     protected LocalTime arrivee_heure = null;
 
-    public Site(long id, float lat, float lng) {
-        this.id = id;
-        this.lat = lat;
-        this.lng = lng;
+    // Constructeur minimal
+    public Site(long id) {
+        super(id,null,null);
     }
 
+    // Constructeur complet
+    public Site(long id, Float lat, Float lng) {
+        super(id,lat,lng);
+    }
+
+    //Getters / Setters
     public long getId() {
         return id;
     }
-
-    public float getLat() {
-        return lat;
-    }
-
-    public float getLng() {
-        return lng;
-    }
-
+    
     public LocalTime getDepartHeure() {
         return depart_heure;
     }
-
+    
     public LocalTime getArriveeHeure() {
         return arrivee_heure;
     }
+   
+    public void setDepartHeure(LocalTime depart_heure) {
+        this.depart_heure = depart_heure;
+    }
 
+    public void setArriveeHeure(LocalTime arrivee_heure) {
+        this.arrivee_heure = arrivee_heure;
+    }
+
+    /**
+     * Retourne le type de site ("entrepot", "livraison", "collecte", etc.)
+     */
+    public abstract String getTypeSite();
 }
