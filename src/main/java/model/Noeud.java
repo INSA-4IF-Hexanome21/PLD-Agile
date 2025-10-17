@@ -1,10 +1,11 @@
 package model;
 
 public class Noeud {
+
     // Attributs
-    private long id;
-    private Float latitude;
-    private Float longitude;
+    protected long id;
+    protected Float latitude;
+    protected Float longitude;
 
     // Constructeur
     public Noeud(long id, Float latitude, Float longitude) {
