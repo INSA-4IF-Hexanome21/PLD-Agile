@@ -29,10 +29,10 @@ public class GrapheLivraison implements Graphe {
 			idToIndex.put(key, compteur);
 			compteur += 1;
 		}
-		System.out.println("Table de conversion ID <-> Index :");
+		/* System.out.println("Table de conversion ID <-> Index :");
 		for (var entry : indexToId.entrySet()) {
 			System.out.println("Index: " + entry.getKey() + " <-> ID: " + entry.getValue());
-		}
+		} */
 
 		this.nbSommets = nbSommets;
 		cout = new int[nbSommets][nbSommets];

@@ -142,7 +142,7 @@ public class CarteController {
         int nbSommets = noeuds.size();
 
         GrapheTotal gt = new GrapheTotal(nbSommets, troncons, noeuds, idEntrepot);
-        gt.printGraphe();
+        //gt.printGraphe();
         return gt;
     }
 

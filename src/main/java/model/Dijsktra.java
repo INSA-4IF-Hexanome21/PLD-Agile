@@ -9,7 +9,8 @@ public class Dijsktra {
     public static Map<Integer, Float> dijkstra(
         GrapheTotal gt, 
         Long idNoeudDepart, 
-        Map<SimpleEntry<Integer, Integer>, List<Integer>> cheminsMin
+        Map<SimpleEntry<Integer, Integer>, List<Integer>> cheminsMin,
+        HashMap<Integer, Integer> depotCollecteHashMap
     ) {
         // int indexNoeudDepart = gt.idToIndex.get(idNoeudDepart);
         int indexNoeudDepart = gt.getIndexFromId(idNoeudDepart);
@@ -18,7 +19,6 @@ public class Dijsktra {
         
         int[] predecesseurs = new int[nbSommets+1];
         float[] distances = new float[nbSommets+1];
-        List<Integer> sommetsVisites = new ArrayList<>();
         boolean[] visites = new boolean[nbSommets+1];
         PriorityQueue<SimpleEntry<Integer, Float>> p = new PriorityQueue<>(
             Comparator.comparing(SimpleEntry::getValue)
@@ -43,11 +43,14 @@ public class Dijsktra {
                 //System.out.println("Voisin : " + voisin.getKey() + " avec cout " + voisin.getValue());
                 int indexVoisin = voisin.getKey();
                 float cout = voisin.getValue();
-                if (!visites[indexVoisin]) {
-                    calculeDistanceMin(gt, s, indexVoisin, predecesseurs, distances, cout, p);   
-                }
+                Integer indexCollecte = depotCollecteHashMap.get(indexVoisin);
+                // Condition :
+                // - Si ce n'est pas un dépôt (indexCollecte == null) : on peut y aller normalement
+                // - Si c'est un dépôt : on ne peut y aller QUE si sa collecte a déjà été visitée
+                if (!visites[indexVoisin] && (indexCollecte == null || visites[indexCollecte])) {
+                    calculeDistanceMin(gt, s, indexVoisin, predecesseurs, distances, cout, p);  
+                } 
             }
-            sommetsVisites.add(s);
             visites[s] = true;
         }
         
