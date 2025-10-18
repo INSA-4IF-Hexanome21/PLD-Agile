@@ -335,6 +335,10 @@ header h1 {
   font-family: 'Segoe UI', sans-serif;
 }
 
+.leaflet-popup-pane {
+  z-index: 10000 !important;
+}
+
 /* //! Marqueurs personnalisés */
 .marqueur-noeud {
   background: var(--spie-dark-teal);

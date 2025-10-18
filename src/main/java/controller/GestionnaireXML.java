@@ -126,7 +126,7 @@ public class GestionnaireXML {
                 long idLivraison = Long.parseLong(adresseLivraison);
                 int dureeEnlevement = Integer.parseInt(elem.getAttribute("dureeEnlevement"));
                 int dureeLivraison = Integer.parseInt(elem.getAttribute("dureeLivraison"));
-                int numLivraison = i;
+                int numLivraison = i+1;
 
                 // Collecte
                 Noeud noeudCollecte = trouverNoeud(adresseEnlevement, mapNoeuds);

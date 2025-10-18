@@ -260,17 +260,18 @@ public class GrapheTotal implements Graphe {
 		
 		List<Integer> cheminComplet = new ArrayList<>();
 		
-		for(int i = solution.size() -1 ; i > 0; i--) {
-			int indexDepart = solution.get(i);
-			int indexArrivee = solution.get(i - 1);
+		for(int i = 1 ; i < solution.size(); i++) {
+			int indexArrivee = solution.get(i);
+			int indexDepart = solution.get(i - 1);
+			System.out.println(getIdFromIndex(indexDepart)+" -> "+getIdFromIndex(indexArrivee) + " (" + indexDepart+" -> "+indexArrivee + ");");
 			
 			SimpleEntry<Integer, Integer> cle = new SimpleEntry<>(indexDepart, indexArrivee);
 			List<Integer> chemin = cheminsMin.get(cle);
 			
-			/* System.out.printf("Étape %d : %d -> %d : %s%n", 
+			System.out.printf("Étape %d : %d -> %d : %s%n", 
 				i, indexDepart, indexArrivee, 
-				(chemin == null ? "PAS DE CHEMIN" : "OK"));
-			 */
+				chemin != null ? chemin.toString() : "Chemin non trouvé");
+			
 			if (chemin == null) return null;
 			
 			if (i == 0) cheminComplet.addAll(chemin);
