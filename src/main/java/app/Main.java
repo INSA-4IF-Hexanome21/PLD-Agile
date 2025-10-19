@@ -1,6 +1,5 @@
 package app;
 
-import controller.CarteController;
 import controller.ServeurHTTP;
 import controller.state.Controller;
 import java.io.*;
@@ -17,17 +16,12 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
        // 1. carte
-        
         Controller controller = new Controller();
 
         ServeurHTTP serveur = new ServeurHTTP(PORT_SERVEUR, CHEMIN_BASE_VIEW, CHEMIN_BASE_RESSOURCES, controller);
-        CarteController carteController = new CarteController();
             
         // 2. demandes 
-        String cheminDemandes = "ressources/fichiersXMLCollecteDepot/demandeMoyen5.xml";
-        carteController.chargerDemandesDepuisXML(cheminDemandes);
-
-        Carte carte = carteController.getCarte();
+        // Carte carte = carteController.getCarte();
 
             // Afficher les informations de la carte chargée
         // System.out.println("Carte chargée avec succès:");
@@ -35,14 +29,14 @@ public class Main {
         // System.out.println("  - Tronçons: " + carte.getTroncons().size());
         // System.out.println();
 
-        Entrepot e = null;
-        for (Site site : carte.getSites()) {
-            if (site instanceof Entrepot) {
-                e = (Entrepot) site;
-            }
-        }
-        GrapheTotal gt = carteController.creerGrapheTotal(carte, e.getId());
-        carteController.chercherCheminsMin(gt, carte.getSites());
+        // Entrepot e = null;
+        // for (Site site : carte.getSites()) {
+        //     if (site instanceof Entrepot) {
+        //         e = (Entrepot) site;
+        //     }
+        // }
+        // GrapheTotal gt = carteController.creerGrapheTotal(carte, e.getId());
+        // carteController.chercherCheminsMin(gt, carte.getSites());
         serveur.demarrer();
 
 

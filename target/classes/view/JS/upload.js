@@ -110,33 +110,40 @@ function updateUIBasedOnState() {
     const $demandeInput = $demandeArea.find('input[type=file]');
     const $demandeDummy = $demandeArea.find('.file-dummy');
     
+    // Retirer message précédent
+    $demandeArea.find('.info-message').remove();
+    
     if (state.canLoadLivraison) {
         $demandeArea.removeClass('disabled');
         $demandeInput.prop('disabled', false);
         $demandeDummy.css('opacity', '1');
+        $demandeDummy.css('cursor', 'pointer');
     } else {
         $demandeArea.addClass('disabled');
         $demandeInput.prop('disabled', true);
         $demandeDummy.css('opacity', '0.5');
+        $demandeDummy.css('cursor', 'not-allowed');
         
         // Ajouter un message informatif
-        if (!$demandeArea.find('.info-message').length) {
-            $demandeArea.append(
-                '<div class="info-message" style="margin-top:10px; color:#e67e22; font-size:0.9em;">' +
-                '⚠️ Chargez d\'abord un plan de distribution</div>'
-            );
-        }
+        $demandeArea.append(
+            '<div class="info-message" style="margin-top:10px; padding:10px; background:#fff3cd; border-left:4px solid #ffc107; color:#856404; font-size:0.9em; border-radius:4px;">' +
+            '⚠️ Veuillez d\'abord charger un plan de distribution</div>'
+        );
     }
     
     // Afficher les indicateurs de statut
     if (state.carteChargee) {
         $('#status-plan').removeClass('loading error').addClass('success')
-            .text('✅ Plan de distribution chargé').show();
+            .html('✅ Plan de distribution chargé').show();
+    } else {
+        $('#status-plan').hide();
     }
     
     if (state.livraisonChargee) {
         $('#status-demande').removeClass('loading error').addClass('success')
-            .text('✅ Demandes de livraison chargées').show();
+            .html('✅ Demandes de livraison chargées').show();
+    } else {
+        $('#status-demande').hide();
     }
 }
 
@@ -195,21 +202,28 @@ function subirArchivo(file, uploadType) {
                 try {
                     if (uploadType === 'plan') {
                         window.appController.onCarteLoaded();
+                        // Afficher message encourageant à charger la demande
+                        setTimeout(() => {
+                            if (!window.appController.getStateInfo().livraisonChargee) {
+                            }
+                        }, 500);
                     } else if (uploadType === 'demande') {
                         window.appController.onLivraisonLoaded();
+                        // Afficher message et proposer d'aller à la carte
+                        setTimeout(() => {
+                            if (confirm('✅ Demandes chargées! Voulez-vous voir la carte?')) {
+                                $('#btn-mapa').trigger('click');
+                            }
+                        }, 500);
                     }
                 } catch (err) {
                     console.error('❌ Erreur contrôleur:', err);
-                    alert(err.message);
+                    alert('⚠️ ' + err.message);
+                    // Réinitialiser le status en cas d'erreur
+                    $(statusId).removeClass('loading success').addClass('error')
+                        .text('❌ ' + err.message);
+                    return;
                 }
-            }
-            
-            // Si c'est un plan, recharger la carte automatiquement
-            if (uploadType === 'plan') {
-                setTimeout(function() {
-                    console.log('🔄 Rechargement de la carte...');
-                    $('#btn-mapa').trigger('click');
-                }, 1500);
             }
         })
         .catch(err => {

@@ -13,12 +13,27 @@ public class CarteChargeState implements State {
         System.out.println(">>> [CarteChargeState] Carte rechargée, reste dans CarteChargeState");
     }
 
+   
     @Override
     public void chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
-        System.out.println(">>> [CarteChargeState] Chargement de la livraison...");
+        System.out.println(">>> [CarteChargeState] Chargement de la livraison depuis " + cheminFichier);
+        // Charger la demande
         carteC.chargerDemandesDepuisXML(cheminFichier);
-        c.setCurrentState(c.livraisonChargeState);
-        System.out.println(">>> [CarteChargeState] Transition vers LivraisonChargeState");
+
+        // Lancer immédiatement le calcul de la tournée
+        try {
+            System.out.println(">>> [CarteChargeState] Lancement du calcul de la tournée...");
+            carteC.calculerTournee(); // <-- méthode que tu as créée dans CarteController
+            c.setCurrentState(c.livraisonCalculeState);
+            System.out.println(">>> [CarteChargeState] Calcul terminé, transition vers LivraisonCalculeState");
+        } catch (Exception ex) {
+            System.err.println(">>> [CarteChargeState] ERREUR pendant le calcul: " + ex.getMessage());
+            ex.printStackTrace();
+            // On reste en CarteChargeState (ou on peut définir une stratégie d'erreur différente)
+            c.setCurrentState(c.carteChargeState);
+            // Renvoyer l'erreur pour que le serveur HTTP puisse la remonter si nécessaire
+            throw new RuntimeException("Erreur lors du calcul de la tournée : " + ex.getMessage(), ex);
+        }
     }
     
     @Override
