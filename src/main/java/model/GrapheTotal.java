@@ -268,9 +268,9 @@ public class GrapheTotal implements Graphe {
 			SimpleEntry<Integer, Integer> cle = new SimpleEntry<>(indexDepart, indexArrivee);
 			List<Integer> chemin = cheminsMin.get(cle);
 			
-			System.out.printf("Étape %d : %d -> %d : %s%n", 
+			/* System.out.printf("Étape %d : %d -> %d : %s%n", 
 				i, indexDepart, indexArrivee, 
-				chemin != null ? chemin.toString() : "Chemin non trouvé");
+				chemin != null ? chemin.toString() : "Chemin non trouvé"); */
 			
 			if (chemin == null) return null;
 			

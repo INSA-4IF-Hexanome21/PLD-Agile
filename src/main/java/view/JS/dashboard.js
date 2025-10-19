@@ -170,7 +170,7 @@ function afficherDonneesSurCarte(donnees) {
       let normalizedType = rawType;
       if (rawType === 'livraison' || rawType === 'depot') normalizedType = 'depot';
       else if (rawType === 'collecte' || rawType === 'collecte' || rawType === 'pick-up') normalizedType = 'collecte';
-      else if (rawType === 'entrepot' || rawType === 'depot' || rawType === 'warehouse') normalizedType = 'entrepot';
+      else if (rawType === 'entrepot' || rawType === 'warehouse') normalizedType = 'entrepot';
 
       const color = COULEURS_SITES[normalizedType] || COULEURS_SITES['default'];
 
@@ -190,7 +190,11 @@ function afficherDonneesSurCarte(donnees) {
         marker.options.numLivraison = site.numLivraison;
 
         marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -initialRadius - 6] });
-        marker.bindPopup(`<strong style="color:${color}">${normalizedType} ${site.id}</strong><br>N° livraison: ${site.numLivraison || 'N/A'}<br>Lat: ${site.lat.toFixed(6)}<br>Lng: ${site.lng.toFixed(6)}`);
+        marker.bindPopup(`<strong style="color:${color}">${normalizedType} ${site.id}</strong>
+          <br>N° livraison: ${site.numLivraison || 'N/A'}
+          <br>Heure d'arrivee: ${site.arrivee}
+          <br>Heure de départ: ${site.depart}`
+        );
 
         marker.addTo(carte);
         siteMarkers.push(marker);
