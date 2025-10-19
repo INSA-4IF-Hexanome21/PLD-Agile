@@ -1,5 +1,6 @@
 package model;
 
+import java.time.LocalTime;
 import java.util.*;
 
 public class Carte {
@@ -80,7 +81,40 @@ public class Carte {
                 troncons.add(troncon);
             }
             
+            Site siteTrouve = null;
+            for(Site site: trajet.getSites()){
+                if(site.getId() == idNoeud2){
+                    siteTrouve = site;
+                    break;
+                }
+            }
+            if(siteTrouve != null)
+            {   float heure_arrivee = 8 + dureeTrajet;
+
+                if(siteTrouve instanceof Collecte) {
+                    siteTrouve.setArriveeHeure(LocalTime.of((int)heure_arrivee,(int)((heure_arrivee%1)*60)));
+                    dureeTrajet += ((Collecte)siteTrouve).getDureeRecup()/3600f;
+                    float heure_depart = 8 + dureeTrajet;
+                    siteTrouve.setDepartHeure(LocalTime.of((int)heure_depart,(int)((heure_depart%1)*60)));
+                }
+
+                else if(siteTrouve instanceof Depot) {
+                    siteTrouve.setArriveeHeure(LocalTime.of((int)heure_arrivee,(int)((heure_arrivee%1)*60)));
+                    dureeTrajet += ((Depot)siteTrouve).getDureeRecup()/3600f;
+                    float heure_depart = 8 + dureeTrajet;
+                    siteTrouve.setDepartHeure(LocalTime.of((int)heure_depart,(int)((heure_depart%1)*60)));
+                }
+
+                else if(i==chemin.size()-2){
+                    siteTrouve.setArriveeHeure(LocalTime.of((int)heure_arrivee,(int)((heure_arrivee%1)*60)));
+                }
+                System.out.println("Site : " + siteTrouve.getId());
+                System.out.println("Arrivée Sur site: " +siteTrouve.getArriveeHeure());
+                System.out.println("Départ du site: " +siteTrouve.getDepartHeure());
+            }
+            
         }
+
         trajet.setTroncons(troncons);
         trajet.setdureeTrajet(dureeTrajet);
     }
