@@ -14,7 +14,7 @@ public class Dijsktra {
         // int indexNoeudDepart = gt.idToIndex.get(idNoeudDepart);
         int indexNoeudDepart = gt.getIndexFromId(idNoeudDepart);
         int nbSommets = gt.getNbSommets();
-        System.out.println("Nombre de sommets dans le graphe : " + nbSommets);
+        // System.out.println("Nombre de sommets dans le graphe : " + nbSommets);
         
         int[] predecesseurs = new int[nbSommets+1];
         float[] distances = new float[nbSommets+1];

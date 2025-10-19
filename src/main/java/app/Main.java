@@ -25,10 +25,10 @@ public class Main {
         Carte carte = carteController.getCarte();
 
             // Afficher les informations de la carte chargée
-        System.out.println("Carte chargée avec succès:");
-        System.out.println("  - Noeuds: " + carte.getNoeuds().size());
-        System.out.println("  - Tronçons: " + carte.getTroncons().size());
-        System.out.println();
+        // System.out.println("Carte chargée avec succès:");
+        // System.out.println("  - Noeuds: " + carte.getNoeuds().size());
+        // System.out.println("  - Tronçons: " + carte.getTroncons().size());
+        // System.out.println();
 
         Entrepot e = null;
         for (Site site : carte.getSites()) {

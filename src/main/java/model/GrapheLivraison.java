@@ -71,7 +71,7 @@ public class GrapheLivraison implements Graphe {
 			this.contrainteHashMap.put(indexA, indexB);
 		}
 		
-		System.out.println("Contrainte HashMap définie : " + this.contrainteHashMap);
+		// System.out.println("Contrainte HashMap définie : " + this.contrainteHashMap);
 	}
 
 	public boolean estAccessible(int dest, ArrayList<Integer> nonVisites) {

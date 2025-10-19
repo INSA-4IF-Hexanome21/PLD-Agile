@@ -51,10 +51,10 @@ public class CarteController {
             carte.ajouterSite(site);
         }
         
-        System.out.println("Demandes chargées:");
-        System.out.println("  - Sites accessibles: " + trajet.getSites().size());
-        System.out.println("  - Sites NON accessibles: " + trajet.getSitesNonAccessibles().size());
-        System.out.println("  - Total sites dans carte: " + carte.getSites().size());
+        // System.out.println("Demandes chargées:");
+        // System.out.println("  - Sites accessibles: " + trajet.getSites().size());
+        // System.out.println("  - Sites NON accessibles: " + trajet.getSitesNonAccessibles().size());
+        // System.out.println("  - Total sites dans carte: " + carte.getSites().size());
     }
     
     /**
@@ -88,11 +88,11 @@ public class CarteController {
         // Sites
         json.append("],\"sites\":[");
         List<Site> sites = carte.getSites();
-        System.out.println("Génération JSON pour " + sites.size() + " sites");
+        // System.out.println("Génération JSON pour " + sites.size() + " sites");
         
         for (int i = 0; i < sites.size(); i++) {
             Site s = sites.get(i);
-            System.out.println("Traitement site " + (i+1) + "/" + sites.size() + " - ID: " + s.getId());
+            // System.out.println("Traitement site " + (i+1) + "/" + sites.size() + " - ID: " + s.getId());
             Integer numLivraison = null;
             if (s instanceof Depot ) numLivraison = ((Depot) s).getNumLivraison();
             else if (s instanceof Collecte ) numLivraison = ((Collecte) s).getNumLivraison();
@@ -115,9 +115,9 @@ public class CarteController {
                 if (numLivraison != null) {
                     json.append(String.format(",\"numLivraison\":%d", numLivraison));
                 }
-                /* if (s.getNumPassage() != null) {
+                if (s.getNumPassage() != null) {
                     json.append(String.format(",\"numPassage\":%d", s.getNumPassage()));
-                } */
+                }
                 
                 json.append("}");
                 
@@ -126,7 +126,7 @@ public class CarteController {
                     json.append(",");
                 }
                 
-                System.out.println("Site " + s.getId() + " traité avec succès");
+                // System.out.println("Site " + s.getId() + " traité avec succès");
             } catch (Exception e) {
                 System.err.println("Erreur lors du traitement du site " + s.getId() + ": " + e.getMessage());
                 e.printStackTrace();
@@ -136,7 +136,7 @@ public class CarteController {
         // Trajets
         json.append("],\"trajets\":[");
         List<Trajet> trajets = carte.getTrajets();
-        System.out.println("Génération JSON pour " + trajets.size() + " trajets");
+        // System.out.println("Génération JSON pour " + trajets.size() + " trajets");
         for (int i = 0; i < trajets.size(); i++) {
             Trajet t = trajets.get(i);
             for (int j = 0; j < t.getTroncons().size(); j++) {
@@ -150,7 +150,7 @@ public class CarteController {
         }
         
         json.append("]}");
-        System.out.println(">>> JSON généré avec succès - Longueur: " + json.length() + " caractères <<<");
+        // System.out.println(">>> JSON généré avec succès - Longueur: " + json.length() + " caractères <<<");
         return json.toString();
     }
 
@@ -175,15 +175,15 @@ public class CarteController {
         gl.setContrainteHashMap(gt.getContrainteHashMap());
         TSP tsp = new TSP2();
         tsp.chercheSolution(60000, gl);
-        System.out.print("Solution de longueur "+tsp.getCoutSolution()+" trouvee en "
-					+(System.currentTimeMillis() - tempsDebut)+"ms : ");
+        // System.out.print("Solution de longueur "+tsp.getCoutSolution()+" trouvee en "
+		// 			+(System.currentTimeMillis() - tempsDebut)+"ms : ");
         List<Integer> solution = new ArrayList<Integer>();
         for (int i=0; i<gl.getNbSommets(); i++) {
             solution.add(gl.getIdFromIndex(tsp.getSolution(i)));
 		   
         }
         solution.add(solution.get(0));
-        System.out.println(solution);
+        // System.out.println(solution);
         List<Integer> cheminComplet = gt.getCheminComplet(solution);
         //System.out.println("Chemin complet avec noeuds intermédiaires : " + cheminComplet);
         List<Long> cheminCompletConverti = gt.convertirCheminComplet(cheminComplet);

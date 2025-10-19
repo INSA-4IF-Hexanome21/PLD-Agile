@@ -70,7 +70,7 @@ public class Carte {
     }
 
     public void majTrajetDepuisChemin(GrapheTotal gt, List<Long> cheminComplet,List<Integer>solution, Trajet trajet){
-        System.out.println(solution);
+        // System.out.println(solution);
         List<Troncon> troncons = new ArrayList<Troncon>();
         float dureeTrajet = 0;
         //Création d'une hasmap pour numéro de passage
@@ -130,11 +130,11 @@ public class Carte {
                 }
                 siteTrouve.setNumPassage(numsPassage.get(siteTrouve.getId()));
                 
-                System.out.println();
-                System.out.println("Site : " + siteTrouve.getId());
-                System.out.println("numPassage : " + siteTrouve.getNumPassage());
-                System.out.println("Arrivée Sur site: " +siteTrouve.getArriveeHeure());
-                System.out.println("Départ du site: " +siteTrouve.getDepartHeure());
+                // System.out.println();
+                // System.out.println("Site : " + siteTrouve.getId());
+                // System.out.println("numPassage : " + siteTrouve.getNumPassage());
+                // System.out.println("Arrivée Sur site: " +siteTrouve.getArriveeHeure());
+                // System.out.println("Départ du site: " +siteTrouve.getDepartHeure());
             }
             
         }

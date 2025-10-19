@@ -74,7 +74,7 @@ public class GrapheTotal implements Graphe {
 			//Ajout des tronçon dans la table de conversion
 			tronconHashMap.put(new SimpleEntry<>(idNoeud1, idNoeud2), troncon);
 		}
-		System.out.println(tronconHashMap.size());
+		// System.out.println(tronconHashMap.size());
 	}
 
 	@Override
@@ -152,7 +152,7 @@ public class GrapheTotal implements Graphe {
 	
 	private void setContrainteHashMap(HashMap<Integer,Integer> contrainteHashMap) {
 		this.contrainteHashMap = contrainteHashMap;
-		System.out.println("Contrainte HashMap définie : " + this.contrainteHashMap);
+		// System.out.println("Contrainte HashMap définie : " + this.contrainteHashMap);
 	}
 
 	public HashMap<Integer,Integer> getContrainteHashMap(){
@@ -280,7 +280,8 @@ public class GrapheTotal implements Graphe {
 	public Troncon NoeudstoTroncon(long idNoeud1,long idNoeud2){
 		Troncon troncon = tronconHashMap.get(new SimpleEntry<>(idNoeud1, idNoeud2));
 		if(troncon == null){
-			troncon =  tronconHashMap.get(new SimpleEntry<>(idNoeud2, idNoeud1));
+			Troncon tronconInverse =  tronconHashMap.get(new SimpleEntry<>(idNoeud2, idNoeud1));
+			troncon = new Troncon(tronconInverse.getNomRue(), tronconInverse.getLongueur(), tronconInverse.getDestination(), tronconInverse.getOrigine());
 		}
 		return troncon;
 	}
