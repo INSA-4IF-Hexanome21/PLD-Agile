@@ -192,6 +192,7 @@ function afficherDonneesSurCarte(donnees) {
         marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -initialRadius - 6] });
         marker.bindPopup(`<strong style="color:${color}">${normalizedType} ${site.id}</strong>
           <br>N° livraison: ${site.numLivraison || 'N/A'}
+          <br>Ordre de passage : ${site.numPassage}
           <br>Heure d'arrivee: ${site.arrivee}
           <br>Heure de départ: ${site.depart}`
         );
@@ -212,8 +213,29 @@ function afficherDonneesSurCarte(donnees) {
             [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
             { color: '#3ce861ff', weight: 3, opacity: 0.8, smoothFactor: 1 }
           ).addTo(carte);
+          
+          // Ajouter le décorateur pour les flèches
+          const decorator = L.polylineDecorator(ligne, {
+            patterns: [
+              {
+                offset: '50%', // Position de la flèche (milieu de la ligne)
+                repeat: 0, // Ne pas répéter la flèche
+                symbol: L.Symbol.arrowHead({
+                  pixelSize: 15, // Taille de la flèche en pixels
+                  polygon: false,
+                  pathOptions: {
+                    stroke: true,
+                    color: '#268b3cff',
+                    weight: 1
+                  }
+                })
+              }
+            ]
+          }).addTo(carte);
+
           ligne.bindPopup(`<strong>Trajet</strong><br>De: ${trajet.from}<br>À: ${trajet.to}`);
           trajetLines.push(ligne);
+          trajetLines.push(decorator); 
         }
       })
     }

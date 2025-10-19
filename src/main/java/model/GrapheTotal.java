@@ -72,14 +72,9 @@ public class GrapheTotal implements Graphe {
 			mapAllSommets.get(indexNoeud2).add(new SimpleEntry<>(indexNoeud1, troncon.getLongueur()));
 
 			//Ajout des tronçon dans la table de conversion
-			if(idNoeud1 < idNoeud2){
-				tronconHashMap.put(new SimpleEntry<>(idNoeud1, idNoeud2), troncon);
-			}
-			else{
-				tronconHashMap.put(new SimpleEntry<>(idNoeud2, idNoeud1), troncon);
-			}
-			
+			tronconHashMap.put(new SimpleEntry<>(idNoeud1, idNoeud2), troncon);
 		}
+		System.out.println(tronconHashMap.size());
 	}
 
 	@Override
@@ -181,23 +176,15 @@ public class GrapheTotal implements Graphe {
 			if(type == "depot"){
 				Integer numlivraison = ((Depot)site).getNumLivraison();
 				Integer indexCollecte = numLivraisonEtSite.get(numlivraison);
-				if(indexCollecte == null){
-					numLivraisonEtSite.put(numlivraison,indexSite);
-				}
-				else{
-					depotCollecteHashMap.put(indexSite,indexCollecte);
-				}
+				if(indexCollecte == null) numLivraisonEtSite.put(numlivraison,indexSite);
+				else depotCollecteHashMap.put(indexSite,indexCollecte);
 			}
 
 			else if(type == "collecte"){
 				Integer numlivraison = ((Collecte)site).getNumLivraison();
 				Integer indexDepot = numLivraisonEtSite.get(numlivraison);
-				if(indexDepot == null){
-					numLivraisonEtSite.put(numlivraison,indexSite);
-				}
-				else{
-					depotCollecteHashMap.put(indexDepot,indexSite);
-				}
+				if(indexDepot == null) numLivraisonEtSite.put(numlivraison,indexSite);
+				else depotCollecteHashMap.put(indexDepot,indexSite);
 			}
 		}
 		this.setContrainteHashMap(depotCollecteHashMap);
@@ -263,7 +250,7 @@ public class GrapheTotal implements Graphe {
 		for(int i = 1 ; i < solution.size(); i++) {
 			int indexArrivee = solution.get(i);
 			int indexDepart = solution.get(i - 1);
-			System.out.println(getIdFromIndex(indexDepart)+" -> "+getIdFromIndex(indexArrivee) + " (" + indexDepart+" -> "+indexArrivee + ");");
+			//System.out.println(getIdFromIndex(indexDepart)+" -> "+getIdFromIndex(indexArrivee) + " (" + indexDepart+" -> "+indexArrivee + ");");
 			
 			SimpleEntry<Integer, Integer> cle = new SimpleEntry<>(indexDepart, indexArrivee);
 			List<Integer> chemin = cheminsMin.get(cle);
@@ -274,11 +261,11 @@ public class GrapheTotal implements Graphe {
 			
 			if (chemin == null) return null;
 			
-			if (i == 0) cheminComplet.addAll(chemin);
+			if (i == 1) cheminComplet.addAll(chemin);
 			else cheminComplet.addAll(chemin.subList(1, chemin.size()));
-			
+
 		}
-		
+
 		return cheminComplet;
 	}
 
