@@ -7,12 +7,10 @@ let noeudMarkers = [];
 let tronconLines = [];
 let donneesGlobales = null;
 
-// Configuración de colores para cada tipo de site
+
 const COULEURS_SITES = {
   'depot': '#2b6cb0',
   'collecte': '#38a169',
-  'collecte': '#38a169',
-  'depot': '#e53e3e',
   'livraison': '#e53e3e',
   'entrepot': '#2b6cb0',
   'default': '#999999'
@@ -65,16 +63,7 @@ function computeSiteRadius(map) {
 function initialiserCarte() {
   console.log('Initialisation de la carte...');
 
-  // Remove previous map if exists
-  if (carte !== null) {
-    try { carte.off(); carte.remove(); } catch (e) {}
-    marqueurs = [];
-    lignes = [];
-    siteMarkers = [];
-    noeudMarkers = [];
-    tronconLines = [];
-    donneesGlobales = null;
-  }
+  nettoyerCarte();
 
   const elementCarte = document.getElementById('map');
 
@@ -113,6 +102,14 @@ function initialiserCarte() {
       console.error('Erreur lors du chargement des données de la carte:', err);
       alert('Impossible de charger les données de la carte. Vérifiez la console pour plus de détails.');
     });
+}
+
+function normaliserTypeSite(type) {
+  const rawType = (type || '').toString().toLowerCase();
+  if (rawType === 'livraison' || rawType === 'depot') return 'livraison';
+  if (rawType === 'collecte' || rawType === 'pick-up') return 'collecte';
+  if (rawType === 'entrepot' || rawType === 'warehouse') return 'entrepot';
+  return 'default';
 }
 
 /* //! ----------------- RENDER DATOS EN MAPA ----------------- */
@@ -168,31 +165,13 @@ function afficherDonneesSurCarte(donnees) {
     const initialRadius = computeSiteRadius(carte);
 
     donnees.sites.forEach(site => {
-      const rawType = (site.type || '').toString().toLowerCase();
-      let normalizedType = rawType;
-      if (rawType === 'livraison' || rawType === 'depot') normalizedType = 'livraison';
-      else if (rawType === 'collecte' || rawType === 'collecte' || rawType === 'pick-up') normalizedType = 'collecte';
-      else if (rawType === 'entrepot' || rawType === 'depot' || rawType === 'warehouse') normalizedType = 'entrepot';
+     
+      const normalizedType = normaliserTypeSite(site.type);
 
       const color = COULEURS_SITES[normalizedType] || COULEURS_SITES['default'];
 
       if (site.lat != null && site.lng != null) {
-        const marker = L.circleMarker([site.lat, site.lng], {
-          radius: initialRadius,
-          fillOpacity: 1,
-          color: '#ffffff',
-          weight: 2,
-          fillColor: color,
-          pane: 'sitePane'
-        });
-
-        // metadata para filtros
-        marker.options.siteType = normalizedType;
-        marker.options.siteId = site.id;
-
-        marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -initialRadius - 6] });
-        marker.bindPopup(`<strong style="color:${color}">${normalizedType} ${site.id}</strong><br>Lat: ${site.lat.toFixed(6)}<br>Lng: ${site.lng.toFixed(6)}`);
-
+        const marker = creerMarqueurSite(site, normalizedType, color, initialRadius);
         marker.addTo(carte);
         siteMarkers.push(marker);
       }
@@ -200,21 +179,7 @@ function afficherDonneesSurCarte(donnees) {
 
     // resize al zoom (solo una vez)
     if (!carte._siteZoomHandlerAdded) {
-      carte.on('zoomend', () => {
-        const newR = computeSiteRadius(carte);
-        siteMarkers.forEach(m => {
-          try {
-            if (m && m.setRadius) m.setRadius(newR);
-            // actualizar tooltip offset
-            const tip = m.getTooltip && m.getTooltip();
-            if (tip) {
-              const content = tip.getContent ? tip.getContent() : (m.options && m.options.siteId ? m.options.siteId : '');
-              m.unbindTooltip();
-              m.bindTooltip(content, { permanent: false, direction: 'top', offset: [0, -newR - 6] });
-            }
-          } catch (e) {}
-        });
-      });
+      configurerZoomSites();
       carte._siteZoomHandlerAdded = true;
     }
 
@@ -233,6 +198,55 @@ function afficherDonneesSurCarte(donnees) {
     }
   } catch (e) {}
 } // end afficherDonneesSurCarte
+
+function configurerZoomSites() {
+  carte.on('zoomend', () => {
+    const newR = computeSiteRadius(carte);
+    siteMarkers.forEach(m => {
+      try {
+        if (m && m.setRadius) m.setRadius(newR);
+        const tip = m.getTooltip && m.getTooltip();
+        if (tip) {
+          const content = tip.getContent ? tip.getContent() : (m.options && m.options.siteId ? m.options.siteId : '');
+          m.unbindTooltip();
+          m.bindTooltip(content, { permanent: false, direction: 'top', offset: [0, -newR - 6] });
+        }
+      } catch (e) {}
+    });
+  });
+}
+
+
+function creerMarqueurSite(site, type, color, radius) {
+  const marker = L.circleMarker([site.lat, site.lng], {
+    radius: radius,
+    fillOpacity: 1,
+    color: '#ffffff',
+    weight: 2,
+    fillColor: color,
+    pane: 'sitePane'
+  });
+
+  marker.options.siteType = type;
+  marker.options.siteId = site.id;
+
+  marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+  marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong><br>Lat: ${site.lat.toFixed(6)}<br>Lng: ${site.lng.toFixed(6)}`);
+
+  // click + tooltip handlers (mantén attachSiteHoverHandlers para hover genérico si quieres)
+  marker.on('click', () => {
+    try {
+      if (marker.getLatLng) carte.panTo(marker.getLatLng());
+      if (marker.openPopup) marker.openPopup();
+    } catch (e) {}
+  });
+
+  marker.on('mouseover', () => { try { if (marker.openTooltip) marker.openTooltip(); } catch (e) {} });
+  marker.on('mouseout', () => { try { if (marker.closeTooltip) marker.closeTooltip(); } catch (e) {} });
+
+  return marker;
+}
+
 
 /* //! ----------------- PANE / HOVER / DIM ----------------- */
 
@@ -305,8 +319,10 @@ function updateVisibility() {
   // Sites
   siteMarkers.forEach(marker => {
     const type = marker.options.siteType || 'default';
-    // mapea nombres usados en visibilityState
-    const key = (type === 'entrepot' ? 'entrepot' : (type === 'collecte' ? 'collecte' : (type === 'livraison' ? 'livraison' : 'entrepot')));
+    const key = (type === 'entrepot' || type === 'depot') ? 'entrepot'
+              : (type === 'collecte') ? 'collecte'
+              : (type === 'livraison') ? 'livraison'
+              : 'default';
     if (visibilityState[key]) {
       if (!carte.hasLayer(marker)) marker.addTo(carte);
     } else {
@@ -438,3 +454,16 @@ fetch('/components/Sidebar.html')
     // igualmente intentar cargar mapa por defecto (por si sidebar no es crítico)
     chargerComposantPrincipal('/components/Map.html');
   });
+
+  function nettoyerCarte() {
+  if (carte !== null) {
+    try { carte.off(); carte.remove(); } catch (e) { console.warn('Erreur nettoyage carte:', e); }
+  }
+  // vaciar colecciones
+  marqueurs.length = 0;
+  lignes.length = 0;
+  siteMarkers.length = 0;
+  noeudMarkers.length = 0;
+  tronconLines.length = 0;
+  donneesGlobales = null;
+}
