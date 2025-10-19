@@ -5,6 +5,7 @@ let lignes = [];
 let siteMarkers = [];
 let noeudMarkers = [];
 let tronconLines = [];
+let trajetLines = [];
 let donneesGlobales = null;
 
 const COULEURS_SITES = {
@@ -19,7 +20,7 @@ const COULEURS_SITES = {
 const visibilityState = {
   entrepot: true,
   collecte: true,
-  livraison: true,
+  depot: true,
   noeuds: true,
   troncons: true
 };
@@ -171,6 +172,44 @@ function afficherDonneesSurCarte(donnees) {
       }
     });
 
+    // 4.trajets (si hay)
+    console.log('Trajets reçus:', donnees.trajets);
+    if (donnees.trajets && donnees.trajets.length > 0) {
+      donnees.trajets.forEach((trajet) => {
+        const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.from);
+        const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.to);
+        if (depart && arrivee) {
+          const ligne = L.polyline(
+            [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
+            { color: '#3ce861ff', weight: 3, opacity: 0.8, smoothFactor: 1 }
+          ).addTo(carte);
+          
+          // Ajouter le décorateur pour les flèches
+          const decorator = L.polylineDecorator(ligne, {
+            patterns: [
+              {
+                offset: '50%', // Position de la flèche (milieu de la ligne)
+                repeat: 0, // Ne pas répéter la flèche
+                symbol: L.Symbol.arrowHead({
+                  pixelSize: 15, // Taille de la flèche en pixels
+                  polygon: false,
+                  pathOptions: {
+                    stroke: true,
+                    color: '#268b3cff',
+                    weight: 1
+                  }
+                })
+              }
+            ]
+          }).addTo(carte);
+
+          ligne.bindPopup(`<strong>Trajet</strong><br>De: ${trajet.from}<br>À: ${trajet.to}`);
+          trajetLines.push(ligne);
+          trajetLines.push(decorator); 
+        }
+      })
+    }
+    // resize al zoom (solo una vez)
     if (!carte._siteZoomHandlerAdded) {
       configurerZoomSites();
       carte._siteZoomHandlerAdded = true;
@@ -253,10 +292,31 @@ function attachSiteHoverHandlers() {
     marker._siteHandlersAttached = true;
 
     marker.on('click', () => {
+      const numLivraison = marker.options.numLivraison;
       try {
         if (marker.getLatLng) carte.panTo(marker.getLatLng());
         if (marker.openPopup) marker.openPopup();
       } catch (e) {}
+
+      if (numLivraison != null) {
+        const jumeau = siteMarkers.find(m => m !== marker && m.options.numLivraison === numLivraison);
+        if (jumeau) {
+          const originalRadius = jumeau.options.radius || 8;
+          const originalColor = jumeau.options.color || '#3388ff';
+          jumeau.setStyle({
+            radius: originalRadius * 1.8,
+            color: '#ff6600',
+            weight: 4
+          });
+          setTimeout(() => {
+            jumeau.setStyle({
+              radius: originalRadius,
+              color: originalColor,
+              weight: 2
+            });
+          }, 1000);
+        }
+      }
     });
 
     marker.on('mouseover', () => {
@@ -264,13 +324,45 @@ function attachSiteHoverHandlers() {
         if (marker.openTooltip) marker.openTooltip();
       } catch (e) {}
     });
+
     marker.on('mouseout', () => {
       try {
         if (marker.closeTooltip) marker.closeTooltip();
       } catch (e) {}
+      // Pan et popup
+      if (marker.getLatLng) carte.panTo(marker.getLatLng());
+      if (marker.openPopup) marker.openPopup();
+
+      const numLivraison = marker.options.numLivraison;
+      const jumeau = siteMarkers.find(m => 
+        m !== marker && m.options.numLivraison === numLivraison
+      );
+      if (!jumeau) return;
+
+      // Sauver les propriétés d'origine
+      const originalRadius = jumeau.options.radius || 8;
+      const originalColor = jumeau.options.color || '#3388ff';
+
+      // Grossir et surligner
+      jumeau.setStyle({
+        radius: originalRadius * 1.8,
+        color: '#ff6600',
+        weight: 4
+      });
+
+      // Revenir à la normale après 1 seconde
+      setTimeout(() => {
+        jumeau.setStyle({
+          radius: originalRadius,
+          color: originalColor,
+          weight: 2
+        });
+      }, 1000);
     });
   });
+
 }
+
 
 function dimExcept(activeMarker) {
   tronconLines.forEach(l => { try { if (l.setStyle) l.setStyle({ opacity: 0.12 }); } catch (e) {} });

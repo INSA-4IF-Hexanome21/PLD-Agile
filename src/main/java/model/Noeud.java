@@ -1,13 +1,14 @@
 package model;
 
 public class Noeud {
+
     // Attributs
-    private long id;
-    private float latitude;
-    private float longitude;
+    protected long id;
+    protected Float latitude;
+    protected Float longitude;
 
     // Constructeur
-    public Noeud(long id, float latitude, float longitude) {
+    public Noeud(long id, Float latitude, Float longitude) {
         this.id = id;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -18,11 +19,11 @@ public class Noeud {
         return id;
     }
 
-    public float getLatitude() {
+    public Float getLatitude() {
         return latitude;
     }
 
-    public float getLongitude() {
+    public Float getLongitude() {
         return longitude;
     }
 

@@ -38,7 +38,7 @@ public class Depot extends Site {
 
     @Override
     public String getTypeSite() {
-        return "livraison";
+        return "depot";
     }
 
 }

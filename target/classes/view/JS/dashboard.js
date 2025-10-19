@@ -5,13 +5,18 @@ let lignes = [];
 let siteMarkers = [];
 let noeudMarkers = [];
 let tronconLines = [];
+let trajetLines = [];
 let donneesGlobales = null;
 
-
 const COULEURS_SITES = {
+<<<<<<< HEAD
   'depot': '#2b6cb0',
   'collecte': '#38a169',
   'livraison': '#e53e3e',
+=======
+  'collecte': '#38a169',
+  'depot': '#e53e3e',
+>>>>>>> origin/dev
   'entrepot': '#2b6cb0',
   'default': '#999999'
 };
@@ -20,11 +25,10 @@ const COULEURS_SITES = {
 const visibilityState = {
   entrepot: true,
   collecte: true,
-  livraison: true,
+  depot: true,
   noeuds: true,
   troncons: true
 };
-
 
 /* //! ----------------- UTILIDADES / INIT ----------------- */
 
@@ -42,8 +46,11 @@ function chargerComposantPrincipal(url) {
     .then(html => {
       main.innerHTML = html;
       if (url.includes('Map.html')) {
-        // dejamos un timeout corto para que el DOM dentro de main se renderice
         setTimeout(initialiserCarte, 100);
+      }
+      // Si c'est Import.html, mettre à jour l'UI selon l'état
+      if (url.includes('Import.html') && window.appController) {
+        setTimeout(updateUIBasedOnState, 100);
       }
     })
     .catch(err => {
@@ -54,7 +61,6 @@ function chargerComposantPrincipal(url) {
 
 function computeSiteRadius(map) {
   const zoom = map && map.getZoom ? map.getZoom() : 13;
-  // Ajusta la escala nodos sites: cuanto mayor el zoom, mayor el radio (pero protegemos con min/max)
   return Math.max(4, Math.min(12, Math.round(zoom * 1.2)));
 }
 
@@ -73,7 +79,6 @@ function initialiserCarte() {
     return;
   }
 
-  // Crear mapa
   carte = L.map('map', {
     center: [45.7578137, 4.8320114],
     zoom: 15,
@@ -86,7 +91,6 @@ function initialiserCarte() {
     maxZoom: 19
   }).addTo(carte);
 
-  // Cargar datos
   fetch("/api/carte")
     .then(res => {
       if (!res.ok) throw new Error('Erreur API: ' + res.status);
@@ -96,7 +100,7 @@ function initialiserCarte() {
       console.log('Données reçues:', donnees);
       donneesGlobales = donnees;
       afficherDonneesSurCarte(donnees);
-      configurerControlesVisibilite(); // engancha los controles
+      configurerControlesVisibilite();
     })
     .catch(err => {
       console.error('Erreur lors du chargement des données de la carte:', err);
@@ -120,7 +124,6 @@ function afficherDonneesSurCarte(donnees) {
     return;
   }
 
-  // Asegurarse pane para sites (z-index alto)
   ensureSitePane();
 
   // 1) Tronçons (fondo)
@@ -158,46 +161,113 @@ function afficherDonneesSurCarte(donnees) {
   // 3) Sites (encima)
   console.log('Sites reçus:', donnees.sites);
   if (donnees.sites && donnees.sites.length > 0) {
-    // limpiar previos
     siteMarkers.forEach(m => { try { carte.removeLayer(m); } catch (e) {} });
     siteMarkers.length = 0;
 
     const initialRadius = computeSiteRadius(carte);
 
     donnees.sites.forEach(site => {
-     
+<<<<<<< HEAD
       const normalizedType = normaliserTypeSite(site.type);
-
       const color = COULEURS_SITES[normalizedType] || COULEURS_SITES['default'];
 
       if (site.lat != null && site.lng != null) {
         const marker = creerMarqueurSite(site, normalizedType, color, initialRadius);
+=======
+      const rawType = (site.type || '').toString().toLowerCase();
+      let normalizedType = rawType;
+      if (rawType === 'livraison' || rawType === 'depot') normalizedType = 'depot';
+      else if (rawType === 'collecte' || rawType === 'collecte' || rawType === 'pick-up') normalizedType = 'collecte';
+      else if (rawType === 'entrepot' || rawType === 'warehouse') normalizedType = 'entrepot';
+
+      const color = COULEURS_SITES[normalizedType] || COULEURS_SITES['default'];
+
+      if (site.lat != null && site.lng != null) {
+        const marker = L.circleMarker([site.lat, site.lng], {
+          radius: initialRadius,
+          fillOpacity: 1,
+          color: '#ffffff',
+          weight: 2,
+          fillColor: color,
+          pane: 'sitePane'
+        });
+
+        // metadata para filtros
+        marker.options.siteType = normalizedType;
+        marker.options.siteId = site.id;
+        marker.options.numLivraison = site.numLivraison;
+
+        marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -initialRadius - 6] });
+        marker.bindPopup(`<strong style="color:${color}">${normalizedType} ${site.id}</strong>
+          <br>N° livraison: ${site.numLivraison || 'N/A'}
+          <br>Ordre de passage : ${site.numPassage}
+          <br>Heure d'arrivee: ${site.arrivee}
+          <br>Heure de départ: ${site.depart}`
+        );
+
+>>>>>>> origin/dev
         marker.addTo(carte);
         siteMarkers.push(marker);
       }
     });
 
+<<<<<<< HEAD
+=======
+    // 4.trajets (si hay)
+    console.log('Trajets reçus:', donnees.trajets);
+    if (donnees.trajets && donnees.trajets.length > 0) {
+      donnees.trajets.forEach((trajet) => {
+        const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.from);
+        const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.to);
+        if (depart && arrivee) {
+          const ligne = L.polyline(
+            [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
+            { color: '#3ce861ff', weight: 3, opacity: 0.8, smoothFactor: 1 }
+          ).addTo(carte);
+          
+          // Ajouter le décorateur pour les flèches
+          const decorator = L.polylineDecorator(ligne, {
+            patterns: [
+              {
+                offset: '50%', // Position de la flèche (milieu de la ligne)
+                repeat: 0, // Ne pas répéter la flèche
+                symbol: L.Symbol.arrowHead({
+                  pixelSize: 15, // Taille de la flèche en pixels
+                  polygon: false,
+                  pathOptions: {
+                    stroke: true,
+                    color: '#268b3cff',
+                    weight: 1
+                  }
+                })
+              }
+            ]
+          }).addTo(carte);
+
+          ligne.bindPopup(`<strong>Trajet</strong><br>De: ${trajet.from}<br>À: ${trajet.to}`);
+          trajetLines.push(ligne);
+          trajetLines.push(decorator); 
+        }
+      })
+    }
     // resize al zoom (solo una vez)
+>>>>>>> origin/dev
     if (!carte._siteZoomHandlerAdded) {
       configurerZoomSites();
       carte._siteZoomHandlerAdded = true;
     }
 
-    // attach hover handlers
     attachSiteHoverHandlers();
-
-    // aplicar visibilidad inicial
     updateVisibility();
   }
 
-  // Ajustar vista a nodos si hay
   try {
     if (donnees.noeuds && donnees.noeuds.length > 0) {
       const limites = L.latLngBounds(donnees.noeuds.map(n => [n.lat, n.lng]));
       carte.fitBounds(limites, { padding: [50, 50] });
     }
   } catch (e) {}
-} // end afficherDonneesSurCarte
+}
 
 function configurerZoomSites() {
   carte.on('zoomend', () => {
@@ -216,7 +286,6 @@ function configurerZoomSites() {
   });
 }
 
-
 function creerMarqueurSite(site, type, color, radius) {
   const marker = L.circleMarker([site.lat, site.lng], {
     radius: radius,
@@ -233,7 +302,6 @@ function creerMarqueurSite(site, type, color, radius) {
   marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
   marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong><br>Lat: ${site.lat.toFixed(6)}<br>Lng: ${site.lng.toFixed(6)}`);
 
-  // click + tooltip handlers (mantén attachSiteHoverHandlers para hover genérico si quieres)
   marker.on('click', () => {
     try {
       if (marker.getLatLng) carte.panTo(marker.getLatLng());
@@ -246,7 +314,6 @@ function creerMarqueurSite(site, type, color, radius) {
 
   return marker;
 }
-
 
 /* //! ----------------- PANE / HOVER / DIM ----------------- */
 
@@ -266,15 +333,10 @@ function attachSiteHoverHandlers() {
     if (marker._siteHandlersAttached) return;
     marker._siteHandlersAttached = true;
 
-    // SOLO click: pan + popup
     marker.on('click', () => {
-      try {
-        if (marker.getLatLng) carte.panTo(marker.getLatLng());
-        if (marker.openPopup) marker.openPopup();
-      } catch (e) {}
-    });
+      var numLivraison = marker.options.numLivraison;
 
-    // Opcional: mostrar tooltip al pasar sin animar (no cambiar radius ni dim)
+<<<<<<< HEAD
     marker.on('mouseover', () => {
       try {
         if (marker.openTooltip) marker.openTooltip();
@@ -284,10 +346,41 @@ function attachSiteHoverHandlers() {
       try {
         if (marker.closeTooltip) marker.closeTooltip();
       } catch (e) {}
+=======
+      // Pan et popup
+      if (marker.getLatLng) carte.panTo(marker.getLatLng());
+      if (marker.openPopup) marker.openPopup();
+
+      // Trouver le jumeau
+      const jumeau = siteMarkers.find(m => 
+        m !== marker && m.options.numLivraison === numLivraison
+      );
+      if (!jumeau) return;
+
+      // Sauver les propriétés d'origine
+      const originalRadius = jumeau.options.radius || 8;
+      const originalColor = jumeau.options.color || '#3388ff';
+
+      // Grossir et surligner
+      jumeau.setStyle({
+        radius: originalRadius * 1.8,
+        color: '#ff6600',
+        weight: 4
+      });
+
+      // Revenir à la normale après 1 seconde
+      setTimeout(() => {
+        jumeau.setStyle({
+          radius: originalRadius,
+          color: originalColor,
+          weight: 2
+        });
+      }, 1000);
+>>>>>>> origin/dev
     });
   });
-}
 
+}
 
 function dimExcept(activeMarker) {
   tronconLines.forEach(l => { try { if (l.setStyle) l.setStyle({ opacity: 0.12 }); } catch (e) {} });
@@ -316,13 +409,17 @@ function undimAll() {
 /* //! ----------------- VISIBILITY CONTROLS ----------------- */
 
 function updateVisibility() {
-  // Sites
   siteMarkers.forEach(marker => {
     const type = marker.options.siteType || 'default';
+<<<<<<< HEAD
     const key = (type === 'entrepot' || type === 'depot') ? 'entrepot'
               : (type === 'collecte') ? 'collecte'
               : (type === 'livraison') ? 'livraison'
               : 'default';
+=======
+    // mapea nombres usados en visibilityState
+    const key = (type === 'entrepot' ? 'entrepot' : (type === 'collecte' ? 'collecte' : (type === 'depot' ? 'depot' : 'entrepot')));
+>>>>>>> origin/dev
     if (visibilityState[key]) {
       if (!carte.hasLayer(marker)) marker.addTo(carte);
     } else {
@@ -330,7 +427,6 @@ function updateVisibility() {
     }
   });
 
-  // Nœuds
   noeudMarkers.forEach(marker => {
     if (visibilityState.noeuds) {
       if (!carte.hasLayer(marker)) marker.addTo(carte);
@@ -339,7 +435,6 @@ function updateVisibility() {
     }
   });
 
-  // Tronçons
   tronconLines.forEach(line => {
     if (visibilityState.troncons) {
       if (!carte.hasLayer(line)) line.addTo(carte);
@@ -350,8 +445,12 @@ function updateVisibility() {
 }
 
 function configurerControlesVisibilite() {
-  // checkbox toggles: entrepot, collecte, livraison
+<<<<<<< HEAD
   ['entrepot', 'collecte', 'livraison'].forEach(type => {
+=======
+  // checkbox toggles: entrepot, collecte, depot
+  ['entrepot', 'collecte', 'depot'].forEach(type => {
+>>>>>>> origin/dev
     const cb = document.getElementById(`toggle-${type}`);
     if (cb) {
       cb.checked = visibilityState[type];
@@ -362,7 +461,6 @@ function configurerControlesVisibilite() {
     }
   });
 
-  // nodo toggle
   const tNoeuds = document.getElementById('toggle-noeuds');
   if (tNoeuds) {
     tNoeuds.checked = visibilityState.noeuds;
@@ -372,7 +470,6 @@ function configurerControlesVisibilite() {
     });
   }
 
-  // troncons toggle
   const tTron = document.getElementById('toggle-troncons');
   if (tTron) {
     tTron.checked = visibilityState.troncons;
@@ -382,7 +479,6 @@ function configurerControlesVisibilite() {
     });
   }
 
-  // reset view
   const btnReset = document.getElementById('btn-reset-view');
   if (btnReset) {
     btnReset.addEventListener('click', () => {
@@ -397,15 +493,18 @@ function configurerControlesVisibilite() {
     });
   }
 
-  // toggle all
   const btnToggleAll = document.getElementById('btn-toggle-all');
   if (btnToggleAll) {
     btnToggleAll.addEventListener('click', () => {
       const all = Object.values(visibilityState).every(v => v === true);
       const newState = !all;
       Object.keys(visibilityState).forEach(k => visibilityState[k] = newState);
-      // actualizar checkboxes visualmente
+<<<<<<< HEAD
       ['entrepot','collecte','livraison','noeuds','troncons'].forEach(k => {
+=======
+      // actualizar checkboxes visualmente
+      ['entrepot','collecte','depot','noeuds','troncons'].forEach(k => {
+>>>>>>> origin/dev
         const el = document.getElementById(`toggle-${k}`);
         if (el) el.checked = visibilityState[k];
       });
@@ -414,9 +513,20 @@ function configurerControlesVisibilite() {
   }
 }
 
+function nettoyerCarte() {
+  if (carte !== null) {
+    try { carte.off(); carte.remove(); } catch (e) { console.warn('Erreur nettoyage carte:', e); }
+  }
+  marqueurs = [];
+  lignes = [];
+  siteMarkers = [];
+  noeudMarkers = [];
+  tronconLines = [];
+  donneesGlobales = null;
+}
+
 /* //! ----------------- CARGA SIDEBAR + INICIO ----------------- */
 
-// Cargar Sidebar.html y luego cargar el componente principal por defecto
 fetch('/components/Sidebar.html')
   .then(res => {
     if (!res.ok) throw new Error('Erreur lors du chargement du sidebar');
@@ -425,45 +535,30 @@ fetch('/components/Sidebar.html')
   .then(html => {
     const sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.innerHTML = html;
-    // enganchar botones de navegación básicos (ya están en tu HTML)
+    
     document.getElementById('btn-mapa')?.addEventListener('click', () => {
-      // marcado visual
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-mapa')?.classList.add('active');
       chargerComposantPrincipal('/components/Map.html');
     });
+    
     document.getElementById('btn-filtros')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-filtros')?.classList.add('active');
       chargerComposantPrincipal('/components/Import.html');
-      //TODO Import
     });
+    
     document.getElementById('btn-estadisticas')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-estadisticas')?.classList.add('active');
       document.getElementById('main-content').innerHTML = `<div style="padding:2rem;"><h2>Statistiques</h2><p>Fonctionnalité en construction…</p></div>`;
     });
 
-    // cargar componente por defecto
     chargerComposantPrincipal('/components/Map.html');
   })
   .catch(err => {
     console.error("Erreur lors du chargement du sidebar:", err);
     const sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.innerHTML = '<p style="color:#e74c3c;">Erreur de chargement</p>';
-    // igualmente intentar cargar mapa por defecto (por si sidebar no es crítico)
     chargerComposantPrincipal('/components/Map.html');
   });
-
-  function nettoyerCarte() {
-  if (carte !== null) {
-    try { carte.off(); carte.remove(); } catch (e) { console.warn('Erreur nettoyage carte:', e); }
-  }
-  // vaciar colecciones
-  marqueurs.length = 0;
-  lignes.length = 0;
-  siteMarkers.length = 0;
-  noeudMarkers.length = 0;
-  tronconLines.length = 0;
-  donneesGlobales = null;
-}
