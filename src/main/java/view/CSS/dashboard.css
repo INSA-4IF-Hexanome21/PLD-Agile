@@ -84,7 +84,7 @@
 
 .site-indicator.entrepot { background: #2b6cb0; }
 .site-indicator.collecte { background: #38a169; }
-.site-indicator.livraison { background: #e53e3e; }
+.site-indicator.depot { background: #e53e3e; }
 .site-indicator.noeuds { background: #16697A; }
 
 /* //! Botones de control */
@@ -333,6 +333,10 @@ header h1 {
 .leaflet-popup-content {
   color: var(--dark-gray);
   font-family: 'Segoe UI', sans-serif;
+}
+
+.leaflet-popup-pane {
+  z-index: 10000 !important;
 }
 
 /* //! Marqueurs personnalisés */
