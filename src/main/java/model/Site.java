@@ -7,6 +7,7 @@ public abstract class Site extends Noeud  {
     // Attributs
     protected LocalTime depart_heure = null;
     protected LocalTime arrivee_heure = null;
+    protected Integer numPassage = null;
 
     // Constructeur minimal
     public Site(long id) {
@@ -26,6 +27,10 @@ public abstract class Site extends Noeud  {
     public LocalTime getArriveeHeure() {
         return arrivee_heure;
     }
+
+    public Integer getNumPassage() {
+        return numPassage;
+    }
    
     public void setDepartHeure(LocalTime depart_heure) {
         this.depart_heure = depart_heure;
@@ -34,6 +39,12 @@ public abstract class Site extends Noeud  {
     public void setArriveeHeure(LocalTime arrivee_heure) {
         this.arrivee_heure = arrivee_heure;
     }
+
+    public void setNumPassage(Integer numPassage) {
+        this.numPassage = numPassage;
+    }
+
+    
 
     /**
      * Retourne le type de site ("entrepot", "livraison", "collecte", etc.)
