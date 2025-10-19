@@ -9,9 +9,8 @@ let trajetLines = [];
 let donneesGlobales = null;
 
 const COULEURS_SITES = {
-  'depot': '#2b6cb0',
+  'depot': '#e53e3e',
   'collecte': '#38a169',
-  'livraison': '#e53e3e',
   'entrepot': '#2b6cb0',
   'default': '#999999'
 };
@@ -105,7 +104,7 @@ function initialiserCarte() {
 
 function normaliserTypeSite(type) {
   const rawType = (type || '').toString().toLowerCase();
-  if (rawType === 'livraison' || rawType === 'depot') return 'livraison';
+  if (rawType === 'livraison' || rawType === 'depot') return 'depot';
   if (rawType === 'collecte' || rawType === 'pick-up') return 'collecte';
   if (rawType === 'entrepot' || rawType === 'warehouse') return 'entrepot';
   return 'default';
@@ -153,20 +152,27 @@ function afficherDonneesSurCarte(donnees) {
     });
   }
 
-  // 3) Sites (encima)
+// 3) Sites (encima)
   console.log('Sites reçus:', donnees.sites);
   if (donnees.sites && donnees.sites.length > 0) {
+    // Limpiar markers previos
     siteMarkers.forEach(m => { try { carte.removeLayer(m); } catch (e) {} });
     siteMarkers.length = 0;
-
+    
     const initialRadius = computeSiteRadius(carte);
-
+    
     donnees.sites.forEach(site => {
-      const normalizedType = normaliserTypeSite(site.type);
+      const rawType = (site.type || '').toString().toLowerCase();
+      let normalizedType = rawType;
+      if (rawType === 'livraison' || rawType === 'depot') normalizedType = 'depot';
+      else if (rawType === 'collecte' || rawType === 'pick-up') normalizedType = 'collecte';
+      else if (rawType === 'entrepot' || rawType === 'warehouse') normalizedType = 'entrepot';
+      
       const color = COULEURS_SITES[normalizedType] || COULEURS_SITES['default'];
-
+      
       if (site.lat != null && site.lng != null) {
         const marker = creerMarqueurSite(site, normalizedType, color, initialRadius);
+        marker.options.numLivraison = site.numLivraison;
         marker.addTo(carte);
         siteMarkers.push(marker);
       }
@@ -389,14 +395,17 @@ function undimAll() {
 }
 
 /* //! ----------------- VISIBILITY CONTROLS ----------------- */
-
 function updateVisibility() {
+  // FR: Met à jour la visibilité des marqueurs selon visibilityState
   siteMarkers.forEach(marker => {
     const type = marker.options.siteType || 'default';
-    const key = (type === 'entrepot' || type === 'depot') ? 'entrepot'
+
+    // FR: Faire correspondre les types normalisés attendus (incluant 'depot')
+    const key = (type === 'entrepot') ? 'entrepot'
               : (type === 'collecte') ? 'collecte'
-              : (type === 'livraison') ? 'livraison'
+              : (type === 'depot') ? 'depot'
               : 'default';
+
     if (visibilityState[key]) {
       if (!carte.hasLayer(marker)) marker.addTo(carte);
     } else {
@@ -404,6 +413,7 @@ function updateVisibility() {
     }
   });
 
+  // FR: Gestion de la visibilité des nœuds
   noeudMarkers.forEach(marker => {
     if (visibilityState.noeuds) {
       if (!carte.hasLayer(marker)) marker.addTo(carte);
@@ -412,6 +422,7 @@ function updateVisibility() {
     }
   });
 
+  // FR: Gestion de la visibilité des tronçons
   tronconLines.forEach(line => {
     if (visibilityState.troncons) {
       if (!carte.hasLayer(line)) line.addTo(carte);
@@ -422,7 +433,8 @@ function updateVisibility() {
 }
 
 function configurerControlesVisibilite() {
-  ['entrepot', 'collecte', 'livraison'].forEach(type => {
+  // FR: On attend des checkboxes avec ids toggle-entrepot, toggle-collecte, toggle-depot
+  ['entrepot', 'collecte', 'depot'].forEach(type => {
     const cb = document.getElementById(`toggle-${type}`);
     if (cb) {
       cb.checked = visibilityState[type];
@@ -433,6 +445,7 @@ function configurerControlesVisibilite() {
     }
   });
 
+  // FR: Toggle pour les nœuds
   const tNoeuds = document.getElementById('toggle-noeuds');
   if (tNoeuds) {
     tNoeuds.checked = visibilityState.noeuds;
@@ -442,6 +455,7 @@ function configurerControlesVisibilite() {
     });
   }
 
+  // FR: Toggle pour les tronçons
   const tTron = document.getElementById('toggle-troncons');
   if (tTron) {
     tTron.checked = visibilityState.troncons;
@@ -451,6 +465,7 @@ function configurerControlesVisibilite() {
     });
   }
 
+  // FR: Bouton pour recentrer la vue (utilise donneesGlobales)
   const btnReset = document.getElementById('btn-reset-view');
   if (btnReset) {
     btnReset.addEventListener('click', () => {
@@ -465,13 +480,15 @@ function configurerControlesVisibilite() {
     });
   }
 
+  // FR: Bouton bascule « tout afficher / tout cacher »
   const btnToggleAll = document.getElementById('btn-toggle-all');
   if (btnToggleAll) {
     btnToggleAll.addEventListener('click', () => {
-      const all = Object.values(visibilityState).every(v => v === true);
+      const all = ['entrepot','collecte','depot','noeuds','troncons'].every(k => visibilityState[k] === true);
       const newState = !all;
       Object.keys(visibilityState).forEach(k => visibilityState[k] = newState);
-      ['entrepot','collecte','livraison','noeuds','troncons'].forEach(k => {
+      // FR: mettre à jour l'état visuel des checkboxes si elles existent
+      ['entrepot','collecte','depot','noeuds','troncons'].forEach(k => {
         const el = document.getElementById(`toggle-${k}`);
         if (el) el.checked = visibilityState[k];
       });
@@ -479,6 +496,7 @@ function configurerControlesVisibilite() {
     });
   }
 }
+
 
 function nettoyerCarte() {
   if (carte !== null) {
