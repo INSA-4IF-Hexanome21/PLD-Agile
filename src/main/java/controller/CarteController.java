@@ -165,7 +165,7 @@ public class CarteController {
         return gt;
     }
 
-    public List<Long> chercherCheminsMin(GrapheTotal gt, List<Site> sites){
+    public void chercherCheminsMin(GrapheTotal gt, List<Site> sites){
         long tempsDebut = System.currentTimeMillis();
         gt.RechercheDijkstra(sites);
         GrapheLivraison gl = new GrapheLivraison(carte.getSites().size(), gt.getMapDistances());
@@ -185,11 +185,11 @@ public class CarteController {
         //System.out.println("Chemin complet avec noeuds intermédiaires : " + cheminComplet);
         List<Long> cheminCompletConverti = gt.convertirCheminComplet(cheminComplet);
         //System.out.println("Chemin complet avec noeuds intermédiaires convertis: " + cheminCompletConverti);
-        return cheminCompletConverti;
+        majTrajet(carte, gt, cheminCompletConverti,solution);
     }
 
-    public void majTrajet(Carte carte, GrapheTotal gt, List<Long> chemin){
-        carte.majTrajetDepuisChemin(gt,chemin,carte.getTrajets().get(0));
+    public void majTrajet(Carte carte, GrapheTotal gt, List<Long> cheminComplet, List<Integer> solution){
+        carte.majTrajetDepuisChemin(gt,cheminComplet,solution,carte.getTrajets().get(0));
         //System.out.println(carte.getTrajets().get(0));
     }
 }

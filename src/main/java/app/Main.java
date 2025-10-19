@@ -37,8 +37,7 @@ public class Main {
             }
         }
         GrapheTotal gt = carteController.creerGrapheTotal(carte, e.getId());
-        List<Long> cheminMin = carteController.chercherCheminsMin(gt, carte.getSites());
-        carteController.majTrajet(carte, gt, cheminMin);
+        carteController.chercherCheminsMin(gt, carte.getSites());
         ServeurHTTP serveur = new ServeurHTTP(PORT_SERVEUR, CHEMIN_BASE_VIEW, carteController);
         serveur.demarrer();
 
