@@ -175,99 +175,87 @@ public class CarteController {
     /**
      * Génère le JSON complet de la carte avec noeuds, troncons et sites
      */
-    public String getCarteJSON() {
-        System.out.println(">>> getCarteJSON appelé <<<");
-        
-        StringBuilder json = new StringBuilder();
-        json.append("{\"noeuds\":[");
-        
-        // Noeuds
-        int noeudCount = 0;
-        int noeudTotal = carte.getNoeuds().size();
-        for (Noeud n : carte.getNoeuds().values()) {
-            json.append(String.format(Locale.US,"{\"id\":%d,\"lat\":%f,\"lng\":%f}",
-                    n.getId(), n.getLatitude(), n.getLongitude()));
-            noeudCount++;
-            if (noeudCount < noeudTotal) json.append(",");
-        }
-        
-        // Troncons
-        json.append("],\"troncons\":[");
-        for (int i = 0; i < carte.getTroncons().size(); i++) {
-            Troncon t = carte.getTroncons().get(i);
-            json.append(String.format("{\"from\":%d,\"to\":%d}",
-                    t.getOrigine().getId(), t.getDestination().getId()));
-            if (i < carte.getTroncons().size() - 1) json.append(",");
-        }
-        
-        // Sites
-        json.append("],\"sites\":[");
-        List<Site> sites = carte.getSites();
-        // System.out.println("Génération JSON pour " + sites.size() + " sites");
-        
-        for (int i = 0; i < sites.size(); i++) {
-            Site s = sites.get(i);
-            // System.out.println("Traitement site " + (i+1) + "/" + sites.size() + " - ID: " + s.getId());
-            Integer numLivraison = null;
-            if (s instanceof Depot ) numLivraison = ((Depot) s).getNumLivraison();
-            else if (s instanceof Collecte ) numLivraison = ((Collecte) s).getNumLivraison();
-            try {
-                // Utiliser getLat() et getLng() directement (types primitifs)
-                double lat = s.getLatitude();
-                double lng = s.getLongitude();
-                
-                json.append(String.format(Locale.US, 
-                    "{\"id\":%d,\"lat\":%f,\"lng\":%f,\"type\":\"%s\"",
-                    s.getId(), lat, lng, s.getTypeSite()));
-                
-                // Agregar horarios si existen
-                if (s.getDepartHeure() != null) {
-                    json.append(String.format(",\"depart\":\"%s\"", s.getDepartHeure().toString()));
-                }
-                if (s.getArriveeHeure() != null) {
-                    json.append(String.format(",\"arrivee\":\"%s\"", s.getArriveeHeure().toString()));
-                }
-                if (numLivraison != null) {
-                    json.append(String.format(",\"numLivraison\":%d", numLivraison));
-                }
-                if (s.getNumPassage() != null) {
-                    json.append(String.format(",\"numPassage\":%d", s.getNumPassage()));
-                }
-                
-                json.append("}");
-                
-                // Agregar coma si no es el último elemento
-                if (i < sites.size() - 1) {
-                    json.append(",");
-                }
-                
-                // System.out.println("Site " + s.getId() + " traité avec succès");
-            } catch (Exception e) {
-                System.err.println("Erreur lors du traitement du site " + s.getId() + ": " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
+ public String getCarteJSON() {
+    System.out.println(">>> getCarteJSON appelé <<<");
 
-        // Trajets
-        json.append("],\"trajets\":[");
-        List<Trajet> trajets = carte.getTrajets();
-        // System.out.println("Génération JSON pour " + trajets.size() + " trajets");
-        for (int i = 0; i < trajets.size(); i++) {
-            Trajet t = trajets.get(i);
-            for (int j = 0; j < t.getTroncons().size(); j++) {
-                Troncon tr = t.getTroncons().get(j);
-                json.append(String.format("{\"from\":%d,\"to\":%d}",
-                        tr.getOrigine().getId(), tr.getDestination().getId()));
-                if (i < trajets.size() - 1 || j < t.getTroncons().size() - 1) {
-                    json.append(",");
-                }
-            }
-        }
-        
-        json.append("]}");
-        // System.out.println(">>> JSON généré avec succès - Longueur: " + json.length() + " caractères <<<");
-        return json.toString();
+    StringBuilder json = new StringBuilder();
+    json.append("{");
+
+    // -- Noeuds
+    json.append("\"noeuds\":[");
+    boolean firstNoeud = true;
+    for (Noeud n : carte.getNoeuds().values()) {
+        if (!firstNoeud) json.append(",");
+        firstNoeud = false;
+        json.append(String.format(Locale.US,"{\"id\":%d,\"lat\":%f,\"lng\":%f}",
+                n.getId(), n.getLatitude(), n.getLongitude()));
     }
+    json.append("]");
+
+    // -- Troncons
+    json.append(",\"troncons\":[");
+    boolean firstTroncon = true;
+    for (Troncon t : carte.getTroncons()) {
+        if (!firstTroncon) json.append(",");
+        firstTroncon = false;
+        json.append(String.format("{\"from\":%d,\"to\":%d}",
+                t.getOrigine().getId(), t.getDestination().getId()));
+    }
+    json.append("]");
+
+    // -- Sites
+    json.append(",\"sites\":[");
+    boolean firstSite = true;
+    for (Site s : carte.getSites()) {
+        if (!firstSite) json.append(",");
+        firstSite = false;
+        Integer numLivraison = null;
+        if (s instanceof Depot ) numLivraison = ((Depot) s).getNumLivraison();
+        else if (s instanceof Collecte ) numLivraison = ((Collecte) s).getNumLivraison();
+
+        try {
+            double lat = s.getLatitude();
+            double lng = s.getLongitude();
+            json.append(String.format(Locale.US,
+                "{\"id\":%d,\"lat\":%f,\"lng\":%f,\"type\":\"%s\"",
+                s.getId(), lat, lng, s.getTypeSite()));
+
+            if (s.getDepartHeure() != null) {
+                json.append(String.format(",\"depart\":\"%s\"", s.getDepartHeure().toString()));
+            }
+            if (s.getArriveeHeure() != null) {
+                json.append(String.format(",\"arrivee\":\"%s\"", s.getArriveeHeure().toString()));
+            }
+            if (numLivraison != null) {
+                json.append(String.format(",\"numLivraison\":%d", numLivraison));
+            }
+            if (s.getNumPassage() != null) {
+                json.append(String.format(",\"numPassage\":%d", s.getNumPassage()));
+            }
+            json.append("}");
+        } catch (Exception e) {
+            System.err.println("Erreur lors du traitement du site " + s.getId() + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    json.append("]");
+
+    // -- Trajets (concaténation de tous les troncons de tous les trajets)
+    json.append(",\"trajets\":[");
+    boolean firstTrajetEntry = true;
+    for (Trajet t : carte.getTrajets()) {
+        for (Troncon tr : t.getTroncons()) {
+            if (!firstTrajetEntry) json.append(",");
+            firstTrajetEntry = false;
+            json.append(String.format("{\"from\":%d,\"to\":%d}",
+                    tr.getOrigine().getId(), tr.getDestination().getId()));
+        }
+    }
+    json.append("]");
+
+    json.append("}");
+    return json.toString();
+}
 
     public Carte getCarte() {
         return carte;

@@ -5,13 +5,17 @@ import controller.CarteController;
 public class CarteChargeState implements State {
     // État: carte chargée - peut charger une nouvelle carte ou une livraison
     
-    @Override
-    public void chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
-        System.out.println(">>> [CarteChargeState] Rechargement de la carte...");
-        carteC.chargerCarteDepuisXML(cheminFichier);
-        c.setCurrentState(c.carteChargeState);
-        System.out.println(">>> [CarteChargeState] Carte rechargée, reste dans CarteChargeState");
-    }
+   @Override
+	public void chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
+		System.out.println(">>> [CarteChargeState] Rechargement de la carte...");
+		// Nettoyer livraisons et calculs précédents
+		carteC.effacerCalcul();
+		carteC.effacerLivraison();
+		carteC.chargerCarteDepuisXML(cheminFichier);
+		c.setCurrentState(c.carteChargeState);
+		System.out.println(">>> [CarteChargeState] Carte rechargée, reste dans CarteChargeState");
+	}
+
 
    
     @Override

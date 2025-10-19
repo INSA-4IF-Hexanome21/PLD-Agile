@@ -8,9 +8,9 @@ public class LivraisonCalculeState implements State {
     @Override
     public void chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
         System.out.println(">>> [LivraisonCalculeState] Rechargement de la carte (effacement calcul et livraison)...");
-        // Effacer le calcul et la livraison
-        // carteC.effacerCalcul();
-        // carteC.effacerLivraison();
+        // Effacer calculs et livraisons antérieurs pour éviter données résiduelles
+        carteC.effacerCalcul();
+        carteC.effacerLivraison();
         carteC.chargerCarteDepuisXML(cheminFichier);
         c.setCurrentState(c.carteChargeState);
         System.out.println(">>> [LivraisonCalculeState] Transition vers CarteChargeState");
@@ -20,11 +20,20 @@ public class LivraisonCalculeState implements State {
     public void chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
         System.out.println(">>> [LivraisonCalculeState] Rechargement de la livraison (effacement calcul)...");
         // Effacer le calcul actuel
-        // carteC.effacerCalcul();
+        carteC.effacerCalcul();
         carteC.chargerDemandesDepuisXML(cheminFichier);
-        c.setCurrentState(c.livraisonChargeState);
-        System.out.println(">>> [LivraisonCalculeState] Transition vers LivraisonChargeState");
+        // lancer calcul inmediatamente si quieres (opcional)
+        try {
+            carteC.calculerTournee();
+            c.setCurrentState(c.livraisonCalculeState);
+        } catch (Exception ex) {
+            System.err.println(">>> [LivraisonCalculeState] ERREUR pendant le calcul: " + ex.getMessage());
+            c.setCurrentState(c.carteChargeState);
+            throw new RuntimeException("Erreur lors du calcul de la tournée : " + ex.getMessage(), ex);
+        }
+        System.out.println(">>> [LivraisonCalculeState] Transition vers LivraisonCalculeState");
     }
+
 
     @Override
     public void calculerLivraison(Controller c) {
