@@ -115,6 +115,9 @@ public class CarteController {
                 if (numLivraison != null) {
                     json.append(String.format(",\"numLivraison\":%d", numLivraison));
                 }
+                /* if (s.getNumPassage() != null) {
+                    json.append(String.format(",\"numPassage\":%d", s.getNumPassage()));
+                } */
                 
                 json.append("}");
                 
