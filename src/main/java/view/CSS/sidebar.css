@@ -9,6 +9,35 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.07);
 } */
 
+/* Estilos adicionales para indicadores de trajets */
+.site-indicator.trajets {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+}
+
+/* Animación sutil para el checkbox de trajets */
+#toggle-trajets:checked + label .site-indicator.trajets {
+  animation: trajets-pulse 2s ease-in-out infinite;
+}
+
+@keyframes trajets-pulse {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+  }
+}
+
+.site-indicator.troncons { 
+  background: #667eea; 
+}
+
+.site-indicator.trajets { 
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3);
+}
+
 .file-area {
     position: relative;
     display: flex;
