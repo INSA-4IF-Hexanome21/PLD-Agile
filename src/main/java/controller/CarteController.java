@@ -2,6 +2,7 @@ package controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import tsp.*;
@@ -32,30 +33,45 @@ public class CarteController {
         System.out.println("Plan chargé: " + noeuds.size() + " noeuds, " + troncons.size() + " troncons");
     }
     
-    /**
-     * Charge les demandes de livraison depuis un fichier XML
-     */
-    public void chargerDemandesDepuisXML(String cheminFichierDemandes) {
+  public synchronized void chargerDemandesDepuisXML(String cheminFichierDemandes) {
+        // Protection contre appels concurrents
         if (carte == null) {
             carte = new Carte();
         }
-        
+
+        // Avant d'ajouter la nouvelle demande, supprimer l'ancienne pour éviter accumulation
+        System.out.println(">>> CarteController: début chargement demandes, effacement des livraisons existantes...");
+        this.effacerLivraison();
+
         Trajet trajet = GestionnaireXML.chargerDemandeLivraisons(
             cheminFichierDemandes, 
             carte.getNoeuds()
         );
-        
+
+        // Ajout du trajet (nouveau)
         carte.ajouterTrajet(trajet);
-        
-        for (Site site : trajet.getSites()) {
-            carte.ajouterSite(site);
+
+        // Ajouter les sites du trajet à la carte, mais éviter les doublons par id
+        List<Site> sitesTrajet = trajet.getSites();
+        HashSet<Long> idsExistants = new HashSet<>();
+        for (Site s : carte.getSites()) {
+            idsExistants.add(s.getId());
         }
-        
-        // System.out.println("Demandes chargées:");
-        // System.out.println("  - Sites accessibles: " + trajet.getSites().size());
-        // System.out.println("  - Sites NON accessibles: " + trajet.getSitesNonAccessibles().size());
-        // System.out.println("  - Total sites dans carte: " + carte.getSites().size());
+
+        int ajout = 0;
+        for (Site site : sitesTrajet) {
+            if (!idsExistants.contains(site.getId())) {
+                carte.ajouterSite(site);
+                idsExistants.add(site.getId());
+                ajout++;
+            } else {
+                System.out.println(">>> Site déjà présent, id=" + site.getId());
+            }
+        }
+
+        System.out.println(">>> CarteController: demande chargée, sites ajoutés=" + ajout + ", total sites=" + carte.getSites().size());
     }
+
 
   // --- modifications dans controller/CarteController.java ---
 
