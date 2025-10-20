@@ -264,7 +264,12 @@ function creerMarqueurSite(site, type, color, radius) {
   marker.options.siteId = site.id;
 
   marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
-  marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong><br>Lat: ${site.lat.toFixed(6)}<br>Lng: ${site.lng.toFixed(6)}`);
+  marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
+    <br>Numéro de livraison: ${site.numLivraison}
+    <br>Ordre de visite: ${site.numPassage}
+    <br>Heure d'arrivée: ${site.arrivee}
+    <br>Heure de départ: ${site.depart}
+  `);
 
   marker.on('click', () => {
     try {
