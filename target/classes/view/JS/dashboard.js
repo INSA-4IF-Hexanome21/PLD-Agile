@@ -222,10 +222,6 @@ function afficherDonneesSurCarte(donnees) {
     }
 
     attachSiteHoverHandlers();
-<<<<<<< HEAD
-=======
-
->>>>>>> feat/FrontendCorrections
     updateVisibility();
   }
 
@@ -237,8 +233,6 @@ function afficherDonneesSurCarte(donnees) {
   } catch (e) {}
 }
 
-<<<<<<< HEAD
-=======
 function attachSiteHoverHandlers() {
   if (!Array.isArray(siteMarkers) || !carte) return;
 
@@ -276,7 +270,6 @@ function attachSiteHoverHandlers() {
 }
 
 
->>>>>>> feat/FrontendCorrections
 function configurerZoomSites() {
   carte.on('zoomend', () => {
     const newR = computeSiteRadius(carte);
@@ -304,17 +297,6 @@ function creerMarqueurSite(site, type, color, radius) {
     pane: 'sitePane'
   });
 
-<<<<<<< HEAD
-  marker.options.siteType = type;
-  marker.options.siteId = site.id;
-
-  marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
-  marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong><br>Lat: ${site.lat.toFixed(6)}<br>Lng: ${site.lng.toFixed(6)}`);
-
-  marker.on('click', () => {
-    try {
-      if (marker.getLatLng) carte.panTo(marker.getLatLng());
-=======
 
   // actualizar tooltips/labels y radios al cambiar el zoom (se añade solo una vez)
   if (carte && !carte._siteLabelZoomHandlerAdded) {
@@ -405,7 +387,6 @@ function creerMarqueurSite(site, type, color, radius) {
   
   marker.on('click', () => {
     try {
->>>>>>> feat/FrontendCorrections
       if (marker.openPopup) marker.openPopup();
     } catch (e) {}
   });
@@ -427,89 +408,6 @@ function ensureSitePane() {
   }
 }
 
-<<<<<<< HEAD
-function attachSiteHoverHandlers() {
-  if (!Array.isArray(siteMarkers) || !carte) return;
-
-  siteMarkers.forEach(marker => {
-    if (marker._siteHandlersAttached) return;
-    marker._siteHandlersAttached = true;
-
-    marker.on('click', () => {
-      const numLivraison = marker.options.numLivraison;
-      try {
-        if (marker.getLatLng) carte.panTo(marker.getLatLng());
-        if (marker.openPopup) marker.openPopup();
-      } catch (e) {}
-
-      if (numLivraison != null) {
-        const jumeau = siteMarkers.find(m => m !== marker && m.options.numLivraison === numLivraison);
-        if (jumeau) {
-          const originalRadius = jumeau.options.radius || 8;
-          const originalColor = jumeau.options.color || '#3388ff';
-          jumeau.setStyle({
-            radius: originalRadius * 1.8,
-            color: '#ff6600',
-            weight: 4
-          });
-          setTimeout(() => {
-            jumeau.setStyle({
-              radius: originalRadius,
-              color: originalColor,
-              weight: 2
-            });
-          }, 1000);
-        }
-      }
-    });
-
-    marker.on('mouseover', () => {
-      try {
-        if (marker.openTooltip) marker.openTooltip();
-      } catch (e) {}
-    });
-
-    marker.on('mouseout', () => {
-      try {
-        if (marker.closeTooltip) marker.closeTooltip();
-      } catch (e) {}
-      // Pan et popup
-      if (marker.getLatLng) carte.panTo(marker.getLatLng());
-      if (marker.openPopup) marker.openPopup();
-
-      const numLivraison = marker.options.numLivraison;
-      const jumeau = siteMarkers.find(m => 
-        m !== marker && m.options.numLivraison === numLivraison
-      );
-      if (!jumeau) return;
-
-      // Sauver les propriétés d'origine
-      const originalRadius = jumeau.options.radius || 8;
-      const originalColor = jumeau.options.color || '#3388ff';
-
-      // Grossir et surligner
-      jumeau.setStyle({
-        radius: originalRadius * 1.8,
-        color: '#ff6600',
-        weight: 4
-      });
-
-      // Revenir à la normale après 1 seconde
-      setTimeout(() => {
-        jumeau.setStyle({
-          radius: originalRadius,
-          color: originalColor,
-          weight: 2
-        });
-      }, 1000);
-    });
-  });
-
-}
-
-
-=======
->>>>>>> feat/FrontendCorrections
 function dimExcept(activeMarker) {
   tronconLines.forEach(l => { try { if (l.setStyle) l.setStyle({ opacity: 0.12 }); } catch (e) {} });
   noeudMarkers.forEach(m => { try { if (m.setOpacity) m.setOpacity(0.2); } catch (e) {} });
@@ -637,7 +535,6 @@ function configurerControlesVisibilite() {
   }
 }
 
-<<<<<<< HEAD
 /**
  * Lance le calcul
  */
@@ -702,8 +599,6 @@ function lancerCalcul() {
                 .text('❌ Erreur: ' + err.message);
         });
     };
-=======
->>>>>>> feat/FrontendCorrections
 
 function nettoyerCarte() {
   if (carte !== null) {
@@ -738,10 +633,7 @@ fetch('/components/Sidebar.html')
     document.getElementById('btn-filtros')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-filtros')?.classList.add('active');
-<<<<<<< HEAD
       document.getElementById('btn-calcul')?.classList.add('active');
-=======
->>>>>>> feat/FrontendCorrections
       chargerComposantPrincipal('/components/Import.html');
     });
     
@@ -752,14 +644,11 @@ fetch('/components/Sidebar.html')
       document.getElementById('main-content').innerHTML = `<div style="padding:2rem;"><h2>Statistiques</h2><p>Fonctionnalité en construction…</p></div>`;
     });
 
-<<<<<<< HEAD
     document.getElementById('btn-calcul')?.addEventListener('click', () => {
       lancerCalcul();
       chargerComposantPrincipal('/components/Map.html');
     });
 
-=======
->>>>>>> feat/FrontendCorrections
     chargerComposantPrincipal('/components/Map.html');
   })
   .catch(err => {
