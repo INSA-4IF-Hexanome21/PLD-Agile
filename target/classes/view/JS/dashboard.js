@@ -221,7 +221,6 @@ function afficherDonneesSurCarte(donnees) {
       carte._siteZoomHandlerAdded = true;
     }
 
-    attachSiteHoverHandlers();
     updateVisibility();
   }
 
@@ -268,7 +267,7 @@ function creerMarqueurSite(site, type, color, radius) {
     <br>Numéro de livraison: ${site.numLivraison}
     <br>Ordre de visite: ${site.numPassage}
     <br>Heure d'arrivée: ${site.arrivee}
-    <br>Heure de départ: ${site.depart}
+    <br>Heure de départ: ${site.depart} //TODO not when its a site
   `);
 
   marker.on('click', () => {
