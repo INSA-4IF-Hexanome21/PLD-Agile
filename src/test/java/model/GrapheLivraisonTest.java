@@ -9,7 +9,7 @@ public class GrapheLivraisonTest {
         System.out.println("====== Test GrapheLivraison ====== ");
         // Exemple de mapDistances:
 		// {0=[(1, 2.0), (2, 3.5)], 1=[(0, 2.0), (2, 1.5)], 2=[(0, 3.5), (1, 1.5)]}
-        Map<Integer, List<SimpleEntry<Integer, Float>>> mapDistances = new HashMap();
+		Map<Integer, List<SimpleEntry<Integer, Float>>> mapDistances = new HashMap<Integer, List<SimpleEntry<Integer, Float>>>();
 		mapDistances.put(0, new ArrayList<SimpleEntry<Integer, Float>>(
 			Arrays.asList(
 				new SimpleEntry<>(1, 2.0f), 

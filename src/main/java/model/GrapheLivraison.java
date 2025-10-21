@@ -53,15 +53,15 @@ public class GrapheLivraison implements Graphe {
 		
 	}
 
-	private void printCout() {
-		System.out.println("Matrice des couts :");
-		for (int i=0; i<nbSommets; i++) {
-			for (int j=0; j<nbSommets; j++) {
-				System.out.print(cout[i][j] + "\t");
-			}
-			System.out.println();
-		}
-	}
+	// private void printCout() {
+	// 	System.out.println("Matrice des couts :");
+	// 	for (int i=0; i<nbSommets; i++) {
+	// 		for (int j=0; j<nbSommets; j++) {
+	// 			System.out.print(cout[i][j] + "\t");
+	// 		}
+	// 		System.out.println();
+	// 	}
+	// }
 
 	public void setContrainteHashMap(HashMap<Integer,Integer> contrainteHashMap) {
 		this.contrainteHashMap = new HashMap<Integer,Integer>();
