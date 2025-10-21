@@ -233,6 +233,43 @@ function afficherDonneesSurCarte(donnees) {
   } catch (e) {}
 }
 
+function attachSiteHoverHandlers() {
+  if (!Array.isArray(siteMarkers) || !carte) return;
+
+  siteMarkers.forEach(marker => {
+    if (marker._siteHandlersAttached) return;
+    marker._siteHandlersAttached = true;
+
+    marker.on('click', () => {
+      const numLivraison = marker.options.numLivraison;
+      if (numLivraison == null) return;
+
+      const jumeau = siteMarkers.find(m => m !== marker && m.options.numLivraison === numLivraison);
+      if (!jumeau) return;
+
+      const originalColor = jumeau.options.fillColor || '#3388ff';
+      const originalWeight = jumeau.options.weight || 2;
+
+      // Cambio instantáneo de color y grosor
+      jumeau.setStyle({
+        color: '#ff6600',
+        fillColor: '#ff6600',
+        weight: 4
+      });
+
+      // Regreso inmediato al estado original (sin animación ni delay largo)
+      setTimeout(() => {
+        jumeau.setStyle({
+          color: '#ffffff',
+          fillColor: originalColor,
+          weight: originalWeight
+        });
+      }, 250);
+    });
+  });
+}
+
+
 function configurerZoomSites() {
   carte.on('zoomend', () => {
     const newR = computeSiteRadius(carte);
@@ -260,15 +297,96 @@ function creerMarqueurSite(site, type, color, radius) {
     pane: 'sitePane'
   });
 
+
+  // actualizar tooltips/labels y radios al cambiar el zoom (se añade solo una vez)
+  if (carte && !carte._siteLabelZoomHandlerAdded) {
+    carte.on('zoomend', () => {
+      const newR = computeSiteRadius(carte);
+      siteMarkers.forEach(m => {
+        try {
+          if (m && m.setRadius) m.setRadius(newR);
+          bindAppropriateTooltip(m);
+        } catch (e) {}
+      });
+    });
+    carte._siteLabelZoomHandlerAdded = true;
+  }
+
+
+  // label fijo debajo del círculo mostrando el "ordre de visite"
+  const labelHtml = `<div style="
+    display:inline-block;
+    background:rgba(255,255,255,0.92);
+    padding:2px 6px;
+    border-radius:4px;
+    border:1px solid rgba(0,0,0,0.08);
+    font-size:12px;
+    color:#222;
+    box-shadow:0 1px 2px rgba(0,0,0,0.06);
+    white-space:nowrap;
+  ">${site.numPassage??''}</div>`;
+
+  // Nota: si hay MUCHOS puntos, lo más efectivo es usar clustering (leaflet.markercluster)
+  // y/o técnicas de gestión de etiquetas (labelgun, avoidance plugins) para evitar solapamientos.
+
+  const _siteTypeLower = (site.type || '').toString().toLowerCase();
+  let labelIcon;
+  if (_siteTypeLower !== 'entrepot') {
+    labelIcon = L.divIcon({
+      className: 'site-order-label',
+      html: labelHtml,
+      iconSize: null,
+      // iconAnchor Y negative to shift the label downward relative to the marker point
+      iconAnchor: [0, -radius - 8]
+    });
+  } else {
+    // no visible label for entrepot: use an empty/invisible divIcon so we don't render anything
+    labelIcon = L.divIcon({
+      className: 'site-order-label-hidden',
+      html: '',
+      iconSize: [0, 0],
+      iconAnchor: [0, 0]
+    });
+  }
+
+  const labelMarker = L.marker([site.lat, site.lng], {
+    icon: labelIcon,
+    interactive: false,
+    pane: 'sitePane',
+    zIndexOffset: 999
+  });
+
+  // attach label to the circle marker so we can manage it together
+  marker._orderLabel = labelMarker;
+
+  // when the circle is added/removed from the map, add/remove the label as well
+  marker.on('add', () => { try { if (carte && !carte.hasLayer(labelMarker)) carte.addLayer(labelMarker); } catch (e) {} });
+  marker.on('remove', () => { try { if (carte && carte.hasLayer(labelMarker)) carte.removeLayer(labelMarker); } catch (e) {} });
+
+  // if the circle is already on the map, ensure the label is added immediately
+  try { if (carte && carte.hasLayer(marker) && !carte.hasLayer(labelMarker)) carte.addLayer(labelMarker); } catch (e) {}
+
   marker.options.siteType = type;
   marker.options.siteId = site.id;
 
-  marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
-  marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong><br>Lat: ${site.lat.toFixed(6)}<br>Lng: ${site.lng.toFixed(6)}`);
+  if (site.type === 'entrepot') {
 
+    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
+      <br>Heure d'arrivée: ${site.arrivee}
+      <br>Heure de départ: 8:00
+      `);
+    
+  } else  {
+    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
+      <br>Heure d'arrivée: ${site.arrivee}
+      <br>Heure de départ: ${site.depart} 
+      `);
+  }
+  
   marker.on('click', () => {
     try {
-      if (marker.getLatLng) carte.panTo(marker.getLatLng());
       if (marker.openPopup) marker.openPopup();
     } catch (e) {}
   });
@@ -289,86 +407,6 @@ function ensureSitePane() {
     p.style.pointerEvents = 'auto';
   }
 }
-
-function attachSiteHoverHandlers() {
-  if (!Array.isArray(siteMarkers) || !carte) return;
-
-  siteMarkers.forEach(marker => {
-    if (marker._siteHandlersAttached) return;
-    marker._siteHandlersAttached = true;
-
-    marker.on('click', () => {
-      const numLivraison = marker.options.numLivraison;
-      try {
-        if (marker.getLatLng) carte.panTo(marker.getLatLng());
-        if (marker.openPopup) marker.openPopup();
-      } catch (e) {}
-
-      if (numLivraison != null) {
-        const jumeau = siteMarkers.find(m => m !== marker && m.options.numLivraison === numLivraison);
-        if (jumeau) {
-          const originalRadius = jumeau.options.radius || 8;
-          const originalColor = jumeau.options.color || '#3388ff';
-          jumeau.setStyle({
-            radius: originalRadius * 1.8,
-            color: '#ff6600',
-            weight: 4
-          });
-          setTimeout(() => {
-            jumeau.setStyle({
-              radius: originalRadius,
-              color: originalColor,
-              weight: 2
-            });
-          }, 1000);
-        }
-      }
-    });
-
-    marker.on('mouseover', () => {
-      try {
-        if (marker.openTooltip) marker.openTooltip();
-      } catch (e) {}
-    });
-
-    marker.on('mouseout', () => {
-      try {
-        if (marker.closeTooltip) marker.closeTooltip();
-      } catch (e) {}
-      // Pan et popup
-      if (marker.getLatLng) carte.panTo(marker.getLatLng());
-      if (marker.openPopup) marker.openPopup();
-
-      const numLivraison = marker.options.numLivraison;
-      const jumeau = siteMarkers.find(m => 
-        m !== marker && m.options.numLivraison === numLivraison
-      );
-      if (!jumeau) return;
-
-      // Sauver les propriétés d'origine
-      const originalRadius = jumeau.options.radius || 8;
-      const originalColor = jumeau.options.color || '#3388ff';
-
-      // Grossir et surligner
-      jumeau.setStyle({
-        radius: originalRadius * 1.8,
-        color: '#ff6600',
-        weight: 4
-      });
-
-      // Revenir à la normale après 1 seconde
-      setTimeout(() => {
-        jumeau.setStyle({
-          radius: originalRadius,
-          color: originalColor,
-          weight: 2
-        });
-      }, 1000);
-    });
-  });
-
-}
-
 
 function dimExcept(activeMarker) {
   tronconLines.forEach(l => { try { if (l.setStyle) l.setStyle({ opacity: 0.12 }); } catch (e) {} });

@@ -222,6 +222,10 @@ function afficherDonneesSurCarte(donnees) {
     }
 
     attachSiteHoverHandlers();
+<<<<<<< HEAD
+=======
+
+>>>>>>> feat/FrontendCorrections
     updateVisibility();
   }
 
@@ -233,6 +237,46 @@ function afficherDonneesSurCarte(donnees) {
   } catch (e) {}
 }
 
+<<<<<<< HEAD
+=======
+function attachSiteHoverHandlers() {
+  if (!Array.isArray(siteMarkers) || !carte) return;
+
+  siteMarkers.forEach(marker => {
+    if (marker._siteHandlersAttached) return;
+    marker._siteHandlersAttached = true;
+
+    marker.on('click', () => {
+      const numLivraison = marker.options.numLivraison;
+      if (numLivraison == null) return;
+
+      const jumeau = siteMarkers.find(m => m !== marker && m.options.numLivraison === numLivraison);
+      if (!jumeau) return;
+
+      const originalColor = jumeau.options.fillColor || '#3388ff';
+      const originalWeight = jumeau.options.weight || 2;
+
+      // Cambio instantáneo de color y grosor
+      jumeau.setStyle({
+        color: '#ff6600',
+        fillColor: '#ff6600',
+        weight: 4
+      });
+
+      // Regreso inmediato al estado original (sin animación ni delay largo)
+      setTimeout(() => {
+        jumeau.setStyle({
+          color: '#ffffff',
+          fillColor: originalColor,
+          weight: originalWeight
+        });
+      }, 250);
+    });
+  });
+}
+
+
+>>>>>>> feat/FrontendCorrections
 function configurerZoomSites() {
   carte.on('zoomend', () => {
     const newR = computeSiteRadius(carte);
@@ -260,6 +304,7 @@ function creerMarqueurSite(site, type, color, radius) {
     pane: 'sitePane'
   });
 
+<<<<<<< HEAD
   marker.options.siteType = type;
   marker.options.siteId = site.id;
 
@@ -269,6 +314,98 @@ function creerMarqueurSite(site, type, color, radius) {
   marker.on('click', () => {
     try {
       if (marker.getLatLng) carte.panTo(marker.getLatLng());
+=======
+
+  // actualizar tooltips/labels y radios al cambiar el zoom (se añade solo una vez)
+  if (carte && !carte._siteLabelZoomHandlerAdded) {
+    carte.on('zoomend', () => {
+      const newR = computeSiteRadius(carte);
+      siteMarkers.forEach(m => {
+        try {
+          if (m && m.setRadius) m.setRadius(newR);
+          bindAppropriateTooltip(m);
+        } catch (e) {}
+      });
+    });
+    carte._siteLabelZoomHandlerAdded = true;
+  }
+
+
+  // label fijo debajo del círculo mostrando el "ordre de visite"
+  const labelHtml = `<div style="
+    display:inline-block;
+    background:rgba(255,255,255,0.92);
+    padding:2px 6px;
+    border-radius:4px;
+    border:1px solid rgba(0,0,0,0.08);
+    font-size:12px;
+    color:#222;
+    box-shadow:0 1px 2px rgba(0,0,0,0.06);
+    white-space:nowrap;
+  ">${site.numPassage??''}</div>`;
+
+  // Nota: si hay MUCHOS puntos, lo más efectivo es usar clustering (leaflet.markercluster)
+  // y/o técnicas de gestión de etiquetas (labelgun, avoidance plugins) para evitar solapamientos.
+
+  const _siteTypeLower = (site.type || '').toString().toLowerCase();
+  let labelIcon;
+  if (_siteTypeLower !== 'entrepot') {
+    labelIcon = L.divIcon({
+      className: 'site-order-label',
+      html: labelHtml,
+      iconSize: null,
+      // iconAnchor Y negative to shift the label downward relative to the marker point
+      iconAnchor: [0, -radius - 8]
+    });
+  } else {
+    // no visible label for entrepot: use an empty/invisible divIcon so we don't render anything
+    labelIcon = L.divIcon({
+      className: 'site-order-label-hidden',
+      html: '',
+      iconSize: [0, 0],
+      iconAnchor: [0, 0]
+    });
+  }
+
+  const labelMarker = L.marker([site.lat, site.lng], {
+    icon: labelIcon,
+    interactive: false,
+    pane: 'sitePane',
+    zIndexOffset: 999
+  });
+
+  // attach label to the circle marker so we can manage it together
+  marker._orderLabel = labelMarker;
+
+  // when the circle is added/removed from the map, add/remove the label as well
+  marker.on('add', () => { try { if (carte && !carte.hasLayer(labelMarker)) carte.addLayer(labelMarker); } catch (e) {} });
+  marker.on('remove', () => { try { if (carte && carte.hasLayer(labelMarker)) carte.removeLayer(labelMarker); } catch (e) {} });
+
+  // if the circle is already on the map, ensure the label is added immediately
+  try { if (carte && carte.hasLayer(marker) && !carte.hasLayer(labelMarker)) carte.addLayer(labelMarker); } catch (e) {}
+
+  marker.options.siteType = type;
+  marker.options.siteId = site.id;
+
+  if (site.type === 'entrepot') {
+
+    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
+      <br>Heure d'arrivée: ${site.arrivee}
+      <br>Heure de départ: 8:00
+      `);
+    
+  } else  {
+    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
+      <br>Heure d'arrivée: ${site.arrivee}
+      <br>Heure de départ: ${site.depart} 
+      `);
+  }
+  
+  marker.on('click', () => {
+    try {
+>>>>>>> feat/FrontendCorrections
       if (marker.openPopup) marker.openPopup();
     } catch (e) {}
   });
@@ -290,6 +427,7 @@ function ensureSitePane() {
   }
 }
 
+<<<<<<< HEAD
 function attachSiteHoverHandlers() {
   if (!Array.isArray(siteMarkers) || !carte) return;
 
@@ -370,6 +508,8 @@ function attachSiteHoverHandlers() {
 }
 
 
+=======
+>>>>>>> feat/FrontendCorrections
 function dimExcept(activeMarker) {
   tronconLines.forEach(l => { try { if (l.setStyle) l.setStyle({ opacity: 0.12 }); } catch (e) {} });
   noeudMarkers.forEach(m => { try { if (m.setOpacity) m.setOpacity(0.2); } catch (e) {} });
@@ -497,6 +637,7 @@ function configurerControlesVisibilite() {
   }
 }
 
+<<<<<<< HEAD
 /**
  * Lance le calcul
  */
@@ -561,6 +702,8 @@ function lancerCalcul() {
                 .text('❌ Erreur: ' + err.message);
         });
     };
+=======
+>>>>>>> feat/FrontendCorrections
 
 function nettoyerCarte() {
   if (carte !== null) {
@@ -595,7 +738,10 @@ fetch('/components/Sidebar.html')
     document.getElementById('btn-filtros')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-filtros')?.classList.add('active');
+<<<<<<< HEAD
       document.getElementById('btn-calcul')?.classList.add('active');
+=======
+>>>>>>> feat/FrontendCorrections
       chargerComposantPrincipal('/components/Import.html');
     });
     
@@ -606,11 +752,14 @@ fetch('/components/Sidebar.html')
       document.getElementById('main-content').innerHTML = `<div style="padding:2rem;"><h2>Statistiques</h2><p>Fonctionnalité en construction…</p></div>`;
     });
 
+<<<<<<< HEAD
     document.getElementById('btn-calcul')?.addEventListener('click', () => {
       lancerCalcul();
       chargerComposantPrincipal('/components/Map.html');
     });
 
+=======
+>>>>>>> feat/FrontendCorrections
     chargerComposantPrincipal('/components/Map.html');
   })
   .catch(err => {
