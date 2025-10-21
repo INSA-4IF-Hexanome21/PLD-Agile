@@ -210,11 +210,7 @@ function subirArchivo(file, uploadType) {
                     } else if (uploadType === 'demande') {
                         window.appController.onLivraisonLoaded();
                         // Afficher message et proposer d'aller à la carte
-                        setTimeout(() => {
-                            if (confirm('✅ Demandes chargées! Voulez-vous voir la carte?')) {
-                                $('#btn-mapa').trigger('click');
-                            }
-                        }, 500);
+                       
                     }
                 } catch (err) {
                     console.error('❌ Erreur contrôleur:', err);
