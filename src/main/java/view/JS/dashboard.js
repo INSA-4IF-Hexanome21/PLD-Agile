@@ -364,7 +364,6 @@ function creerMarqueurSite(site, type, color, radius) {
     <br>Heure d'arrivée: ${site.arrivee}
     <br>Heure de départ: ${site.depart} 
     `);
-    //TODO not when its a site
     
   marker.on('click', () => {
     try {
