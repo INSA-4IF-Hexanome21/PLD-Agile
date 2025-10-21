@@ -48,7 +48,7 @@ public class Controller{
 	 * Méthode pour calculer une livraison
 	 */
     public void calculerLivraison() {
-        currentState.calculerLivraison(this);
+        currentState.calculerLivraison(this, carteController);
     }
 
 	/**

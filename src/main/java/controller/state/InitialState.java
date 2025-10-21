@@ -20,7 +20,7 @@ public class InitialState implements State {
     }
     
     @Override
-    public void calculerLivraison(Controller c) {
+    public void calculerLivraison(Controller c, CarteController carteC) {
         System.err.println(">>> [InitialState] ERREUR: Impossible de calculer sans carte et livraison!");
         throw new IllegalStateException("Veuillez d'abord charger une carte et une livraison");
     }

@@ -96,8 +96,8 @@ class ApplicationController {
     onCarteLoaded() {
         console.log('✅ [Controller] Carte chargée');
         this.carteChargee = true;
+        this.carteChargee = true;
         this.livraisonChargee = false;
-        this.livraisonCalculee = false;
         this.setState(AppState.CARTE_CHARGEE);
     }
 
@@ -112,6 +112,7 @@ class ApplicationController {
         console.log('✅ [Controller] Livraison chargée');
         this.livraisonChargee = true;
         this.livraisonCalculee = false;
+        this.livraison
         this.setState(AppState.LIVRAISON_CHARGEE);
     }
 

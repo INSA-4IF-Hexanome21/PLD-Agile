@@ -497,6 +497,70 @@ function configurerControlesVisibilite() {
   }
 }
 
+/**
+ * Lance le calcul
+ */
+function lancerCalcul() {
+   console.log('Calcul lancé');
+    // Déterminer l'endpoint selon le type
+    var endpoint = '/api/calcul';
+    var statusId = '#status-calcul';
+    
+    console.log('📤 Début du calcul:', endpoint);
+    
+    // Afficher l'état de chargement
+    $(statusId).removeClass('success error').addClass('loading')
+        .text('⏳ Chargement en cours...').show();
+    
+    // Lire le fichier comme ArrayBuffer
+    var reader = new FileReader();
+  
+        // Envoyer directement l'ArrayBuffer
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/xml',
+            },
+        })
+        .then(response => {
+            console.log('📥 Réponse du serveur:', response.status);
+            if (!response.ok) {
+                throw new Error('Erreur serveur: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('✅ Calcul effectué', data);
+            
+            $(statusId).removeClass('loading error').addClass('success')
+                .text('✅ ' + file.name + ' chargé avec succès!');
+            
+            // Notifier le contrôleur du succès
+            if (window.appController) {
+                try {
+                      window.appController.onLivraisonCalculated();
+                      // Afficher message et proposer d'aller à la carte
+                      setTimeout(() => {
+                          if (confirm('✅ Livraison Calculé! Voulez-vous voir la carte?')) {
+                              $('#btn-mapa').trigger('click');
+                          }
+                      }, 500);
+                } catch (err) {
+                    console.error('❌ Erreur contrôleur:', err);
+                    alert('⚠️ ' + err.message);
+                    // Réinitialiser le status en cas d'erreur
+                    $(statusId).removeClass('loading success').addClass('error')
+                        .text('❌ ' + err.message);
+                    return;
+                }
+            }
+        })
+        .catch(err => {
+            console.error('❌ Erreur lors du téléchargement:', err);
+            $(statusId).removeClass('loading success').addClass('error')
+                .text('❌ Erreur: ' + err.message);
+        });
+    };
 
 function nettoyerCarte() {
   if (carte !== null) {
@@ -524,19 +588,27 @@ fetch('/components/Sidebar.html')
     document.getElementById('btn-mapa')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-mapa')?.classList.add('active');
+      document.getElementById('btn-calcul')?.classList.add('active');
       chargerComposantPrincipal('/components/Map.html');
     });
     
     document.getElementById('btn-filtros')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-filtros')?.classList.add('active');
+      document.getElementById('btn-calcul')?.classList.add('active');
       chargerComposantPrincipal('/components/Import.html');
     });
     
     document.getElementById('btn-estadisticas')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-estadisticas')?.classList.add('active');
+      document.getElementById('btn-calcul')?.classList.add('active');
       document.getElementById('main-content').innerHTML = `<div style="padding:2rem;"><h2>Statistiques</h2><p>Fonctionnalité en construction…</p></div>`;
+    });
+
+    document.getElementById('btn-calcul')?.addEventListener('click', () => {
+      lancerCalcul();
+      chargerComposantPrincipal('/components/Map.html');
     });
 
     chargerComposantPrincipal('/components/Map.html');

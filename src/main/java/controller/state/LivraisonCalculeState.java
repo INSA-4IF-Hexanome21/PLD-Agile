@@ -22,7 +22,12 @@ public class LivraisonCalculeState implements State {
         // Effacer le calcul actuel
         carteC.effacerCalcul();
         carteC.chargerDemandesDepuisXML(cheminFichier);
-        // lancer calcul inmediatamente si quieres (opcional)
+    }
+
+
+    @Override
+    public void calculerLivraison(Controller c, CarteController carteC) {
+        System.out.println(">>> [LivraisonCalculeState] Recalcul de la livraison...");
         try {
             carteC.calculerTournee();
             c.setCurrentState(c.livraisonCalculeState);
@@ -31,17 +36,6 @@ public class LivraisonCalculeState implements State {
             c.setCurrentState(c.carteChargeState);
             throw new RuntimeException("Erreur lors du calcul de la tournée : " + ex.getMessage(), ex);
         }
-        System.out.println(">>> [LivraisonCalculeState] Transition vers LivraisonCalculeState");
-    }
-
-
-    @Override
-    public void calculerLivraison(Controller c) {
-        System.out.println(">>> [LivraisonCalculeState] Recalcul de la livraison...");
-        // TODO: Relancer le calcul de la tournée
-        // carteC.calculerTournee();
-        c.setCurrentState(c.livraisonCalculeState);
-        System.out.println(">>> [LivraisonCalculeState] Recalculé, reste dans LivraisonCalculeState");
     }
 
     @Override

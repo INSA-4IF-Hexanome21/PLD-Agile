@@ -24,24 +24,12 @@ public class CarteChargeState implements State {
         // Charger la demande
         carteC.chargerDemandesDepuisXML(cheminFichier);
 
-        // Lancer immédiatement le calcul de la tournée
-        try {
-            System.out.println(">>> [CarteChargeState] Lancement du calcul de la tournée...");
-            carteC.calculerTournee(); // <-- méthode que tu as créée dans CarteController
-            c.setCurrentState(c.livraisonCalculeState);
-            System.out.println(">>> [CarteChargeState] Calcul terminé, transition vers LivraisonCalculeState");
-        } catch (Exception ex) {
-            System.err.println(">>> [CarteChargeState] ERREUR pendant le calcul: " + ex.getMessage());
-            ex.printStackTrace();
-            // On reste en CarteChargeState (ou on peut définir une stratégie d'erreur différente)
-            c.setCurrentState(c.carteChargeState);
-            // Renvoyer l'erreur pour que le serveur HTTP puisse la remonter si nécessaire
-            throw new RuntimeException("Erreur lors du calcul de la tournée : " + ex.getMessage(), ex);
-        }
+        c.setCurrentState(c.livraisonChargeState);
+		System.out.println(">>> [LivraisonChargeState] Livraison chargée, passe dans LivraisonChargeState");
     }
     
     @Override
-    public void calculerLivraison(Controller c) {
+    public void calculerLivraison(Controller c, CarteController carteC) {
         System.err.println(">>> [CarteChargeState] ERREUR: Impossible de calculer sans livraison!");
         throw new IllegalStateException("Veuillez d'abord charger une livraison");
     }

@@ -26,7 +26,13 @@ public class LivraisonChargeState implements State {
         // Charger la nouvelle demande (idempotent après effacerLivraison)
         carteC.chargerDemandesDepuisXML(cheminFichier);
 
-        // lancer calcul immédiatement
+    }
+
+
+
+    @Override
+    public void calculerLivraison(Controller c, CarteController carteC) {
+        System.out.println(">>> [LivraisonChargeState] Calcul de la livraison...");
         try {
             System.out.println(">>> [LivraisonChargeState] Lancement du calcul de la tournée...");
             carteC.calculerTournee(); 
@@ -36,15 +42,6 @@ public class LivraisonChargeState implements State {
             System.err.println(">>> [LivraisonChargeState] ERREUR pendant le calcul: " + ex.getMessage());
             throw new RuntimeException("Erreur lors du calcul de la tournée : " + ex.getMessage(), ex);
         }
-    }
-
-
-
-    @Override
-    public void calculerLivraison(Controller c) {
-        System.out.println(">>> [LivraisonChargeState] Calcul de la livraison...");
-        // TODO: Lancer le calcul de la tournée
-        // carteC.calculerTournee();
         c.setCurrentState(c.livraisonCalculeState);
         System.out.println(">>> [LivraisonChargeState] Transition vers LivraisonCalculeState");
     }

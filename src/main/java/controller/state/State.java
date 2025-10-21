@@ -23,7 +23,7 @@ public interface State {
      * Méthode appelée par le controlleur pour calculer une livraison
      * @param c le controlleur
      */
-    public default void calculerLivraison(Controller c) {}
+    public default void calculerLivraison(Controller c, CarteController carteC) {}
     
     /**
      * Méthode appelée par le controlleur pour changer l'emplacement d'une livraison
