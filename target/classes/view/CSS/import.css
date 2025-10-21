@@ -1,0 +1,20 @@
+.import-container {
+  padding: 1rem;
+}
+
+.file-area.dragover {
+  background-color: #e8f4f8;
+  border-color: #3498db;
+}
+
+.upload-status.success {
+  color: #27ae60;
+}
+
+.upload-status.error {
+  color: #e74c3c;
+}
+
+.upload-status.loading {
+  color: #3498db;
+}
