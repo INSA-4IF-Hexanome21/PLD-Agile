@@ -126,27 +126,10 @@
   color: white;
 }
 
-/* //! Efecto de hover en sites - dimming del resto */
-.map-container {
-  position: relative;
-  transition: filter 0.3s ease;
-}
-
 .map-dim {
   filter: brightness(0.4) grayscale(0.6);
 }
 
-/* //! Animación pulse para markers destacados */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 0 16px currentColor;
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px currentColor;
-    transform: scale(1.15);
-  }
-}
 
 #toggle-trajets:checked + label .site-indicator.trajets {
   animation: none;

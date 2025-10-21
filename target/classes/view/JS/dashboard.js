@@ -273,7 +273,6 @@ function creerMarqueurSite(site, type, color, radius) {
 
   marker.on('click', () => {
     try {
-      if (marker.getLatLng) carte.panTo(marker.getLatLng());
       if (marker.openPopup) marker.openPopup();
     } catch (e) {}
   });
@@ -294,86 +293,6 @@ function ensureSitePane() {
     p.style.pointerEvents = 'auto';
   }
 }
-
-function attachSiteHoverHandlers() {
-  if (!Array.isArray(siteMarkers) || !carte) return;
-
-  siteMarkers.forEach(marker => {
-    if (marker._siteHandlersAttached) return;
-    marker._siteHandlersAttached = true;
-
-    marker.on('click', () => {
-      const numLivraison = marker.options.numLivraison;
-      try {
-        if (marker.getLatLng) carte.panTo(marker.getLatLng());
-        if (marker.openPopup) marker.openPopup();
-      } catch (e) {}
-
-      if (numLivraison != null) {
-        const jumeau = siteMarkers.find(m => m !== marker && m.options.numLivraison === numLivraison);
-        if (jumeau) {
-          const originalRadius = jumeau.options.radius || 8;
-          const originalColor = jumeau.options.color || '#3388ff';
-          jumeau.setStyle({
-            radius: originalRadius * 1.8,
-            color: '#ff6600',
-            weight: 4
-          });
-          setTimeout(() => {
-            jumeau.setStyle({
-              radius: originalRadius,
-              color: originalColor,
-              weight: 2
-            });
-          }, 1000);
-        }
-      }
-    });
-
-    marker.on('mouseover', () => {
-      try {
-        if (marker.openTooltip) marker.openTooltip();
-      } catch (e) {}
-    });
-
-    marker.on('mouseout', () => {
-      try {
-        if (marker.closeTooltip) marker.closeTooltip();
-      } catch (e) {}
-      // Pan et popup
-      if (marker.getLatLng) carte.panTo(marker.getLatLng());
-      if (marker.openPopup) marker.openPopup();
-
-      const numLivraison = marker.options.numLivraison;
-      const jumeau = siteMarkers.find(m => 
-        m !== marker && m.options.numLivraison === numLivraison
-      );
-      if (!jumeau) return;
-
-      // Sauver les propriétés d'origine
-      const originalRadius = jumeau.options.radius || 8;
-      const originalColor = jumeau.options.color || '#3388ff';
-
-      // Grossir et surligner
-      jumeau.setStyle({
-        radius: originalRadius * 1.8,
-        color: '#ff6600',
-        weight: 4
-      });
-
-      // Revenir à la normale après 1 seconde
-      setTimeout(() => {
-        jumeau.setStyle({
-          radius: originalRadius,
-          color: originalColor,
-          weight: 2
-        });
-      }, 1000);
-    });
-  });
-
-}
-
 
 function dimExcept(activeMarker) {
   tronconLines.forEach(l => { try { if (l.setStyle) l.setStyle({ opacity: 0.12 }); } catch (e) {} });
