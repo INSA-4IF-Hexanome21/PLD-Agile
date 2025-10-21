@@ -298,19 +298,6 @@ function creerMarqueurSite(site, type, color, radius) {
     pane: 'sitePane'
   });
 
-  // label fijo debajo del círculo mostrando el "ordre de visite"
-  const labelHtml = `<div style="
-    display:inline-block;
-    background:rgba(255,255,255,0.92);
-    padding:2px 6px;
-    border-radius:4px;
-    border:1px solid rgba(0,0,0,0.08);
-    font-size:12px;
-    color:#222;
-    box-shadow:0 1px 2px rgba(0,0,0,0.06);
-    white-space:nowrap;
-  ">${site.numPassage??''}</div>`;
-
 
   // actualizar tooltips/labels y radios al cambiar el zoom (se añade solo una vez)
   if (carte && !carte._siteLabelZoomHandlerAdded) {
@@ -326,16 +313,42 @@ function creerMarqueurSite(site, type, color, radius) {
     carte._siteLabelZoomHandlerAdded = true;
   }
 
+
+  // label fijo debajo del círculo mostrando el "ordre de visite"
+  const labelHtml = `<div style="
+    display:inline-block;
+    background:rgba(255,255,255,0.92);
+    padding:2px 6px;
+    border-radius:4px;
+    border:1px solid rgba(0,0,0,0.08);
+    font-size:12px;
+    color:#222;
+    box-shadow:0 1px 2px rgba(0,0,0,0.06);
+    white-space:nowrap;
+  ">${site.numPassage??''}</div>`;
+
   // Nota: si hay MUCHOS puntos, lo más efectivo es usar clustering (leaflet.markercluster)
   // y/o técnicas de gestión de etiquetas (labelgun, avoidance plugins) para evitar solapamientos.
 
-  const labelIcon = L.divIcon({
-    className: 'site-order-label',
-    html: labelHtml,
-    iconSize: null,
-    // iconAnchor Y negative to shift the label downward relative to the marker point
-    iconAnchor: [0, -radius - 8]
-  });
+  const _siteTypeLower = (site.type || '').toString().toLowerCase();
+  let labelIcon;
+  if (_siteTypeLower !== 'entrepot') {
+    labelIcon = L.divIcon({
+      className: 'site-order-label',
+      html: labelHtml,
+      iconSize: null,
+      // iconAnchor Y negative to shift the label downward relative to the marker point
+      iconAnchor: [0, -radius - 8]
+    });
+  } else {
+    // no visible label for entrepot: use an empty/invisible divIcon so we don't render anything
+    labelIcon = L.divIcon({
+      className: 'site-order-label-hidden',
+      html: '',
+      iconSize: [0, 0],
+      iconAnchor: [0, 0]
+    });
+  }
 
   const labelMarker = L.marker([site.lat, site.lng], {
     icon: labelIcon,
@@ -357,14 +370,22 @@ function creerMarqueurSite(site, type, color, radius) {
   marker.options.siteType = type;
   marker.options.siteId = site.id;
 
-  marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
-  marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
-    <br>Numéro de livraison: ${site.numLivraison}
-    <br>Ordre de visite: ${site.numPassage}
-    <br>Heure d'arrivée: ${site.arrivee}
-    <br>Heure de départ: ${site.depart} 
-    `);
+  if (site.type === 'entrepot') {
+
+    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
+      <br>Heure d'arrivée: ${site.arrivee}
+      <br>Heure de départ: 8:00
+      `);
     
+  } else  {
+    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
+      <br>Heure d'arrivée: ${site.arrivee}
+      <br>Heure de départ: ${site.depart} 
+      `);
+  }
+  
   marker.on('click', () => {
     try {
       if (marker.openPopup) marker.openPopup();
