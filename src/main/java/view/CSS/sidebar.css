@@ -11,13 +11,30 @@
 
 /* Estilos adicionales para indicadores de trajets */
 .site-indicator.trajets {
+  width: 30px;
+  height: 4px; 
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+  border-radius: 2px;
 }
 
 /* Animación sutil para el checkbox de trajets */
 #toggle-trajets:checked + label .site-indicator.trajets {
   animation: trajets-pulse 2s ease-in-out infinite;
+}
+
+/* Estilos adicionales para indicadores de troncons */
+.site-indicator.troncons {
+  width: 30px;
+  height: 4px; 
+  background: linear-gradient(135deg, #5b5e6e 0%, #667eea 100%);
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+  border-radius: 2px;
+}
+
+/* Animación sutil para el checkbox de trajets */
+#toggle-troncons:checked + label .site-indicator.troncons {
+  animation: troncons-pulse 2s ease-in-out infinite;
 }
 
 @keyframes trajets-pulse {

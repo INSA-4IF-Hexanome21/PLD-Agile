@@ -21,7 +21,8 @@ const visibilityState = {
   collecte: true,
   depot: true,
   noeuds: true,
-  troncons: true
+  troncons: true,
+  trajets: true
 };
 
 /* //! ----------------- UTILIDADES / INIT ----------------- */
@@ -476,6 +477,15 @@ function updateVisibility() {
       if (carte.hasLayer(line)) carte.removeLayer(line);
     }
   });
+
+  // FR: Gestion de la visibilité des trajets
+  trajetLines.forEach(trajet => {
+    if (visibilityState.trajets) {
+      if (!carte.hasLayer(trajet)) trajet.addTo(carte);
+    } else {
+      if (carte.hasLayer(trajet)) carte.removeLayer(trajet);
+    }
+  });
 }
 
 function configurerControlesVisibilite() {
@@ -511,6 +521,16 @@ function configurerControlesVisibilite() {
     });
   }
 
+  // FR: Toggle pour les trajets
+  const tTraj = document.getElementById('toggle-trajets');
+  if (tTraj) {
+    tTraj.checked = visibilityState.trajets;
+    tTraj.addEventListener('change', (e) => {
+      visibilityState.trajets = e.target.checked;
+      updateVisibility();
+    });
+  }
+
   // FR: Bouton pour recentrer la vue (utilise donneesGlobales)
   const btnReset = document.getElementById('btn-reset-view');
   if (btnReset) {
@@ -530,11 +550,11 @@ function configurerControlesVisibilite() {
   const btnToggleAll = document.getElementById('btn-toggle-all');
   if (btnToggleAll) {
     btnToggleAll.addEventListener('click', () => {
-      const all = ['entrepot','collecte','depot','noeuds','troncons'].every(k => visibilityState[k] === true);
+      const all = ['entrepot','collecte','depot','noeuds','troncons','trajets'].every(k => visibilityState[k] === true);
       const newState = !all;
       Object.keys(visibilityState).forEach(k => visibilityState[k] = newState);
       // FR: mettre à jour l'état visuel des checkboxes si elles existent
-      ['entrepot','collecte','depot','noeuds','troncons'].forEach(k => {
+      ['entrepot','collecte','depot','noeuds','troncons','trajets'].forEach(k => {
         const el = document.getElementById(`toggle-${k}`);
         if (el) el.checked = visibilityState[k];
       });
@@ -553,6 +573,7 @@ function nettoyerCarte() {
   siteMarkers = [];
   noeudMarkers = [];
   tronconLines = [];
+  trajetLines = [];
   donneesGlobales = null;
 }
 
