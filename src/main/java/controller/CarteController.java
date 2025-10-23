@@ -280,9 +280,8 @@ public class CarteController {
     public GrapheTotal creerGrapheTotal(Carte carte, long idEntrepot){
         HashMap<Long, Noeud> noeuds = carte.getNoeuds();
         List<Troncon> troncons = carte.getTroncons();
-        int nbSommets = noeuds.size();
 
-        GrapheTotal gt = new GrapheTotal(nbSommets, troncons, noeuds, idEntrepot);
+        GrapheTotal gt = new GrapheTotal(troncons, noeuds, idEntrepot);
         //gt.printGraphe();
         return gt;
     }

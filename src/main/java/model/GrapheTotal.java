@@ -7,7 +7,6 @@ import tsp.Graphe;
 
 public class GrapheTotal implements Graphe {
 
-	private int nbSommets;
 	private Map<Integer, List<SimpleEntry<Integer, Float>>> mapAllSommets;
 	
 	private Map<Integer, List<SimpleEntry<Integer, Float>>> mapDistances;
@@ -22,15 +21,12 @@ public class GrapheTotal implements Graphe {
 	
 	/**
 	 * Cree un graphe complet dont les aretes ont un cout compris entre COUT_MIN et COUT_MAX
-	 * @param nbSommets
 	 */
 	public GrapheTotal(
-		int nbSommets, 
 		List<Troncon> troncons,
 		HashMap<Long, Noeud> noeuds,
 		long idEntrepot
 	) {
-		this.nbSommets = nbSommets;
 		this.idToIndex = new HashMap<>();
 		this.indexToId = new HashMap<>();
 		this.mapAllSommets = new HashMap<>();
@@ -216,30 +212,30 @@ public class GrapheTotal implements Graphe {
 		//printCheminsEtDistances(sites);
 	}
 
-	private void printCheminsEtDistances(List<Site> sites) {
-		System.out.println("\n=== Chemins et distances minimales entre sites ==="); 
-		for (var entry : mapDistances.entrySet()) { 
-			int depart = entry.getKey();
+	// private void printCheminsEtDistances(List<Site> sites) {
+	// 	System.out.println("\n=== Chemins et distances minimales entre sites ==="); 
+	// 	for (var entry : mapDistances.entrySet()) { 
+	// 		int depart = entry.getKey();
 			
-			for (SimpleEntry<Integer, Float> voisin : entry.getValue()) {
-				int arrivee = voisin.getKey();
-				float distance = voisin.getValue();
-				System.out.printf("De %d vers %d (distance: %.1f)", depart, arrivee, distance);
-				List<Integer> chemin = cheminsMin.get(new SimpleEntry<>(depart, arrivee));
-				System.out.println(chemin != null && !chemin.isEmpty() ? " via " : " (direct)");
-				if (chemin != null && !chemin.isEmpty()) {
-					// Afficher le chemin avec les nœuds intermédiaires
-					for (int i = 0; i < chemin.size(); i++) {
-						System.out.print(chemin.get(i));
-						if (i < chemin.size() - 1) {
-							System.out.print(" -> ");
-						}
-					}
-				}
-				System.out.println();
-			}
-		}
-	}
+	// 		for (SimpleEntry<Integer, Float> voisin : entry.getValue()) {
+	// 			int arrivee = voisin.getKey();
+	// 			float distance = voisin.getValue();
+	// 			System.out.printf("De %d vers %d (distance: %.1f)", depart, arrivee, distance);
+	// 			List<Integer> chemin = cheminsMin.get(new SimpleEntry<>(depart, arrivee));
+	// 			System.out.println(chemin != null && !chemin.isEmpty() ? " via " : " (direct)");
+	// 			if (chemin != null && !chemin.isEmpty()) {
+	// 				// Afficher le chemin avec les nœuds intermédiaires
+	// 				for (int i = 0; i < chemin.size(); i++) {
+	// 					System.out.print(chemin.get(i));
+	// 					if (i < chemin.size() - 1) {
+	// 						System.out.print(" -> ");
+	// 					}
+	// 				}
+	// 			}
+	// 			System.out.println();
+	// 		}
+	// 	}
+	// }
 
 	public List<Integer> getCheminComplet(List<Integer> solution) {
 		/* System.out.println("=== Reconstruction du chemin complet ===");

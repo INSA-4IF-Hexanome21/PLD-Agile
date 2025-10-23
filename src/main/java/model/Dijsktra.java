@@ -72,19 +72,18 @@ public class Dijsktra {
         }
         return resultat;
     }
-
     
-    private static int getSommetLePlusProche(float[] distances, boolean[] visites) {
-        float minDistance = Float.MAX_VALUE;
-        int minIndex = -1;
-        for (int i = 0; i < distances.length; i++) {
-            if (!visites[i] && distances[i] < minDistance) {
-                minDistance = distances[i];
-                minIndex = i;
-            }
-        }
-        return minIndex;
-    }
+    // private static int getSommetLePlusProche(float[] distances, boolean[] visites) {
+    //     float minDistance = Float.MAX_VALUE;
+    //     int minIndex = -1;
+    //     for (int i = 0; i < distances.length; i++) {
+    //         if (!visites[i] && distances[i] < minDistance) {
+    //             minDistance = distances[i];
+    //             minIndex = i;
+    //         }
+    //     }
+    //     return minIndex;
+    // }
 
     private static void calculeDistanceMin(
         GrapheTotal gt, 
