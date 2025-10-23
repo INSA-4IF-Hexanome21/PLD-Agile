@@ -6,26 +6,33 @@ public class CarteChargeState implements State {
     // État: carte chargée - peut charger une nouvelle carte ou une livraison
     
    @Override
-	public void chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
+	public boolean chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
 		System.out.println(">>> [CarteChargeState] Rechargement de la carte...");
-		// Nettoyer livraisons et calculs précédents
-		carteC.effacerCalcul();
-		carteC.effacerLivraison();
-		carteC.chargerCarteDepuisXML(cheminFichier);
-		c.setCurrentState(c.carteChargeState);
-		System.out.println(">>> [CarteChargeState] Carte rechargée, reste dans CarteChargeState");
-	}
+		boolean chargementCarteReussi = carteC.chargerCarteDepuisXML(cheminFichier);
+        if (chargementCarteReussi == true){
+            c.setCurrentState(c.carteChargeState);
+            System.out.println(">>> [CarteChargeState] Transition vers CarteChargeState");
+            return true;
+        } else {
+            c.setCurrentState(c.initialState);
+            return false;
+        }
+    }
 
 
    
     @Override
-    public void chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
+    public boolean chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
         System.out.println(">>> [CarteChargeState] Chargement de la livraison depuis " + cheminFichier);
         // Charger la demande
-        carteC.chargerDemandesDepuisXML(cheminFichier);
-
-        c.setCurrentState(c.livraisonChargeState);
-		System.out.println(">>> [LivraisonChargeState] Livraison chargée, passe dans LivraisonChargeState");
+        boolean chargementLivrasonReussi = carteC.chargerDemandesDepuisXML(cheminFichier);
+        if (chargementLivrasonReussi == true){
+            c.setCurrentState(c.carteChargeState);
+            System.out.println(">>> [CarteChargeState] Transition vers LivraisonChargeState");
+            return true;
+        } else {
+            return false;
+        }
     }
     
     @Override

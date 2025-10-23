@@ -81,11 +81,6 @@ public class ServeurHTTP {
                         System.out.println("Nombre generado: " + fileName);
                     }
                     
-                    // Vérifier qu'il s'agit d'une fichier XML
-                    if (!fileName.toLowerCase().endsWith(".xml")) {
-                        throw new Exception("Le fichier doit être un XML");
-                    }
-                    
                     // Créer un répertoire s'il n'existe pas
                     File uploadDir = new File(cheminBaseRessources + "uploads/plans/");
                     if (!uploadDir.exists()) {
@@ -101,12 +96,12 @@ public class ServeurHTTP {
                     // Charger le plan dans le controleur
                     System.out.println(">>> Chargement du plan dans le contrôleur <<<");
 
-                    controller.chargerCarte(outFile.getAbsolutePath());
-
-                    // carteController.chargerCarteDepuisXML(outFile.getAbsolutePath());
-                    // System.out.println(">>> Plan chargé avec succès <<<");
+                    boolean carteChargeReussi = controller.chargerCarte(outFile.getAbsolutePath());
+                    if (!carteChargeReussi) {
+                        throw new Exception("Le fichier ne permet pas de charger une carte");
+                    }
                     
-                    // Rrépondre au client
+                    // Répondre au client
                     String response = "{\"status\":\"ok\",\"type\":\"plan\",\"path\":\"uploads/plans/" 
                                     + fileName + "\",\"size\":" + bytes.length + ",\"message\":\"Plan chargé avec succès\"}";
                     byte[] responseBytes = response.getBytes("UTF-8");
@@ -132,7 +127,7 @@ public class ServeurHTTP {
                     exchange.close();
                 }
             } else {
-                System.out.println("Método no permitido: " + exchange.getRequestMethod());
+                System.out.println("Méthode non permise: " + exchange.getRequestMethod());
                 exchange.sendResponseHeaders(405, -1);
                 exchange.close();
             }
@@ -183,8 +178,14 @@ public class ServeurHTTP {
                 // Asumiendo que tienes un método para cargar demandes
                 System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
 
-                controller.chargerLivraison(outFile.getAbsolutePath());
+                 boolean carteChargeReussi =  controller.chargerLivraison(outFile.getAbsolutePath());
+                    if (!carteChargeReussi) {
+                        throw new Exception("Le fichier ne permet pas de charger une carte");
+                    }
 
+                if (!fileName.toLowerCase().endsWith(".xml")) {
+                    throw new Exception("Le fichier doit être un XML");
+                }
                 // carteController.chargerDemandesDepuisXML(outFile.getAbsolutePath());
                 System.out.println(">>> Demande chargée avec succès <<<");
                 

@@ -6,17 +6,23 @@ public class LivraisonChargeState implements State {
     // État: livraison chargée - peut recalculer, recharger carte/livraison, ou calculer livraison
     
     @Override
-    public void chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
-        System.out.println(">>> [LivraisonChargeState] Rechargement de la carte (effacement livraison)...");
-        // Effacer la livraison actuelle
-        // carteC.effacerLivraison(); // À implémenter dans CarteController
-        carteC.chargerCarteDepuisXML(cheminFichier);
-        c.setCurrentState(c.carteChargeState);
-        System.out.println(">>> [LivraisonChargeState] Transition vers CarteChargeState");
+   public boolean chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
+		System.out.println(">>> [LivraisonChargeState] Rechargement de la carte...");
+		// Nettoyer livraisons et calculs précédents
+		carteC.effacerLivraison();
+		boolean chargementCarteReussi = carteC.chargerCarteDepuisXML(cheminFichier);
+        if (chargementCarteReussi == true){
+            c.setCurrentState(c.carteChargeState);
+            System.out.println(">>> [LivraisonChargeState] Transition vers CarteChargeState");
+            return true;
+        } else {
+            c.setCurrentState(c.initialState);
+            return false;
+        }
     }
 
   @Override
-    public void chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
+    public boolean chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
         System.out.println(">>> [LivraisonChargeState] Rechargement de la livraison...");
 
         // Effacer la livraison précédente avant de charger la nouvelle
@@ -24,8 +30,15 @@ public class LivraisonChargeState implements State {
         carteC.effacerLivraison();
 
         // Charger la nouvelle demande (idempotent après effacerLivraison)
-        carteC.chargerDemandesDepuisXML(cheminFichier);
-
+        boolean chargementLivrasonReussi = carteC.chargerDemandesDepuisXML(cheminFichier);
+        if (chargementLivrasonReussi == true){
+            c.setCurrentState(c.carteChargeState);
+            System.out.println(">>> [LivraisonChargeState] Transition vers LivraisonChargeState");
+            return true;
+        } else {
+            c.setCurrentState(c.carteChargeState);
+            return false;
+        }
     }
 
 
