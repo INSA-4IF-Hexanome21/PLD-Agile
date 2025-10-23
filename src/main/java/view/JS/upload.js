@@ -42,6 +42,7 @@ $(document).ready(function() {
             
             // Télécharger le fichier automatiquement
             subirArchivo(this.files[0], uploadType);
+            setTimeout(initialiserCarte, 1000);
         } else {
             $dummy.find('.selected').hide();
             $dummy.find('.default').show();

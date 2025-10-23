@@ -43,7 +43,7 @@ function chargerComposantPrincipal(url) {
         setTimeout(initialiserCarte, 100);
       }
       // Si c'est Import.html, mettre à jour l'UI selon l'état
-      if (url.includes('Import.html') && window.appController) {
+      if (url.includes('Import.html') && window.appController) { //TODO mkkk
         setTimeout(updateUIBasedOnState, 100);
       }
     })
@@ -313,6 +313,9 @@ function creerMarqueurSite(site, type, color, radius) {
   }
 
 
+
+
+
   // label fijo debajo del círculo mostrando el "ordre de visite"
   const labelHtml = `<div style="
     display:inline-block;
@@ -329,24 +332,33 @@ function creerMarqueurSite(site, type, color, radius) {
   // Nota: si hay MUCHOS puntos, lo más efectivo es usar clustering (leaflet.markercluster)
   // y/o técnicas de gestión de etiquetas (labelgun, avoidance plugins) para evitar solapamientos.
 
-  const _siteTypeLower = (site.type || '').toString().toLowerCase();
+  const hasArrival = !(site.arrivee == null || site.arrivee === '');
   let labelIcon;
-  if (_siteTypeLower !== 'entrepot') {
-    labelIcon = L.divIcon({
-      className: 'site-order-label',
-      html: labelHtml,
-      iconSize: null,
-      // iconAnchor Y negative to shift the label downward relative to the marker point
-      iconAnchor: [0, -radius - 8]
-    });
-  } else {
-    // no visible label for entrepot: use an empty/invisible divIcon so we don't render anything
+
+  if (!hasArrival) {
     labelIcon = L.divIcon({
       className: 'site-order-label-hidden',
       html: '',
       iconSize: [0, 0],
       iconAnchor: [0, 0]
     });
+  } else {
+    const _siteTypeLower = (site.type || '').toString().toLowerCase();
+    if (_siteTypeLower !== 'entrepot') {
+      labelIcon = L.divIcon({
+        className: 'site-order-label',
+        html: labelHtml,
+        iconSize: null,
+        iconAnchor: [0, -radius - 8]
+      });
+    } else {
+      labelIcon = L.divIcon({
+        className: 'site-order-label-hidden',
+        html: '',
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+      });
+    }
   }
 
   const labelMarker = L.marker([site.lat, site.lng], {
@@ -369,7 +381,25 @@ function creerMarqueurSite(site, type, color, radius) {
   marker.options.siteType = type;
   marker.options.siteId = site.id;
 
+  if ((site.arrivee == null || site.arrivee === '')) {
   if (site.type === 'entrepot') {
+
+    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
+      <br>Heure d'arrivée: Pas encore calculée
+      <br>Heure de départ: 8:00
+      `);
+    
+  } else  {
+    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
+      <br>Heure d'arrivée: Pas encore calculée
+      <br>Heure de départ: Pas encore calculée
+      `);
+
+  } } else  {
+
+    if (site.type === 'entrepot') {
 
     marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
     marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
@@ -384,6 +414,7 @@ function creerMarqueurSite(site, type, color, radius) {
       <br>Heure de départ: ${site.depart} 
       `);
   }
+}
   
   marker.on('click', () => {
     try {
