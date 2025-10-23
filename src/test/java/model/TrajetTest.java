@@ -57,7 +57,7 @@ public class TrajetTest {
         assertTrue(s1.contains("Livreur: model.Livreur@"));
         assertTrue(s1.contains("Heure de début: 08:00"));
         assertTrue(s1.contains("Heure de fin: 10:30"));
-        assertTrue(s1.contains("Durée du trajet: 2,50 heures"));
+        assertTrue(s1.contains("Durée du trajet: 2,50 heures") || s1.contains("Durée du trajet: 2.50 heures"));
         assertTrue(s1.contains("Nombre de sites : 0"));
         assertTrue(s1.contains("[Troncon{nomRue='Rue A', longueur=10.0, origine=1, destination=2}, Troncon{nomRue='Rue B', longueur=20.0, origine=2, destination=1}, Troncon{nomRue='Rue B', longueur=10.0, origine=1, destination=2}]"));
         

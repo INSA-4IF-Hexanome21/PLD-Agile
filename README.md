@@ -21,14 +21,14 @@ java -cp target/classes app.Main
 
 ## Tests
 
-Compiler les tests :
-```bash
-javac -cp target/classes -d target/test-classes src/test/java/model/*.java
-```
-
 Exécuter les tests :
 ```bash
-java -cp target/classes model.<classTest>
+mvn clean test
+```
+
+Pour voir les résultats du test, ouvrir le fichier généré :
+```bash
+target/site/jacoco/index.html
 ```
 
 ## Ressources

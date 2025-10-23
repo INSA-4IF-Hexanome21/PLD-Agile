@@ -4,7 +4,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 
 
-public class Dijsktra {
+public class Dijkstra {
 
     public static Map<Integer, Float> dijkstra(
         GrapheTotal gt, 
