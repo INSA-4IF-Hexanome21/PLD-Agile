@@ -51,10 +51,22 @@ public class TrajetTest {
         trajet1.setdureeTrajet(2.5f);
         trajet1.setTroncons(troncons);
         String s1 = trajet1.toString();
+        String s2 = trajet2.toString();
 
         assertEquals(2.5f, trajet1.getdureeTrajet(), 0.001f);
-        assertNull(trajet1.getHeureFin());
-       
+        assertTrue(s1.contains("Livreur: model.Livreur@"));
+        assertTrue(s1.contains("Heure de début: 08:00"));
+        assertTrue(s1.contains("Heure de fin: 10:30"));
+        assertTrue(s1.contains("Durée du trajet: 2,50 heures"));
+        assertTrue(s1.contains("Nombre de sites : 0"));
+        assertTrue(s1.contains("[Troncon{nomRue='Rue A', longueur=10.0, origine=1, destination=2}, Troncon{nomRue='Rue B', longueur=20.0, origine=2, destination=1}, Troncon{nomRue='Rue B', longueur=10.0, origine=1, destination=2}]"));
+        
+        assertTrue(s2.contains("Livreur: Non assigné"));
+        assertTrue(s2.contains("Heure de début: 08:00"));
+        assertTrue(s2.contains("Heure de fin: Non calculée"));
+        assertTrue(s2.contains("Durée du trajet: Non calculée"));
+        assertTrue(s2.contains("Nombre de sites : 0"));
+        assertTrue(s2.contains("[]"));
     }
 
 }
