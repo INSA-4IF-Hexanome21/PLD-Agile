@@ -69,7 +69,7 @@ public class ServeurHTTPTest {
 
     @Test
     public void testUploadPlanOk() throws Exception {
-        URL url = new URL("http://localhost:" + PORT + "/api/upload/plan");
+        URL url = java.net.URI.create("http://localhost:" + PORT + "/api/upload/plan").toURL();
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("X-File-Name", "testPlan.xml");
@@ -89,13 +89,13 @@ public class ServeurHTTPTest {
 
     @Test
     public void testUploadPlanErreurFormat() throws Exception {
-        URL url = new URL("http://localhost:" + PORT + "/api/upload/plan");
+        URL url = java.net.URI.create("http://localhost:" + PORT + "/api/upload/plan").toURL();
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("X-File-Name", "mauvais.txt");
         connection.setDoOutput(true);
 
-        String fakeData = "Ceci n’est pas du XML";
+        String fakeData = "Ceci n'est pas du XML";
         try (OutputStream os = connection.getOutputStream()) {
             os.write(fakeData.getBytes(StandardCharsets.UTF_8));
         }
@@ -106,7 +106,7 @@ public class ServeurHTTPTest {
 
     @Test
     public void testUploadPlanMethodeNonAutorisee() throws Exception {
-        URL url = new URL("http://localhost:" + PORT + "/api/upload/plan");
+        URL url = java.net.URI.create("http://localhost:" + PORT + "/api/upload/plan").toURL();
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
 
@@ -116,7 +116,7 @@ public class ServeurHTTPTest {
 
     @Test
     public void testUploadPlanSansNomDeFichier() throws Exception {
-        URL url = new URL("http://localhost:" + PORT + "/api/upload/plan");
+        URL url = java.net.URI.create("http://localhost:" + PORT + "/api/upload/plan").toURL();
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);

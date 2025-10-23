@@ -69,32 +69,37 @@ public class ServeurHTTP {
                 try {
                     // Lecture du corps de la requête
                     byte[] bytes = exchange.getRequestBody().readAllBytes();
-                    System.out.println("Bytes recibidos: " + bytes.length);
+                    System.out.println("Octets reçus: " + bytes.length);
                     
                     // Obtenir le nom du fichier de l'en-tête
                     String fileName = exchange.getRequestHeaders().getFirst("X-File-Name");
                     if (fileName != null) {
                         fileName = java.net.URLDecoder.decode(fileName, "UTF-8");
-                        System.out.println("Nombre del archivo: " + fileName);
+                        System.out.println("Nom du fichier: " + fileName);
                     } else {
                         fileName = "plan_" + System.currentTimeMillis() + ".xml";
-                        System.out.println("Nombre generado: " + fileName);
+                        System.out.println("Nom généré: " + fileName);
+                    }
+                    
+                    // Vérifier qu'il s'agit d'un fichier XML
+                    if (!fileName.toLowerCase().endsWith(".xml")) {
+                        throw new Exception("Le fichier doit être un XML");
                     }
                     
                     // Créer un répertoire s'il n'existe pas
                     File uploadDir = new File(cheminBaseRessources + "uploads/plans/");
                     if (!uploadDir.exists()) {
                         boolean created = uploadDir.mkdirs();
-                        System.out.println("Directorio de plans creado: " + created);
+                        System.out.println("Répertoire des plans créé: " + created);
                     }
                     
                     // Enregistrer le fichier
                     File outFile = new File(uploadDir, fileName);
                     Files.write(outFile.toPath(), bytes);
+
                     System.out.println("Plan enregistré dans : " + outFile.getAbsolutePath());
-                    
+
                     // Charger le plan dans le contrôleur
-                    System.out.println(">>> Chargement du plan dans le contrôleur <<<");
 
                     boolean carteChargeReussi = controller.chargerCarte(outFile.getAbsolutePath());
                     if (!carteChargeReussi) {
@@ -102,7 +107,7 @@ public class ServeurHTTP {
                     }
                     
                     // Répondre au client
-                    String response = "{\"status\":\"ok\",\"type\":\"plan\",\"path\":\"uploads/plans/" 
+                    String response = "{\"status\":\"ok\",\"type\":\"plan\",\"path\":\"uploads/plans/"
                                     + fileName + "\",\"size\":" + bytes.length + ",\"message\":\"Plan chargé avec succès\"}";
                     byte[] responseBytes = response.getBytes("UTF-8");
                     
@@ -127,7 +132,7 @@ public class ServeurHTTP {
                     exchange.close();
                 }
             } else {
-                System.out.println("Méthode non permise: " + exchange.getRequestMethod());
+                System.out.println("Méthode non autorisée: " + exchange.getRequestMethod());
                 exchange.sendResponseHeaders(405, -1);
                 exchange.close();
             }
@@ -145,32 +150,37 @@ public class ServeurHTTP {
             try {
                 // Lecture du corps de la requête
                 byte[] bytes = exchange.getRequestBody().readAllBytes();
-                System.out.println("Bytes recibidos: " + bytes.length);
+                System.out.println("Octets reçus: " + bytes.length);
                 
                 // Obtenir le nom du fichier de l'en-tête
                 String fileName = exchange.getRequestHeaders().getFirst("X-File-Name");
                 if (fileName != null) {
                     fileName = java.net.URLDecoder.decode(fileName, "UTF-8");
-                    System.out.println("Nombre del archivo: " + fileName);
+                    System.out.println("Nom du fichier: " + fileName);
                 } else {
                     fileName = "demande_" + System.currentTimeMillis() + ".xml";
-                    System.out.println("Nombre generado: " + fileName);
+                    System.out.println("Nom généré: " + fileName);
                 }
                 
+                // Valider qu'il s'agit d'un XML
+                if (!fileName.toLowerCase().endsWith(".xml")) {
+                    throw new Exception("Le fichier doit être un XML");
+                }
                 
-                // Créer un répertoire s'il n'existe pas
+                // Créer le répertoire s'il n'existe pas
                 File uploadDir = new File(cheminBaseRessources + "uploads/demandes/");
                 if (!uploadDir.exists()) {
                     boolean created = uploadDir.mkdirs();
-                    System.out.println("Directorio de demandes creado: " + created);
+                    System.out.println("Répertoire des demandes créé: " + created);
                 }
                 
                 // Enregistrer le fichier
                 File outFile = new File(uploadDir, fileName);
                 Files.write(outFile.toPath(), bytes);
-                System.out.println("Demande enregistrée dans : " + outFile.getAbsolutePath());
+                System.out.println("Demande enregistrée dans: " + outFile.getAbsolutePath());
                 
-                // Charger la demande dans le controleur
+                // CHARGER LA DEMANDE DANS LE CONTRÔLEUR
+                // En supposant que vous avez une méthode pour charger les demandes
                 System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
 
                  boolean carteChargeReussi =  controller.chargerLivraison(outFile.getAbsolutePath());
@@ -180,7 +190,7 @@ public class ServeurHTTP {
                 System.out.println(">>> Demande chargée avec succès <<<");
                 
                 // Répondre au client
-                String response = "{\"status\":\"ok\",\"type\":\"demande\",\"path\":\"uploads/demandes/" 
+                String response = "{\"status\":\"ok\",\"type\":\"demande\",\"path\":\"uploads/demandes/\""
                                 + fileName + "\",\"size\":" + bytes.length + ",\"message\":\"Demande chargée avec succès\"}";
                 byte[] responseBytes = response.getBytes("UTF-8");
                 
@@ -205,7 +215,7 @@ public class ServeurHTTP {
                 exchange.close();
             }
         } else {
-            System.out.println("Méthode non permise: " + exchange.getRequestMethod());
+            System.out.println("Méthode non autorisée: " + exchange.getRequestMethod());
             exchange.sendResponseHeaders(405, -1);
             exchange.close();
         }

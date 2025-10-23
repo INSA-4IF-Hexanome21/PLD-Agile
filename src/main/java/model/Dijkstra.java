@@ -54,12 +54,14 @@ public class Dijkstra {
         
         // Construire les chemins minimaux
         for (int dest= 0; dest<nbSommets; dest++) {
-            if (dest != indexNoeudDepart && distances[dest] != Float.MAX_VALUE) {
-                List<Integer> chemin = new ArrayList<>();
-                for (int v = dest; v != -1; v = predecesseurs[v]) {
-                    chemin.add(0, v); // Ajouter au début pour inverser l'ordre
+            if (dest != indexNoeudDepart) {
+                if (distances[dest] != Float.MAX_VALUE) {
+                    List<Integer> chemin = new ArrayList<>();
+                    for (int v = dest; v != -1; v = predecesseurs[v]) {
+                        chemin.add(0, v); // Ajouter au début pour inverser l'ordre
+                    }
+                    cheminsMin.put(new SimpleEntry<>(indexNoeudDepart, dest), chemin);
                 }
-                cheminsMin.put(new SimpleEntry<>(indexNoeudDepart, dest), chemin);
             }
         }
         //System.out.println("Chemins minimaux depuis le noeud " + indexNoeudDepart + " : " + cheminsMin);
