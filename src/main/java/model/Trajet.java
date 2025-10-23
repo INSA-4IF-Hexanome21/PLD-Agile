@@ -15,6 +15,9 @@ public class Trajet {
     private LocalTime heureDebut;
     private LocalTime heureFin;
 
+    private List<Long> cheminComplet;
+    private List<Long> solution;
+
 
     // Constructeur complet
     public Trajet(Livreur livreur) {
@@ -83,6 +86,22 @@ public class Trajet {
 
     public void setTroncons(List<Troncon> troncons) {
         this.troncons = troncons;
+    }
+
+    public void setSolution(List<Long> solution) {
+        this.solution = solution;
+    }
+
+    public void setCheminComplet(List<Long> cheminComplet) {
+        this.cheminComplet = cheminComplet;
+    }
+
+    public List<Long> getSolution() {
+        return this.solution;
+    }
+
+    public List<Long> getCheminComplet() {
+        return this.cheminComplet;
     }
 
     @Override

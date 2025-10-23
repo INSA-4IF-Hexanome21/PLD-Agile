@@ -71,13 +71,18 @@ public class Carte {
 
     public void majTrajetDepuisChemin(GrapheTotal gt, List<Long> cheminComplet,List<Integer>solution, Trajet trajet){
         // System.out.println(solution);
+        trajet.setCheminComplet(cheminComplet);
+
         List<Troncon> troncons = new ArrayList<Troncon>();
         float dureeTrajet = 0;
         //Création d'une hasmap pour numéro de passage
         HashMap<Long,Integer> numsPassage = new HashMap<Long,Integer>();
-        for(int i= 1; i<solution.size(); ++i){
+        List<Long> solutionLongs = new ArrayList<>();
+        for(int i= 0; i<solution.size(); ++i){
             numsPassage.put(gt.getIdFromIndex(solution.get(i)),i);
+            solutionLongs.add(gt.getIdFromIndex(solution.get(i)));
         }
+        trajet.setSolution(solutionLongs);
 
         Integer indexSolution = 1;
         Long idSiteAttendu = gt.getIdFromIndex(solution.get(indexSolution));

@@ -1,10 +1,13 @@
 package controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.AbstractMap.SimpleEntry;
 import tsp.*;
 
 import model.*;
@@ -113,6 +116,8 @@ public class CarteController {
             this.chercherCheminsMin(gt, trajet.getSites(), trajet);
         }
        
+        //this.supprimerLivraison(gt, Long.valueOf(25610684), Long.valueOf(21717915), this.getCarte().getTrajets().get(0));
+        this.supprimerLivraison(gt, Long.valueOf(21992645), Long.valueOf(55444215), this.getCarte().getTrajets().get(0));
     }
 
     /**
@@ -198,7 +203,110 @@ public class CarteController {
         System.out.println(">>> CarteController: livraisons précédentes effacées.");
     }
 
+    public void supprimerLivraison(GrapheTotal gt, Long idCollecte, Long idDepot, Trajet trajet) {
+        // On récupère les ids des sites associés au numLivraison pour les supp
+        // TODO : Méthode pour récupérer les id de Collecte et Livraison a partir de numLivraison 
+        // dans la classe demande livraison
+
+        //Long idCollecte, idDepot;
+        
+        List<Site> sites = trajet.getSites();
+        List<Long> solutionLong = trajet.getSolution();
+        List<Long> cheminComplet = trajet.getCheminComplet();
+        List<Long> nouvCheminComplet = new ArrayList<>();
+        
+        // on supprime les sites des sites visités par trajet
+        List<Site> sitesToRemove = new ArrayList<>();
+        for (var s : sites) {
+            if (s.getId() == idCollecte || s.getId() == idDepot) {
+                sitesToRemove.add(s);
+            }
+        }
+        if (sitesToRemove.size() != 2) {
+            System.err.println("La suppression multiple attend exactement 2 sites (collecte + dépôt). Trouvé : " + sitesToRemove.size());
+            return;
+        }
+        
+        sitesToRemove.sort(Comparator.comparingInt(s -> cheminComplet.indexOf(s.getId())));
+        Site s1 = sitesToRemove.get(0);
+        Site s2 = sitesToRemove.get(1);
+        int pos1 = solutionLong.indexOf(s1.getId());
+        int pos2 = solutionLong.indexOf(s2.getId());
+        
+        // on recupere prédécesseurs et successeurs
+        Long suiv1 = solutionLong.get(pos1 + 1);
+        Long prec1 = solutionLong.get(pos1 - 1);
+        solutionLong.remove(s1.getId());
+
+        Long suiv2 = solutionLong.get(pos2 + 1);
+        Long prec2 = solutionLong.get(pos2 - 1);
+        solutionLong.remove(s2.getId());
+        System.out.println("Suiv1:"+suiv1+ "Prec1:"+prec1+  "Suiv2:"+suiv2+  "Prec2:"+prec2);
+
+        // on supprime les sites de la solution et de la carte
+        sites.removeAll(sitesToRemove);
+        for (Site s : sitesToRemove) carte.supprimerSite(s);
+
+        // on construit le nouveau cheminComplet
+        // du début jusqu'à prec1
+        int idxPrec1 = cheminComplet.indexOf(prec1);
+        ajoutSansDuplication(nouvCheminComplet, cheminComplet.subList(0, idxPrec1 + 1));
+        if (pos1 != pos2) {
+            // de prec1 à suiv1 
+            List<Long> chemin1 = getChemin(gt, prec1, suiv1);
+            if (!chemin1.isEmpty()) ajoutSansDuplication(nouvCheminComplet, chemin1);
+            
+            // de suiv1 à prec2 
+            List<Long> chemin2 = getChemin(gt, suiv1, prec2);
+            if (!chemin2.isEmpty()) ajoutSansDuplication(nouvCheminComplet, chemin2);
+            
+            // de prec2 à suiv2 
+            List<Long> chemin3 = getChemin(gt, prec2, suiv2);
+            if (!chemin3.isEmpty()) ajoutSansDuplication(nouvCheminComplet, chemin3);
+        } else {
+            // de prec1 à suiv2 
+            List<Long> chemin = getChemin(gt, prec1, suiv2);
+            if (!chemin.isEmpty()) ajoutSansDuplication(nouvCheminComplet, chemin);
+        }
+        // de suiv2 à fin (si suiv2 n'est pas déjà l'entrepot)
+        if (suiv2 != cheminComplet.get(0)) {
+            int idxSuiv2 = cheminComplet.indexOf(suiv2);
+            if (idxSuiv2 < cheminComplet.size()) {
+                nouvCheminComplet.addAll(cheminComplet.subList(idxSuiv2 + 1, cheminComplet.size()));
+            }
+        }
+
+        // conversion de la solution pour passage a majTrajet
+        List<Integer> solution = new ArrayList<>();
+        for (var id : solutionLong) {
+            solution.add(gt.getIndexFromId(id));
+        }
+        System.out.println("nouvCheminComplet  : " + nouvCheminComplet);
+        majTrajet(carte, gt, nouvCheminComplet, solution);
+    }
+
+    private List<Long> getChemin(GrapheTotal gt, Long prec, Long suiv) {
+        SimpleEntry<Integer, Integer> key = new SimpleEntry<>(
+            gt.getIndexFromId(prec), 
+            gt.getIndexFromId(suiv)
+        );
+        List<Integer> chemin = gt.getCheminsMin().get(key);
+        if (chemin == null || chemin.isEmpty()) return Collections.emptyList();
+
+        List<Long> cheminLong = gt.convertirCheminComplet(chemin);
+        System.out.println("De "+ prec +" à " +suiv+" : cheminLong");
+        return new ArrayList<>(cheminLong);
+    }
     
+    private void ajoutSansDuplication(List<Long> cible, List<Long> ajout) {
+        if (ajout.isEmpty()) return;
+        if (!cible.isEmpty() && cible.get(cible.size() - 1).equals(ajout.get(0))) {
+            cible.addAll(ajout.subList(1, ajout.size()));
+        } else {
+            cible.addAll(ajout);
+    }
+}
+
     /**
      * Génère le JSON complet de la carte avec noeuds, troncons et sites
      */
@@ -336,6 +444,7 @@ public class CarteController {
         }
 
         List<Long> cheminCompletConverti = gt.convertirCheminComplet(cheminComplet);
+        System.out.println("cheminCompletConverti : " + cheminCompletConverti);
         majTrajet(carte, gt, cheminCompletConverti, solution, trajet);
     }
 
