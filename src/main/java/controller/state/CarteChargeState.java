@@ -27,7 +27,7 @@ public class CarteChargeState implements State {
         // Charger la demande
         boolean chargementLivrasonReussi = carteC.chargerDemandesDepuisXML(cheminFichier);
         if (chargementLivrasonReussi == true){
-            c.setCurrentState(c.carteChargeState);
+            c.setCurrentState(c.livraisonChargeState);
             System.out.println(">>> [CarteChargeState] Transition vers LivraisonChargeState");
             return true;
         } else {

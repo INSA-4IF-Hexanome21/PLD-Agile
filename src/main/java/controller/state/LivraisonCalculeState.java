@@ -31,7 +31,7 @@ public class LivraisonCalculeState implements State {
         carteC.effacerCalcul();
         boolean chargementLivrasonReussi = carteC.chargerDemandesDepuisXML(cheminFichier);
         if (chargementLivrasonReussi == true){
-            c.setCurrentState(c.carteChargeState);
+            c.setCurrentState(c.livraisonCalculeState);
             System.out.println(">>> [LivraisonCalculeState] Transition vers CarteChargeState");
             return true;
         } else {
