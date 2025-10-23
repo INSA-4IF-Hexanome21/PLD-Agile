@@ -10,7 +10,7 @@ let donneesGlobales = null;
 
 const COULEURS_SITES = {
   'depot': '#e53e3e',
-  'collecte': '#38a169',
+  'collecte': '#38a169', 
   'entrepot': '#2b6cb0',
   'default': '#999999'
 };
@@ -183,7 +183,7 @@ function afficherDonneesSurCarte(donnees) {
         if (depart && arrivee) {
           const ligne = L.polyline(
             [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
-            { color: '#3ce861ff', weight: 3, opacity: 0.8, smoothFactor: 1 }
+            { color: '#00c82bff', weight: 5, opacity: 1, smoothFactor: 1 }
           ).addTo(carte);
           
           // Ajouter le décorateur pour les flèches
@@ -197,8 +197,8 @@ function afficherDonneesSurCarte(donnees) {
                   polygon: false,
                   pathOptions: {
                     stroke: true,
-                    color: '#268b3cff',
-                    weight: 1
+                    color: '#0a6a1fff',
+                    weight: 1.5
                   }
                 })
               }
