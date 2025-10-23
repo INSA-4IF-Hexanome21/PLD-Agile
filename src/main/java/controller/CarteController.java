@@ -43,16 +43,16 @@ public class CarteController {
         System.out.println(">>> CarteController: début chargement demandes, effacement des livraisons existantes...");
         this.effacerLivraison();
 
-        Trajet trajet = GestionnaireXML.chargerDemandeLivraisons(
+        DemandeLivraison demandeLivraison = GestionnaireXML.chargerDemandeLivraisons(
             cheminFichierDemandes, 
             carte.getNoeuds()
         );
+        if(demandeLivraison == null){
+            throw new NullPointerException("Un site de la demande de livraison n'est pas disponible sur le plan actuellement chargé");
+        }
 
-        // Ajout du trajet (nouveau)
-        carte.ajouterTrajet(trajet);
-
-        // Ajouter les sites du trajet à la carte, mais éviter les doublons par id
-        List<Site> sitesTrajet = trajet.getSites();
+        // Ajouter les sites de la demande de livraison à la carte, mais éviter les doublons par id
+        List<Site> sitesTrajet = demandeLivraison.getSites();
         HashSet<Long> idsExistants = new HashSet<>();
         for (Site s : carte.getSites()) {
             idsExistants.add(s.getId());
@@ -68,7 +68,12 @@ public class CarteController {
                 System.out.println(">>> Site déjà présent, id=" + site.getId());
             }
         }
-
+        Livreur livreur1 = new Livreur(1, "Bobard", "Bobert");
+        Livreur livreur2 = new Livreur(2, "Bobert", "Bobard");
+        Integer nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1, 1, carte);
+        nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1,2, carte);
+        nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur2,3, carte);
+        
         System.out.println(">>> CarteController: demande chargée, sites ajoutés=" + ajout + ", total sites=" + carte.getSites().size());
     }
 
@@ -100,8 +105,14 @@ public class CarteController {
         }
 
         // creer graphe total et calculer chemins minimaux
+        System.out.println("Création graphe total");
         GrapheTotal gt = creerGrapheTotal(this.getCarte(), e.getId());
-        this.chercherCheminsMin(gt, this.getCarte().getSites());
+        for(Trajet trajet: this.getCarte().getTrajets()){
+            System.out.println("Trajet : "+ trajet);
+            System.out.println("Sites : "+ trajet.getSites());
+            this.chercherCheminsMin(gt, trajet.getSites());
+        }
+       
     }
 
     /**
@@ -288,20 +299,26 @@ public class CarteController {
     }
 
     public void chercherCheminsMin(GrapheTotal gt, List<Site> sites){
+        System.out.println("ChercherCheminMin (Controller)");
         gt.RechercheDijkstra(sites);
-        GrapheLivraison gl = new GrapheLivraison(carte.getSites().size(), gt.getMapDistances());
+        System.out.println("Fin recherche dijkstra");
+        GrapheLivraison gl = new GrapheLivraison(sites.size(), gt.getMapDistances());
         gl.setContrainteHashMap(gt.getContrainteHashMap());
+        System.out.println("Nb Sommet : " + gl.getNbSommets());
         TSP tsp = new TSP2();
         tsp.chercheSolution(60000, gl);
+        System.out.println("Fin cherche solution");
 
         List<Integer> solution = new ArrayList<Integer>();
         for (int i=0; i<gl.getNbSommets(); i++) {
             solution.add(gl.getIdFromIndex(tsp.getSolution(i)));
         }
         solution.add(solution.get(0));
+        System.out.println("Fin creation solution : " + solution);
 
         // Reconstruction du chemin complet : vérifier que getCheminComplet ne renvoie pas null
         List<Integer> cheminComplet = gt.getCheminComplet(solution);
+        System.out.println("Chemin Complet : " + cheminComplet);
         if (cheminComplet == null) {
             // Fournir un message utile pour le debug (indices, taille des maps, etc.)
             String msg = "Erreur: getCheminComplet a renvoyé null. Solution: " + solution

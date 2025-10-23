@@ -142,4 +142,15 @@ public class Carte {
         trajet.setTroncons(troncons);
         trajet.setdureeTrajet(dureeTrajet);
     }
+
+    public Trajet getTrajetParLivreur(Long idLivreur){
+        Trajet trajetLivreur = null;
+        for(Trajet trajet: this.getTrajets()){
+            if(trajet.getLivreur().getId() == idLivreur){
+                trajetLivreur = trajet;
+                break;
+            }
+        }
+        return trajetLivreur;
+    }
 }

@@ -6,6 +6,7 @@ import model.Depot;
 import model.Entrepot;
 import model.Noeud;
 import model.Collecte;
+import model.DemandeLivraison;
 import model.Trajet;
 import model.Troncon;
 
@@ -72,9 +73,9 @@ public class GestionnaireXML {
         return troncons;
     }
 
-    // Méthode pour charger une demande de livraison et renvoyer le trajet à effectuer
-    public static Trajet chargerDemandeLivraisons(String cheminFichier, HashMap<Long, Noeud> mapNoeuds) {
-        Trajet trajet = new Trajet();
+    // Méthode pour charger une demande de livraison
+    public static DemandeLivraison chargerDemandeLivraisons(String cheminFichier, HashMap<Long, Noeud> mapNoeuds) {
+        DemandeLivraison demandeLivraison = new DemandeLivraison();
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -89,8 +90,7 @@ public class GestionnaireXML {
 
             Noeud noeudEntrepot = trouverNoeud(adresseEntrepot, mapNoeuds);
             if (noeudEntrepot == null) {
-                Entrepot entrepot = new Entrepot(idEntrepot);
-                trajet.getSitesNonAccessibles().add(entrepot);
+                return null;
             } else {
                 Entrepot entrepot = new Entrepot(
                         idEntrepot,
@@ -112,11 +112,12 @@ public class GestionnaireXML {
                         entrepot.setDepartHeure(LocalTime.of(8, 0)); // valeur par défaut
                     }
                 }
-                trajet.getSites().add(entrepot);
+                demandeLivraison.addSite(entrepot,true);
             }
 
             // Livraisons
             NodeList livraisonsXML = document.getElementsByTagName("livraison");
+            int numLivraison = 1;
             for (int i = 0; i < livraisonsXML.getLength(); i++) {
                 Element elem = (Element) livraisonsXML.item(i);
 
@@ -126,7 +127,6 @@ public class GestionnaireXML {
                 long idDepot = Long.parseLong(adresseDepot);
                 int dureeEnlevement = Integer.parseInt(elem.getAttribute("dureeEnlevement"));
                 int dureeLivraison = Integer.parseInt(elem.getAttribute("dureeLivraison"));
-                int numLivraison = i+1;
 
                 // Collecte
                 Noeud noeudCollecte = trouverNoeud(adresseEnlevement, mapNoeuds);
@@ -147,9 +147,9 @@ public class GestionnaireXML {
                 Noeud noeudDepot = trouverNoeud(adresseDepot, mapNoeuds);
                 Depot depot;
                 if (noeudDepot == null) {
-                    depot = new Depot(idDepot, numLivraison, dureeLivraison);
-                    trajet.getSitesNonAccessibles().add(depot);
-                } else {
+                    return null;
+                } 
+                else {
                     depot = new Depot(
                             idDepot,
                             noeudDepot.getLatitude(),
@@ -158,21 +158,17 @@ public class GestionnaireXML {
                             dureeLivraison
                     );
                 }
-                if( noeudDepot == null || noeudCollecte == null) {
-                    trajet.getSitesNonAccessibles().add(collecte);
-                    trajet.getSitesNonAccessibles().add(depot);
-                }
-                else{
-                    trajet.getSites().add(collecte);
-                    trajet.getSites().add(depot);
-                }
+                
+                demandeLivraison.addSite(collecte,false);
+                demandeLivraison.addSite(depot,false);
+                ++numLivraison;
             }
 
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement de la demande de livraisons : " + e.getMessage());
             e.printStackTrace();
         }
-        return trajet;
+        return demandeLivraison;
     }
 
     // --- Méthode utilitaire ---
