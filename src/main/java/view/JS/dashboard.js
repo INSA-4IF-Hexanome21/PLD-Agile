@@ -180,14 +180,17 @@ function afficherDonneesSurCarte(donnees) {
 
     // 4.trajets (si hay)
     console.log('Trajets reçus:', donnees.trajets);
-    if (donnees.trajets && donnees.trajets.length > 0) {
-      donnees.trajets.forEach((trajet) => {
+    if (donnees.trajets) {
+      for (const key in donnees.trajets) {
+        const color = getRandomHexColor();
+        donnees.trajets[key].forEach((trajet) => {
+        
         const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.from);
         const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.to);
         if (depart && arrivee) {
           const ligne = L.polyline(
             [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
-            { color: '#3ce861ff', weight: 3, opacity: 0.8, smoothFactor: 1 }
+            { color: color, weight: 3, opacity: 0.8, smoothFactor: 1 }
           ).addTo(carte);
           
           // Ajouter le décorateur pour les flèches
@@ -201,7 +204,7 @@ function afficherDonneesSurCarte(donnees) {
                   polygon: false,
                   pathOptions: {
                     stroke: true,
-                    color: '#268b3cff',
+                    color: color,
                     weight: 1
                   }
                 })
@@ -214,6 +217,7 @@ function afficherDonneesSurCarte(donnees) {
           trajetLines.push(decorator); 
         }
       })
+      }
     }
     // resize al zoom (solo una vez)
     if (!carte._siteZoomHandlerAdded) {
@@ -399,6 +403,9 @@ function creerMarqueurSite(site, type, color, radius) {
 }
 
 /* //! ----------------- PANE / HOVER / DIM ----------------- */
+function getRandomHexColor() {
+  return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+}
 
 function ensureSitePane() {
   if (!carte) return;

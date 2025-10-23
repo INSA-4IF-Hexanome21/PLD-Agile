@@ -267,19 +267,26 @@ public class CarteController {
     }
     json.append("]");
 
-    // -- Trajets (concaténation de tous les troncons de tous les trajets)
-    json.append(",\"trajets\":[");
-    boolean firstTrajetEntry = true;
-    for (Trajet t : carte.getTrajets()) {
-        for (Troncon tr : t.getTroncons()) {
-            if (!firstTrajetEntry) json.append(",");
-            firstTrajetEntry = false;
-            json.append(String.format("{\"from\":%d,\"to\":%d}",
-                    tr.getOrigine().getId(), tr.getDestination().getId()));
+    // -- Trajets 
+    json.append(",\"trajets\":{");
+    List<Trajet> trajets = carte.getTrajets();
+    for (int i = 0; i < trajets.size(); i++) {
+        Trajet t = trajets.get(i);
+        json.append("\"").append(i).append("\":[");
+        List<Troncon> troncons = t.getTroncons();
+        for (int j = 0; j < troncons.size(); j++) {
+            Troncon tr = troncons.get(j);
+            json.append(String.format("{\"from\":%d,\"to\":%d}", 
+                tr.getOrigine().getId(), 
+                tr.getDestination().getId()));
+            if (j < troncons.size() - 1) json.append(","); // <-- virgule entre tronçons
         }
-    }
-    json.append("]");
 
+        json.append("]");
+        if (i < trajets.size() - 1) json.append(","); // <-- virgule entre trajets
+    }
+    json.append("}");
+    
     json.append("}");
     return json.toString();
 }
