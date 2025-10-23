@@ -15,6 +15,36 @@
   box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
 }
 
+/* Highlight cuando se puede soltar */
+.file-area.dragover {
+  outline: 3px dashed rgba(34, 150, 243, 0.9);
+  background: rgba(34,150,243,0.06);
+  transition: background 120ms ease, outline-color 120ms ease;
+  border-radius: 6px;
+}
+
+/* Si no está permitido soltar */
+.file-area.drag-disabled {
+  outline: 3px dashed rgba(220, 53, 69, 0.9);
+  background: rgba(220,53,69,0.04);
+  opacity: 0.9;
+}
+
+/* Pequeña etiqueta flotante dentro del área al arrastrar */
+.file-area .drop-hint {
+  display: none;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  margin-left: 8px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 4px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+  color: #224;
+}
+.file-area.dragover .drop-hint { display: inline-block; }
+.file-area.drag-disabled .drop-hint { display: inline-block; color: #811; }
+
+
 /* Animación sutil para el checkbox de trajets */
 #toggle-trajets:checked + label .site-indicator.trajets {
   animation: trajets-pulse 2s ease-in-out infinite;

@@ -42,10 +42,6 @@ function chargerComposantPrincipal(url) {
       if (url.includes('Map.html')) {
         setTimeout(initialiserCarte, 100);
       }
-      // Si c'est Import.html, mettre à jour l'UI selon l'état
-      if (url.includes('Import.html') && window.appController) { //TODO mkkk
-        setTimeout(updateUIBasedOnState, 100);
-      }
     })
     .catch(err => {
       console.error("Erreur lors du chargement du composant:", err);
@@ -643,6 +639,116 @@ function nettoyerCarte() {
   donneesGlobales = null;
 }
 
+function attachDropHandlers() {
+  $('.file-area').each(function() {
+  $(this).data('dragCounter', 0);
+});
+
+function clearAllDragStates() {
+  $('.file-area').removeClass('dragover drag-disabled');
+  $('.file-area').each(function(){ $(this).data('dragCounter', 0); });
+}
+
+$(document).on('dragenter', function(e) {
+  e.preventDefault();
+});
+
+$(document).on('dragover', function(e) {
+  e.preventDefault();
+  var x = e.originalEvent.clientX;
+  var y = e.originalEvent.clientY;
+  if (x === 0 && y === 0) return;
+
+  var el = document.elementFromPoint(x, y);
+  var $target = $(el).closest('.file-area');
+
+  if (!$target || $target.length === 0) {
+    clearAllDragStates();
+    return;
+  }
+
+  $('.file-area').not($target).removeClass('dragover').each(function(){ 
+    if ($(this).hasClass('disabled')) {
+      $(this).addClass('drag-disabled');
+    } else {
+      $(this).removeClass('drag-disabled');
+    }
+  });
+
+  if ($target.hasClass('disabled')) {
+    $target.removeClass('dragover').addClass('drag-disabled');
+  } else {
+    $target.removeClass('drag-disabled').addClass('dragover');
+  }
+});
+
+$(document).on('dragenter', function(e) {
+  e.preventDefault();
+  var x = e.originalEvent.clientX;
+  var y = e.originalEvent.clientY;
+  var el = document.elementFromPoint(x, y);
+  var $a = $(el).closest('.file-area');
+  if ($a && $a.length) {
+    var c = $a.data('dragCounter') || 0;
+    $a.data('dragCounter', c + 1);
+  }
+});
+
+$(document).on('dragleave', function(e) {
+  e.preventDefault();
+  if (e.originalEvent.clientX <= 0 && e.originalEvent.clientY <= 0) {
+    clearAllDragStates();
+    return;
+  }
+  var x = e.originalEvent.clientX;
+  var y = e.originalEvent.clientY;
+  var el = document.elementFromPoint(x, y);
+  var $a = $(el).closest('.file-area');
+
+  $('.file-area').each(function() {
+    var c = $(this).data('dragCounter') || 0;
+    if (c > 0) {
+      $(this).data('dragCounter', c - 1);
+      if (c - 1 <= 0) {
+        $(this).removeClass('dragover drag-disabled');
+      }
+    }
+  });
+});
+
+$(document).on('drop', function(e) {
+  e.preventDefault();
+  var x = e.originalEvent.clientX;
+  var y = e.originalEvent.clientY;
+  var el = document.elementFromPoint(x, y);
+  var $target = $(el).closest('.file-area');
+
+  clearAllDragStates();
+
+  if (!$target || $target.length === 0) return;
+
+  if ($target.hasClass('disabled')) {
+    alert("⚠️ Veuillez d'abord charger un plan de distribution !");
+    return;
+  }
+
+  var files = e.originalEvent.dataTransfer.files;
+  if (files && files.length > 0) {
+    var $input = $target.find('input[type=file]');
+    if ($input && $input.length) {
+      try {
+        const dt = new DataTransfer();
+        for (let i = 0; i < files.length; i++) dt.items.add(files[i]);
+        $input[0].files = dt.files;
+      } catch (err) {
+        $input[0].files = files;
+      }
+      $input.trigger('change');
+    }
+  }
+});
+}
+
 /* //! ----------------- CARGA SIDEBAR + INICIO ----------------- */
 
 fetch('/components/Sidebar.html')
@@ -685,6 +791,9 @@ fetch('/components/Sidebar.html')
     });
 
     chargerComposantPrincipal('/components/Map.html');
+    
+    attachDropHandlers();
+
   })
   .catch(err => {
     console.error("Erreur lors du chargement du sidebar:", err);
