@@ -227,6 +227,8 @@ function afficherDonneesSurCarte(donnees) {
 
     attachSiteHoverHandlers();
 
+    attachSiteHoverHandlers();
+
     updateVisibility();
   }
 
@@ -237,6 +239,43 @@ function afficherDonneesSurCarte(donnees) {
     }
   } catch (e) {}
 }
+
+function attachSiteHoverHandlers() {
+  if (!Array.isArray(siteMarkers) || !carte) return;
+
+  siteMarkers.forEach(marker => {
+    if (marker._siteHandlersAttached) return;
+    marker._siteHandlersAttached = true;
+
+    marker.on('click', () => {
+      const numLivraison = marker.options.numLivraison;
+      if (numLivraison == null) return;
+
+      const jumeau = siteMarkers.find(m => m !== marker && m.options.numLivraison === numLivraison);
+      if (!jumeau) return;
+
+      const originalColor = jumeau.options.fillColor || '#3388ff';
+      const originalWeight = jumeau.options.weight || 2;
+
+      // Cambio instantáneo de color y grosor
+      jumeau.setStyle({
+        color: '#ff6600',
+        fillColor: '#ff6600',
+        weight: 4
+      });
+
+      // Regreso inmediato al estado original (sin animación ni delay largo)
+      setTimeout(() => {
+        jumeau.setStyle({
+          color: '#ffffff',
+          fillColor: originalColor,
+          weight: originalWeight
+        });
+      }, 250);
+    });
+  });
+}
+
 
 function attachSiteHoverHandlers() {
   if (!Array.isArray(siteMarkers) || !carte) return;
