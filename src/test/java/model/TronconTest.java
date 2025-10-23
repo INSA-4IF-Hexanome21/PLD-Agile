@@ -19,15 +19,24 @@ public class TronconTest {
         assertEquals(a.hashCode(), b.hashCode());
         assertNotEquals(a, c);
         assertNotEquals(a, d);
+
+        // Test origine différente
+        Noeud n3 = new Noeud(3L, 3f, 3f);
+        Troncon diffOrigine = new Troncon("Rue A", 10f, n3, n2);
+        assertNotEquals(a, diffOrigine);
+
+        // Test destination différente
+        Noeud n4 = new Noeud(4L, 4f, 4f);
+        Troncon diffDestination = new Troncon("Rue A", 10f, n1, n4);
+        assertNotEquals(a, diffDestination);
     }
 
     @Test
-    public void toStringsEtGetters_ContriennentChanmps() {
+    public void toStringsEtGetters_ContiennentChamps() {
         Troncon t1 = new Troncon("Rue X", 12.5f, new Noeud(1, 0f, 0f), new Noeud(2, 0f, 0f));
         String s1 = t1.toString();
         Troncon t2 = new Troncon("Rue Y", 12.5f, null, null);
         String s2 = t2.toString();
-
 
         assertTrue(s1.contains("Rue X"));
         assertTrue(s1.contains("origine=1"));
