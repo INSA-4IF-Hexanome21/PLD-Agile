@@ -110,7 +110,7 @@ public class CarteController {
         for(Trajet trajet: this.getCarte().getTrajets()){
             System.out.println("Trajet : "+ trajet);
             System.out.println("Sites : "+ trajet.getSites());
-            this.chercherCheminsMin(gt, trajet.getSites());
+            this.chercherCheminsMin(gt, trajet.getSites(), trajet);
         }
        
     }
@@ -298,7 +298,7 @@ public class CarteController {
         return gt;
     }
 
-    public void chercherCheminsMin(GrapheTotal gt, List<Site> sites){
+    public void chercherCheminsMin(GrapheTotal gt, List<Site> sites, Trajet trajet){
         System.out.println("ChercherCheminMin (Controller)");
         gt.RechercheDijkstra(sites);
         System.out.println("Fin recherche dijkstra");
@@ -329,12 +329,12 @@ public class CarteController {
         }
 
         List<Long> cheminCompletConverti = gt.convertirCheminComplet(cheminComplet);
-        majTrajet(carte, gt, cheminCompletConverti, solution);
+        majTrajet(carte, gt, cheminCompletConverti, solution, trajet);
     }
 
 
-    public void majTrajet(Carte carte, GrapheTotal gt, List<Long> cheminComplet, List<Integer> solution){
-        carte.majTrajetDepuisChemin(gt,cheminComplet,solution,carte.getTrajets().get(0));
+    public void majTrajet(Carte carte, GrapheTotal gt, List<Long> cheminComplet, List<Integer> solution, Trajet trajet){
+        carte.majTrajetDepuisChemin(gt,cheminComplet,solution,trajet);
         //System.out.println(carte.getTrajets().get(0));
     }
 }
