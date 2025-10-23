@@ -40,8 +40,8 @@ public class Troncon {
         return "Troncon{" +
                 "nomRue='" + nomRue + '\'' +
                 ", longueur=" + longueur +
-                ", origine=" + (origine != null ? origine.getId() : "null") +
-                ", destination=" + (destination != null ? destination.getId() : "null") +
+                ", origine=" + (origine != null ? origine.getId() : "null ") +
+                ", destination=" + (destination != null ? destination.getId() : "null ") +
                 '}';
     }
 
