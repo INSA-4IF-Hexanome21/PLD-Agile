@@ -5,7 +5,6 @@ public class GrapheTotalTest {
     
     public static void main(String[] args) {
         System.out.println("====== Test GrapheTotal ====== ");
-        int nbSommets = 2;
 		long idEntrepot = 5678;
 		Noeud n1 = new Noeud(1234, 5.2f, 45.4f);
 		Noeud n2 = new Noeud(5678, 5.4f, 45.8f);
@@ -27,7 +26,7 @@ public class GrapheTotalTest {
 		troncons.add(t2);
 
 		System.out.println("Création graphe");
-		GrapheTotal gt = new GrapheTotal(nbSommets, troncons, noeuds, idEntrepot);
+		GrapheTotal gt = new GrapheTotal(troncons, noeuds, idEntrepot);
 
 		System.out.println("Liste d'adjacence");
 		System.out.println(gt.getMapAllSommets());
