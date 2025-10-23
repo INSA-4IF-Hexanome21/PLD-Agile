@@ -38,6 +38,7 @@ public class CarteController {
         if (carte == null) {
             carte = new Carte();
         }
+        carte.resetTournee();
 
         // Avant d'ajouter la nouvelle demande, supprimer l'ancienne pour éviter accumulation
         System.out.println(">>> CarteController: début chargement demandes, effacement des livraisons existantes...");

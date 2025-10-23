@@ -153,4 +153,10 @@ public class Carte {
         }
         return trajetLivreur;
     }
+
+    public void resetTournee(){
+        this.trajets.clear();
+        this.sites.clear();
+        System.out.println("Carte reset");
+    }
 }
