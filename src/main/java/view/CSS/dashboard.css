@@ -135,6 +135,10 @@
   animation: none;
 }
 
+#toggle-trajets:checked + label .site-indicator.trajets {
+  animation: none;
+}
+
 .site-indicator.trajets {
   background: #10b981; 
   border: 1px solid #059669;

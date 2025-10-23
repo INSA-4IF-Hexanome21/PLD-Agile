@@ -10,7 +10,7 @@ let donneesGlobales = null;
 
 const COULEURS_SITES = {
   'depot': '#e53e3e',
-  'collecte': '#38a169',
+  'collecte': '#38a169', 
   'entrepot': '#2b6cb0',
   'default': '#999999'
 };
@@ -41,10 +41,6 @@ function chargerComposantPrincipal(url) {
       main.innerHTML = html;
       if (url.includes('Map.html')) {
         setTimeout(initialiserCarte, 100);
-      }
-      // Si c'est Import.html, mettre à jour l'UI selon l'état
-      if (url.includes('Import.html') && window.appController) {
-        setTimeout(updateUIBasedOnState, 100);
       }
     })
     .catch(err => {
@@ -187,7 +183,7 @@ function afficherDonneesSurCarte(donnees) {
         if (depart && arrivee) {
           const ligne = L.polyline(
             [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
-            { color: '#3ce861ff', weight: 3, opacity: 0.8, smoothFactor: 1 }
+            { color: '#00c82bff', weight: 5, opacity: 1, smoothFactor: 1 }
           ).addTo(carte);
           
           // Ajouter le décorateur pour les flèches
@@ -201,8 +197,8 @@ function afficherDonneesSurCarte(donnees) {
                   polygon: false,
                   pathOptions: {
                     stroke: true,
-                    color: '#268b3cff',
-                    weight: 1
+                    color: '#0a6a1fff',
+                    weight: 1.5
                   }
                 })
               }
@@ -222,7 +218,6 @@ function afficherDonneesSurCarte(donnees) {
     }
 
     attachSiteHoverHandlers();
-
     updateVisibility();
   }
 
@@ -298,19 +293,6 @@ function creerMarqueurSite(site, type, color, radius) {
     pane: 'sitePane'
   });
 
-  // label fijo debajo del círculo mostrando el "ordre de visite"
-  const labelHtml = `<div style="
-    display:inline-block;
-    background:rgba(255,255,255,0.92);
-    padding:2px 6px;
-    border-radius:4px;
-    border:1px solid rgba(0,0,0,0.08);
-    font-size:12px;
-    color:#222;
-    box-shadow:0 1px 2px rgba(0,0,0,0.06);
-    white-space:nowrap;
-  ">${site.numPassage??''}</div>`;
-
 
   // actualizar tooltips/labels y radios al cambiar el zoom (se añade solo una vez)
   if (carte && !carte._siteLabelZoomHandlerAdded) {
@@ -326,16 +308,54 @@ function creerMarqueurSite(site, type, color, radius) {
     carte._siteLabelZoomHandlerAdded = true;
   }
 
+
+
+
+
+  // label fijo debajo del círculo mostrando el "ordre de visite"
+  const labelHtml = `<div style="
+    display:inline-block;
+    background:rgba(255,255,255,0.92);
+    padding:2px 6px;
+    border-radius:4px;
+    border:1px solid rgba(0,0,0,0.08);
+    font-size:12px;
+    color:#222;
+    box-shadow:0 1px 2px rgba(0,0,0,0.06);
+    white-space:nowrap;
+  ">${site.numPassage??''}</div>`;
+
   // Nota: si hay MUCHOS puntos, lo más efectivo es usar clustering (leaflet.markercluster)
   // y/o técnicas de gestión de etiquetas (labelgun, avoidance plugins) para evitar solapamientos.
 
-  const labelIcon = L.divIcon({
-    className: 'site-order-label',
-    html: labelHtml,
-    iconSize: null,
-    // iconAnchor Y negative to shift the label downward relative to the marker point
-    iconAnchor: [0, -radius - 8]
-  });
+  const hasArrival = !(site.arrivee == null || site.arrivee === '');
+  let labelIcon;
+
+  if (!hasArrival) {
+    labelIcon = L.divIcon({
+      className: 'site-order-label-hidden',
+      html: '',
+      iconSize: [0, 0],
+      iconAnchor: [0, 0]
+    });
+  } else {
+    const _siteTypeLower = (site.type || '').toString().toLowerCase();
+    if (_siteTypeLower !== 'entrepot') {
+      labelIcon = L.divIcon({
+        className: 'site-order-label',
+        html: labelHtml,
+        iconSize: null,
+        iconAnchor: [0, -radius - 8]
+      });
+    } else {
+      labelIcon = L.divIcon({
+        className: 'site-order-label-hidden',
+        html: '',
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+      });
+    }
+  }
 
   const labelMarker = L.marker([site.lat, site.lng], {
     icon: labelIcon,
@@ -357,14 +377,41 @@ function creerMarqueurSite(site, type, color, radius) {
   marker.options.siteType = type;
   marker.options.siteId = site.id;
 
-  marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
-  marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
-    <br>Numéro de livraison: ${site.numLivraison}
-    <br>Ordre de visite: ${site.numPassage}
-    <br>Heure d'arrivée: ${site.arrivee}
-    <br>Heure de départ: ${site.depart} 
-    `);
+  if ((site.arrivee == null || site.arrivee === '')) {
+  if (site.type === 'entrepot') {
+
+    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
+      <br>Heure d'arrivée: Pas encore calculée
+      <br>Heure de départ: 8:00
+      `);
     
+  } else  {
+    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
+      <br>Heure d'arrivée: Pas encore calculée
+      <br>Heure de départ: Pas encore calculée
+      `);
+
+  } } else  {
+
+    if (site.type === 'entrepot') {
+
+    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
+      <br>Heure d'arrivée: ${site.arrivee}
+      <br>Heure de départ: 8:00
+      `);
+    
+  } else  {
+    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
+      <br>Heure d'arrivée: ${site.arrivee}
+      <br>Heure de départ: ${site.depart} 
+      `);
+  }
+}
+  
   marker.on('click', () => {
     try {
       if (marker.openPopup) marker.openPopup();
@@ -515,6 +562,70 @@ function configurerControlesVisibilite() {
   }
 }
 
+/**
+ * Lance le calcul
+ */
+function lancerCalcul() {
+   console.log('Calcul lancé');
+    // Déterminer l'endpoint selon le type
+    var endpoint = '/api/calcul';
+    var statusId = '#status-calcul';
+    
+    console.log('📤 Début du calcul:', endpoint);
+    
+    // Afficher l'état de chargement
+    $(statusId).removeClass('success error').addClass('loading')
+        .text('⏳ Chargement en cours...').show();
+    
+    // Lire le fichier comme ArrayBuffer
+    var reader = new FileReader();
+  
+        // Envoyer directement l'ArrayBuffer
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/xml',
+            },
+        })
+        .then(response => {
+            console.log('📥 Réponse du serveur:', response.status);
+            if (!response.ok) {
+                throw new Error('Erreur serveur: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('✅ Calcul effectué', data);
+            
+            $(statusId).removeClass('loading error').addClass('success')
+                .text('✅ ' + file.name + ' chargé avec succès!');
+            
+            // Notifier le contrôleur du succès
+            if (window.appController) {
+                try {
+                      window.appController.onLivraisonCalculated();
+                      // Afficher message et proposer d'aller à la carte
+                      setTimeout(() => {
+                          if (confirm('✅ Livraison Calculé! Voulez-vous voir la carte?')) {
+                              $('#btn-mapa').trigger('click');
+                          }
+                      }, 500);
+                } catch (err) {
+                    console.error('❌ Erreur contrôleur:', err);
+                    alert('⚠️ ' + err.message);
+                    // Réinitialiser le status en cas d'erreur
+                    $(statusId).removeClass('loading success').addClass('error')
+                        .text('❌ ' + err.message);
+                    return;
+                }
+            }
+        })
+        .catch(err => {
+            console.error('❌ Erreur lors du téléchargement:', err);
+            $(statusId).removeClass('loading success').addClass('error')
+                .text('❌ Erreur: ' + err.message);
+        });
+    };
 
 function nettoyerCarte() {
   if (carte !== null) {
@@ -528,6 +639,116 @@ function nettoyerCarte() {
   donneesGlobales = null;
 }
 
+function attachDropHandlers() {
+  $('.file-area').each(function() {
+  $(this).data('dragCounter', 0);
+});
+
+function clearAllDragStates() {
+  $('.file-area').removeClass('dragover drag-disabled');
+  $('.file-area').each(function(){ $(this).data('dragCounter', 0); });
+}
+
+$(document).on('dragenter', function(e) {
+  e.preventDefault();
+});
+
+$(document).on('dragover', function(e) {
+  e.preventDefault();
+  var x = e.originalEvent.clientX;
+  var y = e.originalEvent.clientY;
+  if (x === 0 && y === 0) return;
+
+  var el = document.elementFromPoint(x, y);
+  var $target = $(el).closest('.file-area');
+
+  if (!$target || $target.length === 0) {
+    clearAllDragStates();
+    return;
+  }
+
+  $('.file-area').not($target).removeClass('dragover').each(function(){ 
+    if ($(this).hasClass('disabled')) {
+      $(this).addClass('drag-disabled');
+    } else {
+      $(this).removeClass('drag-disabled');
+    }
+  });
+
+  if ($target.hasClass('disabled')) {
+    $target.removeClass('dragover').addClass('drag-disabled');
+  } else {
+    $target.removeClass('drag-disabled').addClass('dragover');
+  }
+});
+
+$(document).on('dragenter', function(e) {
+  e.preventDefault();
+  var x = e.originalEvent.clientX;
+  var y = e.originalEvent.clientY;
+  var el = document.elementFromPoint(x, y);
+  var $a = $(el).closest('.file-area');
+  if ($a && $a.length) {
+    var c = $a.data('dragCounter') || 0;
+    $a.data('dragCounter', c + 1);
+  }
+});
+
+$(document).on('dragleave', function(e) {
+  e.preventDefault();
+  if (e.originalEvent.clientX <= 0 && e.originalEvent.clientY <= 0) {
+    clearAllDragStates();
+    return;
+  }
+  var x = e.originalEvent.clientX;
+  var y = e.originalEvent.clientY;
+  var el = document.elementFromPoint(x, y);
+  var $a = $(el).closest('.file-area');
+
+  $('.file-area').each(function() {
+    var c = $(this).data('dragCounter') || 0;
+    if (c > 0) {
+      $(this).data('dragCounter', c - 1);
+      if (c - 1 <= 0) {
+        $(this).removeClass('dragover drag-disabled');
+      }
+    }
+  });
+});
+
+$(document).on('drop', function(e) {
+  e.preventDefault();
+  var x = e.originalEvent.clientX;
+  var y = e.originalEvent.clientY;
+  var el = document.elementFromPoint(x, y);
+  var $target = $(el).closest('.file-area');
+
+  clearAllDragStates();
+
+  if (!$target || $target.length === 0) return;
+
+  if ($target.hasClass('disabled')) {
+    alert("⚠️ Veuillez d'abord charger un plan de distribution !");
+    return;
+  }
+
+  var files = e.originalEvent.dataTransfer.files;
+  if (files && files.length > 0) {
+    var $input = $target.find('input[type=file]');
+    if ($input && $input.length) {
+      try {
+        const dt = new DataTransfer();
+        for (let i = 0; i < files.length; i++) dt.items.add(files[i]);
+        $input[0].files = dt.files;
+      } catch (err) {
+        $input[0].files = files;
+      }
+      $input.trigger('change');
+    }
+  }
+});
+}
+
 /* //! ----------------- CARGA SIDEBAR + INICIO ----------------- */
 
 fetch('/components/Sidebar.html')
@@ -538,26 +759,41 @@ fetch('/components/Sidebar.html')
   .then(html => {
     const sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.innerHTML = html;
-    
+        
+    if (typeof updateUIBasedOnState === 'function') {
+      setTimeout(updateUIBasedOnState, 50);
+    }
+
     document.getElementById('btn-mapa')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-mapa')?.classList.add('active');
+      document.getElementById('btn-calcul')?.classList.add('active');
       chargerComposantPrincipal('/components/Map.html');
     });
     
     document.getElementById('btn-filtros')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-filtros')?.classList.add('active');
+      document.getElementById('btn-calcul')?.classList.add('active');
       chargerComposantPrincipal('/components/Import.html');
     });
     
     document.getElementById('btn-estadisticas')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-estadisticas')?.classList.add('active');
+      document.getElementById('btn-calcul')?.classList.add('active');
       document.getElementById('main-content').innerHTML = `<div style="padding:2rem;"><h2>Statistiques</h2><p>Fonctionnalité en construction…</p></div>`;
     });
 
+    document.getElementById('btn-calcul')?.addEventListener('click', () => {
+      lancerCalcul();
+      chargerComposantPrincipal('/components/Map.html');
+    });
+
     chargerComposantPrincipal('/components/Map.html');
+    
+    attachDropHandlers();
+
   })
   .catch(err => {
     console.error("Erreur lors du chargement du sidebar:", err);
