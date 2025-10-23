@@ -19,7 +19,9 @@ public interface State {
      * @param carteC le controlleur de carte (CarteController)
      * @param cheminFichier le chemin du fichier XML de la livraison
      */
-    public default boolean chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {}
+    public default boolean chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
+        return false;
+    }
 
     /**
      * Méthode appelée par le controlleur pour calculer une livraison
