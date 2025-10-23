@@ -69,11 +69,24 @@ public class CarteController {
                 System.out.println(">>> Site déjà présent, id=" + site.getId());
             }
         }
+
+        //Assignation des livreurs aléatoire A FAIRE DISPARAITRE
+       
         Livreur livreur1 = new Livreur(1, "Bobard", "Bobert");
         Livreur livreur2 = new Livreur(2, "Bobert", "Bobard");
         Integer nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1, 1, carte);
-        nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1,2, carte);
-        nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur2,3, carte);
+        Integer i = 1;
+        while(nbLivraisonsNonAssignees > 0){
+            if(i%2 == 0){
+                nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1,++i, carte);
+            }
+            else{
+                nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur2,++i, carte);
+            }
+            
+            
+        }
+        
         
         System.out.println(">>> CarteController: demande chargée, sites ajoutés=" + ajout + ", total sites=" + carte.getSites().size());
     }
