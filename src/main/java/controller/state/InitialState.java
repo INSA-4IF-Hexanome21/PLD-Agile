@@ -6,15 +6,20 @@ public class InitialState implements State {
     // Etat initial - seule action possible: charger une carte
     
     @Override
-    public void chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
+    public boolean chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
         System.out.println(">>> [InitialState] Chargement de la carte...");
-        carteC.chargerCarteDepuisXML(cheminFichier);
-        c.setCurrentState(c.carteChargeState);
-        System.out.println(">>> [InitialState] Transition vers CarteChargeState");
+        boolean chargementCarteReussi = carteC.chargerCarteDepuisXML(cheminFichier);
+        if (chargementCarteReussi == true){
+            c.setCurrentState(c.carteChargeState);
+            System.out.println(">>> [InitialState] Transition vers CarteChargeState");
+            return true;
+        } else {
+            return false;
+        }
     }
     
     @Override
-    public void chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
+    public boolean chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
         System.err.println(">>> [InitialState] ERREUR: Impossible de charger une livraison sans carte!");
         throw new IllegalStateException("Veuillez d'abord charger une carte");
     }

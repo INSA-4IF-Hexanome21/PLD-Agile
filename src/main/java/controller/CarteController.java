@@ -19,7 +19,7 @@ public class CarteController {
     /**
      * Charge le plan (noeuds et troncons) depuis un fichier XML
      */
-    public void chargerCarteDepuisXML(String cheminFichier) {
+    public boolean chargerCarteDepuisXML(String cheminFichier) {
         if (carte == null) {
             carte = new Carte();
         }
@@ -30,10 +30,15 @@ public class CarteController {
         List<Troncon> troncons = GestionnaireXML.chargerPlanTroncons(cheminFichier, noeuds);
         carte.setTroncons(troncons);
         
-        System.out.println("Plan chargé: " + noeuds.size() + " noeuds, " + troncons.size() + " troncons");
+        if(noeuds.isEmpty() & troncons.isEmpty()){
+            return false;
+        } else {
+            System.out.println("Plan chargé: " + noeuds.size() + " noeuds, " + troncons.size() + " troncons");
+            return true;
+        }
     }
     
-  public synchronized void chargerDemandesDepuisXML(String cheminFichierDemandes) {
+  public synchronized boolean chargerDemandesDepuisXML(String cheminFichierDemandes) {
         // Protection contre appels concurrents
         if (carte == null) {
             carte = new Carte();
@@ -69,7 +74,12 @@ public class CarteController {
             }
         }
 
-        System.out.println(">>> CarteController: demande chargée, sites ajoutés=" + ajout + ", total sites=" + carte.getSites().size());
+        if(ajout == 0){
+            return false;
+        } else {
+            System.out.println(">>> CarteController: demande chargée, sites ajoutés=" + ajout + ", total sites=" + carte.getSites().size());
+            return true;
+        }
     }
 
 
