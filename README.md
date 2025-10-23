@@ -4,10 +4,22 @@
 
 ## Utilisation
 
+Installer les dépendances Maven :
+```bash
+mvn install
+```
+
 Compiler le code principal :
 ```bash
-javac -d target/classes src/main/java/model/*.java
+javac -d target/classes $(find src/main/java -name '*.java')
 ```
+
+Exécuter le code principal :
+```bash
+java -cp target/classes app.Main
+```
+
+## Tests
 
 Compiler les tests :
 ```bash

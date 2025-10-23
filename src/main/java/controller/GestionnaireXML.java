@@ -121,21 +121,21 @@ public class GestionnaireXML {
                 Element elem = (Element) livraisonsXML.item(i);
 
                 String adresseEnlevement = elem.getAttribute("adresseEnlevement");
-                String adresseLivraison = elem.getAttribute("adresseLivraison");
+                String adresseDepot = elem.getAttribute("adresseLivraison");
                 long idEnlevement = Long.parseLong(adresseEnlevement);
-                long idLivraison = Long.parseLong(adresseLivraison);
+                long idDepot = Long.parseLong(adresseDepot);
                 int dureeEnlevement = Integer.parseInt(elem.getAttribute("dureeEnlevement"));
                 int dureeLivraison = Integer.parseInt(elem.getAttribute("dureeLivraison"));
-                int numLivraison = i;
+                int numLivraison = i+1;
 
                 // Collecte
                 Noeud noeudCollecte = trouverNoeud(adresseEnlevement, mapNoeuds);
                 Collecte collecte;
                 if (noeudCollecte == null) {
-                    collecte = new Collecte(idLivraison, numLivraison, dureeEnlevement);  
+                    collecte = new Collecte(idEnlevement, numLivraison, dureeEnlevement);  
                 } else {
                     collecte = new Collecte(
-                            idLivraison,
+                            idEnlevement,
                             noeudCollecte.getLatitude(),
                             noeudCollecte.getLongitude(),
                             numLivraison,
@@ -144,14 +144,14 @@ public class GestionnaireXML {
                 }
 
                 // Depot
-                Noeud noeudDepot = trouverNoeud(adresseLivraison, mapNoeuds);
+                Noeud noeudDepot = trouverNoeud(adresseDepot, mapNoeuds);
                 Depot depot;
                 if (noeudDepot == null) {
-                    depot = new Depot(idEnlevement, numLivraison, dureeLivraison);
+                    depot = new Depot(idDepot, numLivraison, dureeLivraison);
                     trajet.getSitesNonAccessibles().add(depot);
                 } else {
                     depot = new Depot(
-                            idEnlevement,
+                            idDepot,
                             noeudDepot.getLatitude(),
                             noeudDepot.getLongitude(),
                             numLivraison,

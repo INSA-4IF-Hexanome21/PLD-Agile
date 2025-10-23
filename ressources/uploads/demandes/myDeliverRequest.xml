@@ -9,4 +9,5 @@
     <livraison adresseEnlevement="130144280" adresseLivraison="25499154" dureeEnlevement="240" dureeLivraison="120"/>
     <livraison adresseEnlevement="26035105" adresseLivraison="25624158" dureeEnlevement="480" dureeLivraison="300"/>
     <livraison adresseEnlevement="1362204817" adresseLivraison="843129906" dureeEnlevement="180" dureeLivraison="540"/>
+    <livraison adresseEnlevement="21604593" adresseLivraison="25336189" dureeEnlevement="200" dureeLivraison="1000"/>
 </demandeDeLivraisons>

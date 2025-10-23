@@ -84,7 +84,7 @@
 
 .site-indicator.entrepot { background: #2b6cb0; }
 .site-indicator.collecte { background: #38a169; }
-.site-indicator.livraison { background: #e53e3e; }
+.site-indicator.depot { background: #e53e3e; }
 .site-indicator.noeuds { background: #16697A; }
 
 /* //! Botones de control */
@@ -126,30 +126,29 @@
   color: white;
 }
 
-/* //! Efecto de hover en sites - dimming del resto */
-.map-container {
-  position: relative;
-  transition: filter 0.3s ease;
-}
-
 .map-dim {
   filter: brightness(0.4) grayscale(0.6);
 }
 
-/* //! Animación pulse para markers destacados */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 0 16px currentColor;
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px currentColor;
-    transform: scale(1.15);
-  }
+
+#toggle-trajets:checked + label .site-indicator.trajets {
+  animation: none;
 }
 
+.site-indicator.trajets {
+  background: #10b981; 
+  border: 1px solid #059669;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: 0 0 3px rgba(0,0,0,0.2);
+}
+
+
 .site-marker-highlight {
-  animation: pulse-glow 1.5s ease-in-out infinite;
+  animation: none;
 }
 
 /* //! Reset et styles de base */
@@ -335,6 +334,10 @@ header h1 {
   font-family: 'Segoe UI', sans-serif;
 }
 
+.leaflet-popup-pane {
+  z-index: 10000 !important;
+}
+
 /* //! Marqueurs personnalisés */
 .marqueur-noeud {
   background: var(--spie-dark-teal);
@@ -345,10 +348,10 @@ header h1 {
 }
 
 .marqueur-noeud:hover {
-  transform: scale(1.3);
   background: var(--spie-orange);
-  box-shadow: 0 4px 12px rgba(255, 166, 43, 0.6);
+  box-shadow: 0 2px 8px rgba(255, 166, 43, 0.4);
 }
+
 
 /*//!  Footer professionnel */
 footer {
@@ -525,3 +528,99 @@ a:focus {
 .sidebar-nav.active { background: rgba(102,126,234,0.12); color:#2a2a2a; }
 .control-btn { padding:8px 10px; border-radius:6px; border:none; cursor:pointer; background:#667eea; color:#fff; margin:6px 4px; }
 .control-btn.ghost { background:transparent; color:#333; border:1px solid rgba(0,0,0,0.06); }
+
+/* Styles pour les zones de upload désactivées */
+.file-area.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.file-area.disabled::after {
+    content: '🔒';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    opacity: 0.3;
+}
+
+.file-area.drag-disabled {
+    background-color: #ffebee !important;
+    border-color: #ef5350 !important;
+}
+
+/* Styles pour les status */
+#status-plan,
+#status-demande {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    font-size: 0.95em;
+    display: none;
+}
+
+#status-plan.loading,
+#status-demande.loading {
+    background-color: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    color: #1565c0;
+    display: block;
+}
+
+#status-plan.success,
+#status-demande.success {
+    background-color: #e8f5e9;
+    border-left: 4px solid #4caf50;
+    color: #2e7d32;
+    display: block;
+}
+
+#status-plan.error,
+#status-demande.error {
+    background-color: #ffebee;
+    border-left: 4px solid #f44336;
+    color: #c62828;
+    display: block;
+}
+
+/* Animation pour les messages */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.info-message {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Amélioration du curseur pour les zones désactivées */
+.file-area.disabled .file-dummy {
+    cursor: not-allowed !important;
+}
+
+.file-area:not(.disabled) .file-dummy {
+    cursor: pointer;
+}
+
+/* Indicateur visuel pour drag disabled */
+.file-area.drag-disabled::before {
+    content: '⚠️ Plan requis';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #f44336;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: bold;
+    z-index: 10;
+}
