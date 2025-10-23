@@ -32,7 +32,7 @@ public class LivraisonChargeState implements State {
         // Charger la nouvelle demande (idempotent après effacerLivraison)
         boolean chargementLivrasonReussi = carteC.chargerDemandesDepuisXML(cheminFichier);
         if (chargementLivrasonReussi == true){
-            c.setCurrentState(c.carteChargeState);
+            c.setCurrentState(c.livraisonChargeState);
             System.out.println(">>> [LivraisonChargeState] Transition vers LivraisonChargeState");
             return true;
         } else {
