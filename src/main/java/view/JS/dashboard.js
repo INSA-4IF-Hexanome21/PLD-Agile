@@ -653,7 +653,11 @@ fetch('/components/Sidebar.html')
   .then(html => {
     const sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.innerHTML = html;
-    
+        
+    if (typeof updateUIBasedOnState === 'function') {
+      setTimeout(updateUIBasedOnState, 50);
+    }
+
     document.getElementById('btn-mapa')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-mapa')?.classList.add('active');
