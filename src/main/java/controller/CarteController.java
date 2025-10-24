@@ -94,6 +94,7 @@ public class CarteController {
             
         }
         System.out.println(">>> CarteController: demande chargée, sites ajoutés=" + ajout + ", total sites=" + carte.getSites().size());
+        return true;
     }
 
 
