@@ -187,38 +187,38 @@ function afficherDonneesSurCarte(donnees) {
         trajetLines[key] = [];
         donnees.trajets[key].forEach((trajet) => {
 
-        const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.from);
-        const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.to);
-        if (depart && arrivee) {
-          const ligne = L.polyline(
-            [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
-            { color: color, weight: 3, opacity: 0.8, smoothFactor: 1 }
-          ).addTo(carte);
-          
-          // Ajouter le décorateur pour les flèches
-          const decorator = L.polylineDecorator(ligne, {
-            patterns: [
-              {
-                offset: '50%', // Position de la flèche (milieu de la ligne)
-                repeat: 0, // Ne pas répéter la flèche
-                symbol: L.Symbol.arrowHead({
-                  pixelSize: 15, // Taille de la flèche en pixels
-                  polygon: false,
-                  pathOptions: {
-                    stroke: true,
-                    color: color,
-                    weight: 1
-                  }
-                })
-              }
-            ]
-          }).addTo(carte);
+          const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.from);
+          const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.to);
+          if (depart && arrivee) {
+            const ligne = L.polyline(
+              [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
+              { color: color, weight: 3, opacity: 0.8, smoothFactor: 1 }
+            ).addTo(carte);
+            
+            // Ajouter le décorateur pour les flèches
+            const decorator = L.polylineDecorator(ligne, {
+              patterns: [
+                {
+                  offset: '50%', // Position de la flèche (milieu de la ligne)
+                  repeat: 0, // Ne pas répéter la flèche
+                  symbol: L.Symbol.arrowHead({
+                    pixelSize: 15, // Taille de la flèche en pixels
+                    polygon: false,
+                    pathOptions: {
+                      stroke: true,
+                      color: color,
+                      weight: 1
+                    }
+                  })
+                }
+              ]
+            }).addTo(carte);
 
-          ligne.bindPopup(`<strong>Trajet</strong><br>De: ${trajet.from}<br>À: ${trajet.to}`);
-          trajetLines[key].push(ligne);
-          trajetLines[key].push(decorator); 
-        }
-      })
+            ligne.bindPopup(`<strong>Trajet</strong><br>De: ${trajet.from}<br>À: ${trajet.to}`);
+            trajetLines[key].push(ligne);
+            trajetLines[key].push(decorator); 
+          }
+        })
       }
     }
     // resize al zoom (solo una vez)
@@ -535,38 +535,83 @@ function configurerControlesVisibilite() {
     });
   }
 
-  // FR: Toggle pour chaque trajet
-  const controlContainer = document.getElementById('trajet-controls');
-  if (controlContainer) {
-    for(const key in trajetLines) {
-      const trajet = trajetLines[key];
-      const index = key;
-      const label = document.createElement('label');
-      label.innerHTML = `<input type="checkbox" id="trajet-${index}" checked ${tTraj && tTraj.checked ? '' : 'disabled'}> Trajet ${index} `;
-      controlContainer.appendChild(label);
-      controlContainer.appendChild(document.createElement('br'));
-
-      document.getElementById(`trajet-${index}`).addEventListener('change', (e) => {
-        trajet.forEach((t) => {
-          if (e.target.checked) {
-            t.addTo(carte);
-          } else {
-            carte.removeLayer(t);
-          }
+  // FR: Créer un contrôle Leaflet flottant pour les trajets
+  L.Control.TrajetsFlottant = L.Control.extend({
+    onAdd: function(map) {
+      const container = L.DomUtil.create('div', 'control-trajets');
+      
+      // En-tête
+      const header = L.DomUtil.create('div', 'trajets-header', container);
+      header.innerHTML = '<strong>Gestion des trajets</strong>';
+      
+      // Corps avec les contrôles
+      const body = L.DomUtil.create('div', 'trajets-body', container);
+      
+      // Conteneur des sous-trajets
+      const controlContainer = L.DomUtil.create('div', 'trajets-list', body);
+      controlContainer.id = 'trajet-controls-floating';
+      
+      // Générer les checkboxes pour chaque trajet
+      for(const key in trajetLines) {
+        const trajet = trajetLines[key];
+        const index = key;
+        
+        const trajetItem = L.DomUtil.create('div', 'control-row trajet-item', controlContainer);
+        const label = L.DomUtil.create('label', '', trajetItem);
+        label.setAttribute('for', `trajet-${index}`);
+        
+        const checkbox = L.DomUtil.create('input', '', label);
+        checkbox.type = 'checkbox';
+        checkbox.id = `trajet-${index}`;
+        checkbox.checked = true;
+        checkbox.disabled = tTraj && !tTraj.checked;
+        
+        label.appendChild(document.createTextNode(` Trajet ${parseInt(index,10)+1}`));
+        
+        // Event listener pour afficher/masquer le trajet
+        checkbox.addEventListener('change', (e) => {
+          trajet.forEach((t) => {
+            if (e.target.checked) {
+              t.addTo(carte);
+            } else {
+              carte.removeLayer(t);
+            }
+          });
         });
-      });
-    };
-    // Synchronisation dynamique du disabled sur le toggle principal
-    if (tTraj) {
-      tTraj.addEventListener('change', () => {
-        const condition = !tTraj.checked;
-        document.querySelectorAll('[id^="trajet-"]').forEach(input => {
-          input.disabled = condition;
-          if (!input.checked) input.checked = condition;
+      }
+      
+      // Synchronisation dynamique du disabled sur le toggle principal
+      if (tTraj) {
+        tTraj.addEventListener('change', () => {
+          const condition = !tTraj.checked;
+          document.querySelectorAll('[id^="trajet-"]').forEach(input => {
+            input.disabled = condition;
+            if (condition && !input.checked) {
+              input.checked = true;
+            }
+          });
         });
-      });
+      }
+      
+      // Empêcher la propagation des événements
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+      
+      return container;
+    },
+    
+    onRemove: function(map) {
+      // Nettoyage si nécessaire
     }
-  }
+  });
+
+  // Créer la fonction d'initialisation
+  L.control.trajetsFlottant = function(opts) {
+    return new L.Control.TrajetsFlottant(opts);
+  };
+
+  // Ajouter le contrôle à la carte
+  L.control.trajetsFlottant({ position: 'topright' }).addTo(carte);
 
   // FR: Bouton pour recentrer la vue (utilise donneesGlobales)
   const btnReset = document.getElementById('btn-reset-view');
