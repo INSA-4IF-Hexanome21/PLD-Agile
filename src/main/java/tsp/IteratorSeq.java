@@ -54,6 +54,6 @@ public class IteratorSeq implements Iterator<Integer> {
 		return candidats[nbCandidats];
 	}
 
-	@Override
-	public void remove() {}
+	// @Override
+	// public void remove() {}
 }
