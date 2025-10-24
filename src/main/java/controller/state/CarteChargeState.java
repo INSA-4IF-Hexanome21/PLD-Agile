@@ -6,42 +6,37 @@ public class CarteChargeState implements State {
     // État: carte chargée - peut charger une nouvelle carte ou une livraison
     
    @Override
-	public void chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
+	public boolean chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
 		System.out.println(">>> [CarteChargeState] Rechargement de la carte...");
-		// Nettoyer livraisons et calculs précédents
-		carteC.effacerCalcul();
-		carteC.effacerLivraison();
-		carteC.chargerCarteDepuisXML(cheminFichier);
-		c.setCurrentState(c.carteChargeState);
-		System.out.println(">>> [CarteChargeState] Carte rechargée, reste dans CarteChargeState");
-	}
+		boolean chargementCarteReussi = carteC.chargerCarteDepuisXML(cheminFichier);
+        if (chargementCarteReussi == true){
+            c.setCurrentState(c.carteChargeState);
+            System.out.println(">>> [CarteChargeState] Transition vers CarteChargeState");
+            return true;
+        } else {
+            c.setCurrentState(c.initialState);
+            return false;
+        }
+    }
 
 
    
     @Override
-    public void chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
+    public boolean chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
         System.out.println(">>> [CarteChargeState] Chargement de la livraison depuis " + cheminFichier);
         // Charger la demande
-        carteC.chargerDemandesDepuisXML(cheminFichier);
-
-        // Lancer immédiatement le calcul de la tournée
-        try {
-            System.out.println(">>> [CarteChargeState] Lancement du calcul de la tournée...");
-            carteC.calculerTournee(); // <-- méthode que tu as créée dans CarteController
-            c.setCurrentState(c.livraisonCalculeState);
-            System.out.println(">>> [CarteChargeState] Calcul terminé, transition vers LivraisonCalculeState");
-        } catch (Exception ex) {
-            System.err.println(">>> [CarteChargeState] ERREUR pendant le calcul: " + ex.getMessage());
-            ex.printStackTrace();
-            // On reste en CarteChargeState (ou on peut définir une stratégie d'erreur différente)
-            c.setCurrentState(c.carteChargeState);
-            // Renvoyer l'erreur pour que le serveur HTTP puisse la remonter si nécessaire
-            throw new RuntimeException("Erreur lors du calcul de la tournée : " + ex.getMessage(), ex);
+        boolean chargementLivrasonReussi = carteC.chargerDemandesDepuisXML(cheminFichier);
+        if (chargementLivrasonReussi == true){
+            c.setCurrentState(c.livraisonChargeState);
+            System.out.println(">>> [CarteChargeState] Transition vers LivraisonChargeState");
+            return true;
+        } else {
+            return false;
         }
     }
     
     @Override
-    public void calculerLivraison(Controller c) {
+    public void calculerLivraison(Controller c, CarteController carteC) {
         System.err.println(">>> [CarteChargeState] ERREUR: Impossible de calculer sans livraison!");
         throw new IllegalStateException("Veuillez d'abord charger une livraison");
     }

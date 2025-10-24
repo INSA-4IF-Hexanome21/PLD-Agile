@@ -24,7 +24,7 @@ public class ServeurHTTP {
      * 
      * @param port Le port sur lequel le serveur écoute
      * @param cheminBase Le chemin de base des fichiers à servir
-     * @para Le contrôleur de carte pour l'API
+     * @param controller Le contrôleur de carte pour l'API
      * @throws IOException Si le serveur ne peut pas être créé
      */
     public ServeurHTTP(int port, String cheminBase, String cheminBaseRessources, Controller controller) throws IOException {
@@ -67,7 +67,7 @@ public class ServeurHTTP {
             
             if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
                 try {
-                    // Lecture du coprs de la requête
+                    // Lecture du corps de la requête
                     byte[] bytes = exchange.getRequestBody().readAllBytes();
                     System.out.println("Bytes recibidos: " + bytes.length);
                     
@@ -81,11 +81,6 @@ public class ServeurHTTP {
                         System.out.println("Nombre generado: " + fileName);
                     }
                     
-                    // Vérifier qu'il s'agit d'une fichier XML
-                    if (!fileName.toLowerCase().endsWith(".xml")) {
-                        throw new Exception("Le fichier doit être un XML");
-                    }
-                    
                     // Créer un répertoire s'il n'existe pas
                     File uploadDir = new File(cheminBaseRessources + "uploads/plans/");
                     if (!uploadDir.exists()) {
@@ -96,17 +91,17 @@ public class ServeurHTTP {
                     // Enregistrer le fichier
                     File outFile = new File(uploadDir, fileName);
                     Files.write(outFile.toPath(), bytes);
-                    System.out.println("Plan guardado en: " + outFile.getAbsolutePath());
+                    System.out.println("Plan enregistré dans : " + outFile.getAbsolutePath());
                     
-                    // Charger le plan dans le controleur
+                    // Charger le plan dans le contrôleur
                     System.out.println(">>> Chargement du plan dans le contrôleur <<<");
 
-                    controller.chargerCarte(outFile.getAbsolutePath());
-
-                    // carteController.chargerCarteDepuisXML(outFile.getAbsolutePath());
-                    // System.out.println(">>> Plan chargé avec succès <<<");
+                    boolean carteChargeReussi = controller.chargerCarte(outFile.getAbsolutePath());
+                    if (!carteChargeReussi) {
+                        throw new Exception("Le fichier ne permet pas de charger une carte");
+                    }
                     
-                    // Rrépondre au client
+                    // Répondre au client
                     String response = "{\"status\":\"ok\",\"type\":\"plan\",\"path\":\"uploads/plans/" 
                                     + fileName + "\",\"size\":" + bytes.length + ",\"message\":\"Plan chargé avec succès\"}";
                     byte[] responseBytes = response.getBytes("UTF-8");
@@ -120,7 +115,7 @@ public class ServeurHTTP {
                     System.out.println(">>> Réponse envoyée: " + response + " <<<");
                     
                 } catch (Exception e) {
-                    System.err.println("ERROR al procesar plan: " + e.getMessage());
+                    System.err.println("ERREUR lors du traitement du plan: " + e.getMessage());
                     e.printStackTrace();
                     
                     String errorResponse = "{\"status\":\"error\",\"type\":\"plan\",\"message\":\"" 
@@ -132,7 +127,7 @@ public class ServeurHTTP {
                     exchange.close();
                 }
             } else {
-                System.out.println("Método no permitido: " + exchange.getRequestMethod());
+                System.out.println("Méthode non permise: " + exchange.getRequestMethod());
                 exchange.sendResponseHeaders(405, -1);
                 exchange.close();
             }
@@ -148,11 +143,11 @@ public class ServeurHTTP {
         
         if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             try {
-                // Lecture du coprs de la requête
+                // Lecture du corps de la requête
                 byte[] bytes = exchange.getRequestBody().readAllBytes();
                 System.out.println("Bytes recibidos: " + bytes.length);
                 
-                // Obtener el nombre del archivo del header
+                // Obtenir le nom du fichier de l'en-tête
                 String fileName = exchange.getRequestHeaders().getFirst("X-File-Name");
                 if (fileName != null) {
                     fileName = java.net.URLDecoder.decode(fileName, "UTF-8");
@@ -162,33 +157,29 @@ public class ServeurHTTP {
                     System.out.println("Nombre generado: " + fileName);
                 }
                 
-                // Validar que sea XML
-                if (!fileName.toLowerCase().endsWith(".xml")) {
-                    throw new Exception("Le fichier doit être un XML");
-                }
                 
-                // Crear directorio si no existe
+                // Créer un répertoire s'il n'existe pas
                 File uploadDir = new File(cheminBaseRessources + "uploads/demandes/");
                 if (!uploadDir.exists()) {
                     boolean created = uploadDir.mkdirs();
                     System.out.println("Directorio de demandes creado: " + created);
                 }
                 
-                // Guardar el archivo
+                // Enregistrer le fichier
                 File outFile = new File(uploadDir, fileName);
                 Files.write(outFile.toPath(), bytes);
-                System.out.println("Demande guardado en: " + outFile.getAbsolutePath());
+                System.out.println("Demande enregistrée dans : " + outFile.getAbsolutePath());
                 
-                // CARGAR LA DEMANDE EN EL CONTROLADOR
-                // Asumiendo que tienes un método para cargar demandes
+                // Charger la demande dans le controleur
                 System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
 
-                controller.chargerLivraison(outFile.getAbsolutePath());
-
-                // carteController.chargerDemandesDepuisXML(outFile.getAbsolutePath());
+                 boolean carteChargeReussi =  controller.chargerLivraison(outFile.getAbsolutePath());
+                    if (!carteChargeReussi) {
+                        throw new Exception("Le fichier ne permet pas de charger une carte");
+                    }
                 System.out.println(">>> Demande chargée avec succès <<<");
                 
-                // Responder al cliente
+                // Répondre au client
                 String response = "{\"status\":\"ok\",\"type\":\"demande\",\"path\":\"uploads/demandes/" 
                                 + fileName + "\",\"size\":" + bytes.length + ",\"message\":\"Demande chargée avec succès\"}";
                 byte[] responseBytes = response.getBytes("UTF-8");
@@ -202,7 +193,7 @@ public class ServeurHTTP {
                 System.out.println(">>> Réponse envoyée: " + response + " <<<");
                 
             } catch (Exception e) {
-                System.err.println("ERROR al procesar demande: " + e.getMessage());
+                System.err.println("ERREUR lors du traitement de la demande: " + e.getMessage());
                 e.printStackTrace();
                 
                 String errorResponse = "{\"status\":\"error\",\"type\":\"demande\",\"message\":\"" 
@@ -214,17 +205,67 @@ public class ServeurHTTP {
                 exchange.close();
             }
         } else {
-            System.out.println("Método no permitido: " + exchange.getRequestMethod());
+            System.out.println("Méthode non permise: " + exchange.getRequestMethod());
             exchange.sendResponseHeaders(405, -1);
             exchange.close();
         }
     });
         
+    /**
+     * ! Calculer une livraison
+     */
+           // Endpoint pour calculer la livraison (demande)
+    serveur.createContext("/api/calcul", exchange -> {
+        System.out.println(">>> Requête reçue sur /api/calcul <<<");
+        
+        if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            try {
+                // Lecture du corps de la requête
+                byte[] bytes = exchange.getRequestBody().readAllBytes();
+                System.out.println("Bytes recibidos: " + bytes.length);
+                
+                // Lancer le calcul de la livraison par le contrôleur
+                System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
+
+                controller.calculerLivraison();
+
+                System.out.println(">>> Demande chargée avec succès <<<");
+                
+                // Répondre au client
+                String response = "{\"status\":\"ok\",\"type\":\"demande\",\"path\":\"cacul\",\"message\":\"Demande chargée avec succès\"}";
+                byte[] responseBytes = response.getBytes("UTF-8");
+                
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                exchange.sendResponseHeaders(200, responseBytes.length);
+                exchange.getResponseBody().write(responseBytes);
+                exchange.close();
+                
+                System.out.println(">>> Réponse envoyée: " + response + " <<<");
+                
+            } catch (Exception e) {
+                System.err.println("ERREUR lors du traitement du calcul: " + e.getMessage());
+                e.printStackTrace();
+                
+                String errorResponse = "{\"status\":\"error\",\"type\":\"demande\",\"message\":\"" 
+                                    + e.getMessage().replace("\"", "'") + "\"}";
+                byte[] errorBytes = errorResponse.getBytes("UTF-8");
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.sendResponseHeaders(500, errorBytes.length);
+                exchange.getResponseBody().write(errorBytes);
+                exchange.close();
+            }
+        } else {
+            System.out.println("Méthode non permise: " + exchange.getRequestMethod());
+            exchange.sendResponseHeaders(405, -1);
+            exchange.close();
+        }
+    });
+
     serveur.createContext("/api/carte", exchange -> {
         System.out.println(">>> Requête reçue sur /api/carte <<<");
         
         String jsonResponse = controller.getCarteJSON();
-        //String jsonResponse = carteController.getCarteJSON();
         byte[] octets = jsonResponse.getBytes("UTF-8");
         
         exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
@@ -235,7 +276,7 @@ public class ServeurHTTP {
         
         System.out.println(">>> Réponse envoyée <<<");
     });
-        // ! Route pour les fichiers JavaScript
+        //  Route pour les fichiers JavaScript
         serveur.createContext("/js/", exchange -> {
             String chemin = exchange.getRequestURI().getPath().replaceFirst("/js/", "");
             File fichier = new File(cheminBase + "JS/" + chemin);
@@ -252,7 +293,7 @@ public class ServeurHTTP {
             exchange.close();
         });
         
-        // ! Route pour les fichiers CSS
+        //  Route pour les fichiers CSS
         serveur.createContext("/css/", exchange -> {
             String chemin = exchange.getRequestURI().getPath().replaceFirst("/css/", "");
             File fichier = new File(cheminBase + "CSS/" + chemin);
