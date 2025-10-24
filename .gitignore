@@ -1,3 +1,8 @@
+ressources/uploads/*
+target/
+
+
+
 # JAVA
 # -------------------------------
 
@@ -59,7 +64,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-ressources/uploads/*
+
 
 # VISUAL STUDIO CODE
 # -------------------------------

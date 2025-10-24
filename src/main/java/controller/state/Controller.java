@@ -33,22 +33,22 @@ public class Controller{
 	/**
 	 * Méthode pour charger la carte
 	 */
-	public void chargerCarte(String cheminFichier) {
-		currentState.chargerCarte(this, carteController, cheminFichier);
+	public boolean chargerCarte(String cheminFichier) {
+		return currentState.chargerCarte(this, carteController, cheminFichier);
 	}
 
 	/**
 	 *Méthode pour charger une livraison
 	 */
-	public void chargerLivraison(String cheminFichier) {
-		currentState.chargerLivraison(this, carteController, cheminFichier);
+	public boolean chargerLivraison(String cheminFichier) {
+		return currentState.chargerLivraison(this, carteController, cheminFichier);
 	}
 
     /**
 	 * Méthode pour calculer une livraison
 	 */
     public void calculerLivraison() {
-        currentState.calculerLivraison(this);
+        currentState.calculerLivraison(this, carteController);
     }
 
 	/**

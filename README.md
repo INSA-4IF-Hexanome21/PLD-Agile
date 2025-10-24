@@ -4,9 +4,9 @@
 
 ## Utilisation
 
-Exécuter le code principal :
+Installer les dépendances Maven :
 ```bash
-java -cp target/classes app.Main
+mvn install
 ```
 
 Compiler le code principal :
@@ -14,16 +14,21 @@ Compiler le code principal :
 javac -d target/classes $(find src/main/java -name '*.java')
 ```
 
-## Tests
-
-Exécuter les tests :
+Exécuter le code principal :
 ```bash
-java -cp target/classes model.<classTest>
+java -cp target/classes app.Main
 ```
+
+## Tests
 
 Compiler les tests :
 ```bash
 javac -cp target/classes -d target/test-classes src/test/java/model/*.java
+```
+
+Exécuter les tests :
+```bash
+java -cp target/classes model.<classTest>
 ```
 
 ## Ressources

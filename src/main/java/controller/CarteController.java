@@ -23,7 +23,7 @@ public class CarteController {
     /**
      * Charge le plan (noeuds et troncons) depuis un fichier XML
      */
-    public void chargerCarteDepuisXML(String cheminFichier) {
+    public boolean chargerCarteDepuisXML(String cheminFichier) {
         if (carte == null) {
             carte = new Carte();
         }
@@ -34,10 +34,15 @@ public class CarteController {
         List<Troncon> troncons = GestionnaireXML.chargerPlanTroncons(cheminFichier, noeuds);
         carte.setTroncons(troncons);
         
-        System.out.println("Plan chargé: " + noeuds.size() + " noeuds, " + troncons.size() + " troncons");
+        if(noeuds.isEmpty() & troncons.isEmpty()){
+            return false;
+        } else {
+            System.out.println("Plan chargé: " + noeuds.size() + " noeuds, " + troncons.size() + " troncons");
+            return true;
+        }
     }
     
-  public synchronized void chargerDemandesDepuisXML(String cheminFichierDemandes) {
+  public synchronized boolean chargerDemandesDepuisXML(String cheminFichierDemandes) {
         // Protection contre appels concurrents
         if (carte == null) {
             carte = new Carte();
@@ -372,9 +377,8 @@ public class CarteController {
     public GrapheTotal creerGrapheTotal(Carte carte, long idEntrepot){
         HashMap<Long, Noeud> noeuds = carte.getNoeuds();
         List<Troncon> troncons = carte.getTroncons();
-        int nbSommets = noeuds.size();
 
-        GrapheTotal gt = new GrapheTotal(nbSommets, troncons, noeuds, idEntrepot);
+        GrapheTotal gt = new GrapheTotal(troncons, noeuds, idEntrepot);
         //gt.printGraphe();
         return gt;
     }
