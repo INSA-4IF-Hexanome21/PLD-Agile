@@ -72,12 +72,22 @@ public class CarteController {
                 System.out.println(">>> Site déjà présent, id=" + site.getId());
             }
         }
+        //Assignation des livreurs aléatoire A FAIRE DISPARAITRE
+       
         Livreur livreur1 = new Livreur(1, "Bobard", "Bobert");
-        //Livreur livreur2 = new Livreur(2, "Bobert", "Bobard");
+        Livreur livreur2 = new Livreur(2, "Bobert", "Bobard");
         Integer nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1, 1, carte);
-        nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1,2, carte);
-        nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1,3, carte);
-        
+        Integer i = 1;
+        while(nbLivraisonsNonAssignees > 0){
+            if(i%2 == 0){
+                nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1,++i, carte);
+            }
+            else{
+                nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur2,++i, carte);
+            }
+            
+            
+        }
         System.out.println(">>> CarteController: demande chargée, sites ajoutés=" + ajout + ", total sites=" + carte.getSites().size());
     }
 
@@ -119,8 +129,8 @@ public class CarteController {
        
         //this.supprimerLivraison(gt, Long.valueOf(25610684), Long.valueOf(21717915), this.getCarte().getTrajets().get(0));
         //this.supprimerLivraison(gt, Long.valueOf(21992645), Long.valueOf(55444215), this.getCarte().getTrajets().get(0));
-        this.supprimerLivraison(gt, Long.valueOf(55444018), Long.valueOf(26470086), this.getCarte().getTrajets().get(0));
-        this.supprimerLivraison(gt, Long.valueOf(27362899), Long.valueOf(505061101), this.getCarte().getTrajets().get(0));
+        //this.supprimerLivraison(gt, Long.valueOf(55444018), Long.valueOf(26470086), this.getCarte().getTrajets().get(0));
+        //this.supprimerLivraison(gt, Long.valueOf(27362899), Long.valueOf(505061101), this.getCarte().getTrajets().get(0));
     }
 
     /**

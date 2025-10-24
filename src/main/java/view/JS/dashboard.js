@@ -5,7 +5,7 @@ let lignes = [];
 let siteMarkers = [];
 let noeudMarkers = [];
 let tronconLines = [];
-let trajetLines = [];
+let trajetLines = {};
 let donneesGlobales = null;
 
 const COULEURS_SITES = {
@@ -184,8 +184,9 @@ function afficherDonneesSurCarte(donnees) {
     if (donnees.trajets) {
       for (const key in donnees.trajets) {
         const color = getRandomHexColor();
+        trajetLines[key] = [];
         donnees.trajets[key].forEach((trajet) => {
-        
+
         const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.from);
         const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.to);
         if (depart && arrivee) {
@@ -214,8 +215,8 @@ function afficherDonneesSurCarte(donnees) {
           }).addTo(carte);
 
           ligne.bindPopup(`<strong>Trajet</strong><br>De: ${trajet.from}<br>À: ${trajet.to}`);
-          trajetLines.push(ligne);
-          trajetLines.push(decorator); 
+          trajetLines[key].push(ligne);
+          trajetLines[key].push(decorator); 
         }
       })
       }
@@ -479,13 +480,16 @@ function updateVisibility() {
   });
 
   // FR: Gestion de la visibilité des trajets
-  trajetLines.forEach(trajet => {
-    if (visibilityState.trajets) {
-      if (!carte.hasLayer(trajet)) trajet.addTo(carte);
-    } else {
-      if (carte.hasLayer(trajet)) carte.removeLayer(trajet);
-    }
-  });
+  for (const key in trajetLines) {
+    const trajet = trajetLines[key]; 
+    trajet.forEach((t) => {
+      if (visibilityState.trajets) {
+        if (!carte.hasLayer(t)) t.addTo(carte);
+      } else {
+        if (carte.hasLayer(t)) carte.removeLayer(t);
+      }
+    })
+  };
 }
 
 function configurerControlesVisibilite() {
@@ -531,6 +535,39 @@ function configurerControlesVisibilite() {
     });
   }
 
+  // FR: Toggle pour chaque trajet
+  const controlContainer = document.getElementById('trajet-controls');
+  if (controlContainer) {
+    for(const key in trajetLines) {
+      const trajet = trajetLines[key];
+      const index = key;
+      const label = document.createElement('label');
+      label.innerHTML = `<input type="checkbox" id="trajet-${index}" checked ${tTraj && tTraj.checked ? '' : 'disabled'}> Trajet ${index} `;
+      controlContainer.appendChild(label);
+      controlContainer.appendChild(document.createElement('br'));
+
+      document.getElementById(`trajet-${index}`).addEventListener('change', (e) => {
+        trajet.forEach((t) => {
+          if (e.target.checked) {
+            t.addTo(carte);
+          } else {
+            carte.removeLayer(t);
+          }
+        });
+      });
+    };
+    // Synchronisation dynamique du disabled sur le toggle principal
+    if (tTraj) {
+      tTraj.addEventListener('change', () => {
+        const condition = !tTraj.checked;
+        document.querySelectorAll('[id^="trajet-"]').forEach(input => {
+          input.disabled = condition;
+          if (!input.checked) input.checked = condition;
+        });
+      });
+    }
+  }
+
   // FR: Bouton pour recentrer la vue (utilise donneesGlobales)
   const btnReset = document.getElementById('btn-reset-view');
   if (btnReset) {
@@ -573,7 +610,7 @@ function nettoyerCarte() {
   siteMarkers = [];
   noeudMarkers = [];
   tronconLines = [];
-  trajetLines = [];
+  trajetLines = {};
   donneesGlobales = null;
 }
 
