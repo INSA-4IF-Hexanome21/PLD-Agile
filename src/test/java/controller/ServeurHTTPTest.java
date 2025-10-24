@@ -75,7 +75,12 @@ public class ServeurHTTPTest {
         connection.setRequestProperty("X-File-Name", "testPlan.xml");
         connection.setDoOutput(true);
 
-        String xmlData = "<carte></carte>";
+        String xmlData = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
+                         "<reseau>\n" +
+                         "<noeud id=\"25175791\" latitude=\"45.75406\" longitude=\"4.857418\"/>\n" +
+                         "<noeud id=\"2129259178\" latitude=\"45.750404\" longitude=\"4.8744674\"/>\n" +
+                         "<troncon destination=\"2129259178\" longueur=\"100.0\" nomRue=\"Rue Test\" origine=\"25175791\"/>\n" +
+                         "</reseau>";
         try (OutputStream os = connection.getOutputStream()) {
             os.write(xmlData.getBytes(StandardCharsets.UTF_8));
         }
@@ -121,7 +126,12 @@ public class ServeurHTTPTest {
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
 
-        String xmlData = "<carte></carte>";
+        String xmlData = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
+                         "<reseau>\n" +
+                         "<noeud id=\"25175791\" latitude=\"45.75406\" longitude=\"4.857418\"/>\n" +
+                         "<noeud id=\"2129259178\" latitude=\"45.750404\" longitude=\"4.8744674\"/>\n" +
+                         "<troncon destination=\"2129259178\" longueur=\"100.0\" nomRue=\"Rue Test\" origine=\"25175791\"/>\n" +
+                         "</reseau>";
         try (OutputStream os = connection.getOutputStream()) {
             os.write(xmlData.getBytes(StandardCharsets.UTF_8));
         }
