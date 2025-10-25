@@ -137,17 +137,31 @@ function updateUIBasedOnState() {
         $('#status-plan').removeClass('loading error').addClass('success')
             .html('✅ Plan de distribution chargé').show();
     } else {
-        $('#status-plan').hide();
+        $('#status-demande').hide();
     }
     
     if (state.livraisonChargee) {
         $('#status-demande').removeClass('loading error').addClass('success')
             .html('✅ Demandes de livraison chargées').show();
-    } else {
-        $('#status-demande').hide();
     }
 }
 
+//Helper pour mettre à jour les états lors des erreurs d'upload
+function miseAJourEtat (uploadType){
+    if (window.appController) {
+                try {
+                    if (uploadType === 'plan') {
+                        window.appController.onInitial();
+                    } else if (uploadType === 'demande') {
+                        window.appController.onCarteLoaded();
+                    }
+                } catch (err) {
+                    console.error('Erreur côté contrôleur :', err);
+                    $(statusId).removeClass('loading success').addClass('error')
+                        .text('' + (err.message || 'Erreur interne'));
+                }
+            }
+}
 
 // Helper pour afficher des erreurs d'upload
 function afficherErreurUpload(statusId, httpStatus, serverBody) {
@@ -240,6 +254,7 @@ function subirArchivo(file, uploadType) {
                 $(statusId).removeClass('loading success').addClass('error')
                     .text('Erreur : ' + (err.message || String(err)));
             }
+            miseAJourEtat(uploadType);
         });
     };
     
