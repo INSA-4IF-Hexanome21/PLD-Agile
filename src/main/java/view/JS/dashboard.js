@@ -176,8 +176,11 @@ function afficherDonneesSurCarte(donnees) {
 
     // 4.trajets (si hay)
     console.log('Trajets reçus:', donnees.trajets);
-    if (donnees.trajets && donnees.trajets.length > 0) {
-      donnees.trajets.forEach((trajet) => {
+    if (donnees.trajets) {
+      for (const key in donnees.trajets) {
+        const color = getRandomHexColor();
+        donnees.trajets[key].forEach((trajet) => {
+        
         const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.from);
         const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.to);
         if (depart && arrivee) {
@@ -210,6 +213,7 @@ function afficherDonneesSurCarte(donnees) {
           trajetLines.push(decorator); 
         }
       })
+      }
     }
     // resize al zoom (solo una vez)
     if (!carte._siteZoomHandlerAdded) {
@@ -228,6 +232,43 @@ function afficherDonneesSurCarte(donnees) {
     }
   } catch (e) {}
 }
+
+function attachSiteHoverHandlers() {
+  if (!Array.isArray(siteMarkers) || !carte) return;
+
+  siteMarkers.forEach(marker => {
+    if (marker._siteHandlersAttached) return;
+    marker._siteHandlersAttached = true;
+
+    marker.on('click', () => {
+      const numLivraison = marker.options.numLivraison;
+      if (numLivraison == null) return;
+
+      const jumeau = siteMarkers.find(m => m !== marker && m.options.numLivraison === numLivraison);
+      if (!jumeau) return;
+
+      const originalColor = jumeau.options.fillColor || '#3388ff';
+      const originalWeight = jumeau.options.weight || 2;
+
+      // Cambio instantáneo de color y grosor
+      jumeau.setStyle({
+        color: '#ff6600',
+        fillColor: '#ff6600',
+        weight: 4
+      });
+
+      // Regreso inmediato al estado original (sin animación ni delay largo)
+      setTimeout(() => {
+        jumeau.setStyle({
+          color: '#ffffff',
+          fillColor: originalColor,
+          weight: originalWeight
+        });
+      }, 250);
+    });
+  });
+}
+
 
 function attachSiteHoverHandlers() {
   if (!Array.isArray(siteMarkers) || !carte) return;
@@ -425,6 +466,9 @@ function creerMarqueurSite(site, type, color, radius) {
 }
 
 /* //! ----------------- PANE / HOVER / DIM ----------------- */
+function getRandomHexColor() {
+  return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+}
 
 function ensureSitePane() {
   if (!carte) return;
