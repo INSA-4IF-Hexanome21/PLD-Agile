@@ -123,6 +123,13 @@
   overflow-x: hidden; /* Évite le débordement horizontal */
 }
 
+.empty-body {
+  padding: 8px; /* Réduit l'espacement */
+  font-size: 0.65rem;
+  color: #333;
+  text-align: center;
+}
+
 /* Scrollbar personnalisée */
 .trajets-body::-webkit-scrollbar {
   width: 4px;

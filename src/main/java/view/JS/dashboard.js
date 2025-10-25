@@ -610,38 +610,45 @@ function configurerControlesVisibilite() {
       // Corps avec les contrôles
       const body = L.DomUtil.create('div', 'trajets-body', container);
       
-      // Conteneur des sous-trajets
-      const controlContainer = L.DomUtil.create('div', 'trajets-list', body);
-      controlContainer.id = 'trajet-controls-floating';
-      
-      // Générer les checkboxes pour chaque trajet
-      for(const key in trajetLines) {
-        const trajet = trajetLines[key];
-        const index = key;
-        
-        const trajetItem = L.DomUtil.create('div', 'control-row trajet-item', controlContainer);
-        const label = L.DomUtil.create('label', '', trajetItem);
-        label.setAttribute('for', `trajet-${index}`);
-        
-        const checkbox = L.DomUtil.create('input', '', label);
-        checkbox.type = 'checkbox';
-        checkbox.id = `trajet-${index}`;
-        checkbox.checked = true;
-        checkbox.disabled = tTraj && !tTraj.checked;
-        
-        label.appendChild(document.createTextNode(` Trajet ${parseInt(index,10)+1}`));
-        
-        // Event listener pour afficher/masquer le trajet
-        checkbox.addEventListener('change', (e) => {
-          trajet.forEach((t) => {
-            if (e.target.checked) {
-              t.addTo(carte);
-            } else {
-              carte.removeLayer(t);
-            }
-          });
-        });
+      if (Object.keys(trajetLines).length === 0) {
+        const emptyBody = L.DomUtil.create('div', 'empty-body', body);
+        emptyBody.innerHTML = " Aucun trajet disponible. ";
       }
+      else {
+        // Conteneur des sous-trajets
+        const controlContainer = L.DomUtil.create('div', 'trajets-list', body);
+        controlContainer.id = 'trajet-controls-floating';
+        
+        // Générer les checkboxes pour chaque trajet
+        for(const key in trajetLines) {
+          const trajet = trajetLines[key];
+          const index = key;
+          
+          const trajetItem = L.DomUtil.create('div', 'control-row trajet-item', controlContainer);
+          const label = L.DomUtil.create('label', '', trajetItem);
+          label.setAttribute('for', `trajet-${index}`);
+          
+          const checkbox = L.DomUtil.create('input', '', label);
+          checkbox.type = 'checkbox';
+          checkbox.id = `trajet-${index}`;
+          checkbox.checked = true;
+          checkbox.disabled = tTraj && !tTraj.checked;
+          
+          label.appendChild(document.createTextNode(` Trajet ${parseInt(index,10)+1}`));
+          
+          // Event listener pour afficher/masquer le trajet
+          checkbox.addEventListener('change', (e) => {
+            trajet.forEach((t) => {
+              if (e.target.checked) {
+                t.addTo(carte);
+              } else {
+                carte.removeLayer(t);
+              }
+            });
+          });
+        }
+      }
+      
       
       // Synchronisation dynamique du disabled sur le toggle principal
       if (tTraj) {
