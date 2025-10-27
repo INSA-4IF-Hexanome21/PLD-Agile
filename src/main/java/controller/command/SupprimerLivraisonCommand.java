@@ -1,31 +1,40 @@
 package controller.command;
 
+import java.util.List;
+
 import model.Carte;
 import model.GrapheTotal;
 import model.Trajet;
+import model.utils.CarteUtils;
+import model.Collecte;
+import model.Depot;
 
 public class SupprimerLivraisonCommand implements Command {
     
     private GrapheTotal gt;
-    private Long idCollecte;
-    private Long idDepot;
+    private Collecte collecte;
+    private Depot depot;
     private Trajet trajet;
     private Carte carte;
+    private List<Long> solution;
 
-    public SupprimerLivraisonCommand(GrapheTotal gt, Long idCollecte, Long idDepot, Trajet trajet, Carte carte) {
+    public SupprimerLivraisonCommand(GrapheTotal gt, Collecte collecte, Depot depot, Trajet trajet, Carte carte) {
         this.gt = gt;
-        this.idCollecte = idCollecte;
-        this.idDepot = idDepot;
+        this.collecte = collecte;
+        this.depot = depot;
         this.trajet = trajet;
         this.carte = carte;
+        this.solution = trajet.getSolution();
     }
 
     public void doCommand() {
-        carte.supprimerLivraison(gt, idCollecte, idDepot, trajet, carte);
+        System.out.println("Suppression de la collecte "+ collecte.getId() +" et du depot "+ depot.getId());
+        carte.supprimerLivraison(gt, collecte.getId(), depot.getId(), trajet, carte);
     }
 
     public void undoCommand() {
-        carte.ajouterLivraison(gt, idCollecte, idCollecte, null, idDepot, idDepot, null, trajet, carte);
+        System.out.println("Ajout de la collecte "+ collecte.getId() +" et du depot "+ depot.getId());
+        carte.ajouterLivraison(gt, collecte.getId(), CarteUtils.getPrecSite(collecte, solution), collecte.getDureeRecup(), depot.getId(), CarteUtils.getPrecSite(depot, solution), depot.getDureeRecup(), trajet, carte);
     }
     
 }

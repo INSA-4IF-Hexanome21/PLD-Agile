@@ -91,7 +91,7 @@ public class Carte {
         return trajetLivreur;
     }
 
-    public void ajouterLivraison(GrapheTotal gt, Long idCollecte,Long idPrecCollecte,Integer dureeEnlevement, Long idDepot,Long idPrecDepot, Integer dureeLivraison,Trajet trajet, Carte carte) {
+    public void ajouterLivraison(GrapheTotal gt, long idCollecte, long idPrecCollecte, Integer dureeEnlevement, long idDepot, long idPrecDepot, Integer dureeLivraison, Trajet trajet, Carte carte) {
         //Creation des nouveaux sites
         Noeud noeudCollecte = gt.trouverNoeud(idCollecte);
         Collecte collecte = new Collecte(idCollecte, noeudCollecte.getLatitude(), noeudCollecte.getLongitude(), carte.getNbLivraisons()+1, dureeEnlevement);
@@ -192,5 +192,12 @@ public class Carte {
             solution.add(gt.getIndexFromId(id));
         }
         CarteUtils.majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
+    }
+
+    public Site getSiteById(Long id) {
+        for (Site s : sites) {
+            if (Objects.equals(s.getId(),id)) return s;
+        }
+        return null;
     }
 }

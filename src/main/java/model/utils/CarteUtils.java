@@ -124,4 +124,14 @@ public final class CarteUtils {
         trajet.setTroncons(troncons);
         trajet.setdureeTrajet(dureeTrajet);
     }
+
+    public static long getPrecSite(Site site, List<Long> solution) {
+        
+        int indexSite = solution.indexOf(site.getId());
+        if (indexSite < 1) {
+            return -1L;
+        }
+        return solution.get(indexSite - 1);
+    }
+
 }

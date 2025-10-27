@@ -155,8 +155,10 @@ public class CarteController {
         //this.supprimerLivraison(gt, Long.valueOf(27362899), Long.valueOf(505061101), this.getCarte().getTrajets().get(0));
         //TEST
         ajouterLivraison();
+        supprimerLivraison();
         undo();
         redo();
+        
     }
 
     /**
@@ -391,7 +393,7 @@ public class CarteController {
 
     // Exécution d'une commande de suppression
     public void supprimerLivraison() {
-        Command slc = new SupprimerLivraisonCommand(gt, Long.valueOf(1679901320), Long.valueOf(26086123), carte.getTrajets().get(0), carte);
+        Command slc = new SupprimerLivraisonCommand(gt, (Collecte) carte.getSiteById(Long.valueOf(1679901320)), (Depot) carte.getSiteById(Long.valueOf(26086123)), carte.getTrajets().get(0), carte);
         history.add(slc);   
     }
 
