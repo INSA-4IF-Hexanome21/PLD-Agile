@@ -10,6 +10,7 @@ public class Carte {
     private List<Troncon> troncons;
     private List<Site> sites;
     private List<Trajet> trajets;
+    private Integer nbLivraisons;
 
     // Constructeur
     public Carte() {
@@ -17,6 +18,7 @@ public class Carte {
         this.troncons = new ArrayList<>();
         this.sites = new ArrayList<>();
         this.trajets = new ArrayList<>();
+        this.nbLivraisons = 0;
     }
 
     // Getters et Setters
@@ -42,6 +44,14 @@ public class Carte {
 
     public void setTroncons(List<Troncon> troncons) {
         this.troncons = troncons;
+    }
+
+    public void setNbLivraisons(Integer nbLivraisons){
+        this.nbLivraisons = nbLivraisons;
+    }
+
+    public Integer getNbLivraisons(){
+        return this.nbLivraisons;
     }
 
     // Méthodes 
