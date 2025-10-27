@@ -4,7 +4,7 @@ public class ReverseCommand implements Command {
 
     private Command command;
 
-    public void ReverseCommand(Command cmd) {
+    public ReverseCommand(Command cmd) {
         this.command = cmd;
     }
 

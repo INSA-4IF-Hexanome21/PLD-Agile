@@ -13,7 +13,7 @@ public class ListOfCommands {
     }
 
     public void add(Command c) {
-        l.add(i++,c);
+        l.add(++i,c);
         c.doCommand();
     }
 
@@ -24,6 +24,6 @@ public class ListOfCommands {
     }
 
     public void redo() {
-        l.get(i++).doCommand();
+        l.get(++i).doCommand();
     }
 }

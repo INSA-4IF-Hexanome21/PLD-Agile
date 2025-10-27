@@ -1,7 +1,8 @@
 package model;
 
-import java.time.LocalTime;
 import java.util.*;
+
+import model.utils.CarteUtils;
 
 public class Carte {
 
@@ -79,85 +80,6 @@ public class Carte {
         this.trajets.remove(trajet);
     }
 
-    public void majTrajetDepuisChemin(GrapheTotal gt, List<Long> cheminComplet,List<Integer>solution, Trajet trajet){
-        // System.out.println(solution);
-        trajet.setCheminComplet(cheminComplet);
-
-        List<Troncon> troncons = new ArrayList<Troncon>();
-        float dureeTrajet = 0;
-        //Création d'une hasmap pour numéro de passage
-        HashMap<Long,Integer> numsPassage = new HashMap<Long,Integer>();
-        List<Long> solutionLongs = new ArrayList<>();
-        for(int i= 0; i<solution.size(); ++i){
-            numsPassage.put(gt.getIdFromIndex(solution.get(i)),i);
-            solutionLongs.add(gt.getIdFromIndex(solution.get(i)));
-        }
-        trajet.setSolution(solutionLongs);
-
-        Integer indexSolution = 1;
-        Long idSiteAttendu = gt.getIdFromIndex(solution.get(indexSolution));
-        for (int i= 0; i<cheminComplet.size()-1; ++i){
-            long idNoeud1 = cheminComplet.get(i);
-            long idNoeud2 = cheminComplet.get(i+1);
-            if (idNoeud1 != idNoeud2) {
-                Troncon troncon = gt.NoeudstoTroncon(idNoeud1, idNoeud2);
-                dureeTrajet += (troncon.getLongueur()/1000)/15;
-                troncons.add(troncon);
-            }
-            
-            Site siteTrouve = null;
-            for(Site site: trajet.getSites()){
-                if(site.getId() == idNoeud2){
-                    siteTrouve = site;
-                    if(site.getId() != idSiteAttendu){
-                        siteTrouve = null;
-                    }
-                    else{
-                        if(indexSolution < solution.size()-1)
-                        {
-                            indexSolution += 1;
-                            idSiteAttendu = gt.getIdFromIndex(solution.get(indexSolution));
-                        }
-                        
-                    }
-                    break;
-                }
-            }
-            if(siteTrouve != null)
-            {   
-                float heure_arrivee = 8 + dureeTrajet;
-                if(siteTrouve instanceof Collecte) {
-                    siteTrouve.setArriveeHeure(LocalTime.of((int)heure_arrivee,(int)((heure_arrivee%1)*60)));
-                    dureeTrajet += ((Collecte)siteTrouve).getDureeRecup()/3600f;
-                    float heure_depart = 8 + dureeTrajet;
-                    siteTrouve.setDepartHeure(LocalTime.of((int)heure_depart,(int)((heure_depart%1)*60)));
-                }
-
-                else if(siteTrouve instanceof Depot) {
-                    siteTrouve.setArriveeHeure(LocalTime.of((int)heure_arrivee,(int)((heure_arrivee%1)*60)));
-                    dureeTrajet += ((Depot)siteTrouve).getDureeRecup()/3600f;
-                    float heure_depart = 8 + dureeTrajet;
-                    siteTrouve.setDepartHeure(LocalTime.of((int)heure_depart,(int)((heure_depart%1)*60)));
-                }
-
-                else if(i==cheminComplet.size()-2){
-                    siteTrouve.setArriveeHeure(LocalTime.of((int)heure_arrivee,(int)((heure_arrivee%1)*60)));
-                }
-                siteTrouve.setNumPassage(numsPassage.get(siteTrouve.getId()));
-                
-                // System.out.println();
-                // System.out.println("Site : " + siteTrouve.getId());
-                // System.out.println("numPassage : " + siteTrouve.getNumPassage());
-                // System.out.println("Arrivée Sur site: " +siteTrouve.getArriveeHeure());
-                // System.out.println("Départ du site: " +siteTrouve.getDepartHeure());
-            }
-            
-        }
-
-        trajet.setTroncons(troncons);
-        trajet.setdureeTrajet(dureeTrajet);
-    }
-
     public Trajet getTrajetParLivreur(Long idLivreur){
         Trajet trajetLivreur = null;
         for(Trajet trajet: this.getTrajets()){
@@ -167,5 +89,108 @@ public class Carte {
             }
         }
         return trajetLivreur;
+    }
+
+    public void ajouterLivraison(GrapheTotal gt, Long idCollecte,Long idPrecCollecte,Integer dureeEnlevement, Long idDepot,Long idPrecDepot, Integer dureeLivraison,Trajet trajet, Carte carte) {
+        //Creation des nouveaux sites
+        Noeud noeudCollecte = gt.trouverNoeud(idCollecte);
+        Collecte collecte = new Collecte(idCollecte, noeudCollecte.getLatitude(), noeudCollecte.getLongitude(), carte.getNbLivraisons()+1, dureeEnlevement);
+        Noeud noeudDepot = gt.trouverNoeud(idDepot);
+        Depot depot = new Depot(idDepot, noeudDepot.getLatitude(), noeudDepot.getLongitude(), carte.getNbLivraisons()+1, dureeLivraison);
+        trajet.addSite(collecte);
+        trajet.addSite(depot);
+        carte.ajouterSite(collecte);
+        carte.ajouterSite(depot);
+
+        List<Long> solutionLong = trajet.getSolution();
+        List<Long> nouvSolutionLong = new ArrayList<>();
+        List<Long> nouvCheminComplet = new ArrayList<>();
+
+        Integer indexCollecteSol = 0;
+        Integer indexDepotSol = 0;
+
+        for (int i = 0; i<solutionLong.size();++i){
+            Long idSite = solutionLong.get(i);
+            System.out.println();
+            System.out.println("--------------------------------------------------");
+            System.out.println("Site en cours :" + idSite);
+            System.out.println("Site Collecte prec attendu  :" + idPrecCollecte);
+            System.out.println("Site Depot prec attendu  :" + idPrecDepot);
+            System.out.println("--------------------------------------------------");
+            System.out.println();
+            nouvSolutionLong.add(idSite);
+            if(i<solutionLong.size() - 1 && Objects.equals(idSite, idPrecCollecte)){
+                System.out.println("Ajout de la collecte");
+                nouvSolutionLong.add(idCollecte);
+                indexCollecteSol = i+1;
+            }
+            else if(i<solutionLong.size() - 1 && Objects.equals(idSite, idPrecDepot)){
+                System.out.println("Ajout du depot");
+                nouvSolutionLong.add(idDepot);
+                indexDepotSol = i+2;
+            }
+        }
+
+
+        //Recherche Dijkstra Collecte
+        List<Site> siteARechercher = new ArrayList<Site>();
+        siteARechercher.add(trajet.getSite(idCollecte));
+        siteARechercher.add(trajet.getSite(idPrecCollecte)); // Ajout du Site précédent
+        siteARechercher.add(trajet.getSite(nouvSolutionLong.get(indexCollecteSol + 1))); // Ajout du Site suivant
+
+        siteARechercher.add(trajet.getSite(idDepot));
+        siteARechercher.add(trajet.getSite(idPrecDepot)); // Ajout du Site précédent
+        siteARechercher.add(trajet.getSite(nouvSolutionLong.get(indexDepotSol + 1))); // Ajout du Site suivant
+
+        gt.RechercheDijkstra(siteARechercher);
+
+        //Recréation du chemin
+        for (var i = 0; i<nouvSolutionLong.size()-1;++i) {
+            List<Long> chemin = CarteUtils.getChemin(gt, nouvSolutionLong.get(i), nouvSolutionLong.get(i+1));
+            CarteUtils.ajoutSansDuplication(nouvCheminComplet,chemin);
+        }
+
+        // conversion de la solution pour passage a majTrajet
+        List<Integer> solution = new ArrayList<>();
+        for (var id : nouvSolutionLong) {
+            solution.add(gt.getIndexFromId(id));
+        }
+        System.out.println("Nouvelle solution : " + solution);
+        CarteUtils.majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
+
+    }
+
+    public void supprimerLivraison(GrapheTotal gt, Long idCollecte, Long idDepot, Trajet trajet, Carte carte) {
+        List<Site> sites = trajet.getSites();
+        List<Site> sitesToRemove = new ArrayList<>();
+        List<Long> solutionLong = trajet.getSolution();
+        List<Long> nouvSolutionLong = new ArrayList<>();
+        List<Long> nouvCheminComplet = new ArrayList<>();
+
+        // on crée la nouvelle solution en retirant les sites à supprimer
+        for (var s : solutionLong ) {
+            if (!Objects.equals(s, idCollecte) && !Objects.equals(s, idDepot)) nouvSolutionLong.add(s);
+        } 
+
+        // on supprime les sites de trajets 
+        for (var s : sites) {
+            if (Objects.equals(s.getId(), idCollecte) || Objects.equals(s.getId(), idDepot)) {
+                sitesToRemove.add(s);
+                carte.supprimerSite(s);
+            }
+        }
+        for (var s : sitesToRemove) trajet.removeSite(s);
+
+        for (var i = 0; i<nouvSolutionLong.size()-1;++i) {
+            List<Long> chemin = CarteUtils.getChemin(gt, nouvSolutionLong.get(i), nouvSolutionLong.get(i+1));
+            CarteUtils.ajoutSansDuplication(nouvCheminComplet,chemin);
+        }
+        
+        // conversion de la solution pour passage a majTrajet
+        List<Integer> solution = new ArrayList<>();
+        for (var id : nouvSolutionLong) {
+            solution.add(gt.getIndexFromId(id));
+        }
+        CarteUtils.majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
     }
 }

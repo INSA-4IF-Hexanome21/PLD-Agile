@@ -1,12 +1,10 @@
 package controller.state;
 
 import controller.CarteController;
-import controller.command.ListOfCommands;
 
 public class Controller{
 	private State currentState;
 	private CarteController carteController;
-	private ListOfCommands listOfCommands;
 
      // Instances associées avec chaque état possible du controlleur 
 	protected final InitialState initialState = new InitialState();
@@ -21,7 +19,6 @@ public class Controller{
 	public Controller() {
 		currentState = initialState;
 		carteController = new CarteController();
-		listOfCommands = new ListOfCommands();
 	}
 
     /**

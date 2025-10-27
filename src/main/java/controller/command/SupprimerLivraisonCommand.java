@@ -2,7 +2,6 @@ package controller.command;
 
 import model.Carte;
 import model.GrapheTotal;
-import model.Site;
 import model.Trajet;
 
 public class SupprimerLivraisonCommand implements Command {
@@ -22,11 +21,11 @@ public class SupprimerLivraisonCommand implements Command {
     }
 
     public void doCommand() {
-        // TODO: to implement
+        carte.supprimerLivraison(gt, idCollecte, idDepot, trajet, carte);
     }
 
     public void undoCommand() {
-        // TODO: to implement
+        carte.ajouterLivraison(gt, idCollecte, idCollecte, null, idDepot, idDepot, null, trajet, carte);
     }
     
 }
