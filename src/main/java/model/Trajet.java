@@ -108,6 +108,17 @@ public class Trajet {
         return this.cheminComplet;
     }
 
+    public Site getSite(Long id){
+        Site siteTrouve = null;
+        for(Site site: sites){
+            if(site.getId() == id){
+                siteTrouve = site;
+                break;
+            }
+        }
+        return siteTrouve;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
