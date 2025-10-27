@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.AbstractMap.SimpleEntry;
+
+import controller.command.AjouterLivraisonCommand;
 import tsp.*;
 
 import model.*;
@@ -137,6 +139,9 @@ public class CarteController {
         //this.supprimerLivraison(gt, Long.valueOf(21992645), Long.valueOf(55444215), this.getCarte().getTrajets().get(0));
         //this.supprimerLivraison(gt, Long.valueOf(55444018), Long.valueOf(26470086), this.getCarte().getTrajets().get(0));
         //this.supprimerLivraison(gt, Long.valueOf(27362899), Long.valueOf(505061101), this.getCarte().getTrajets().get(0));
+
+        // AjouterLivraisonCommand alc = new AjouterLivraisonCommand(gt,Long.valueOf(1679901320), Long.valueOf(342873658), 120, Long.valueOf(26086123), Long.valueOf(208769039), 180, this.getCarte().getTrajets().get(0), carte);
+        // alc.doCommand();
     }
 
     /**
@@ -257,7 +262,7 @@ public class CarteController {
         majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
     }
 
-    private List<Long> getChemin(GrapheTotal gt, Long prec, Long suiv) {
+    public List<Long> getChemin(GrapheTotal gt, Long prec, Long suiv) {
         SimpleEntry<Integer, Integer> key = new SimpleEntry<>(
             gt.getIndexFromId(prec), 
             gt.getIndexFromId(suiv)
@@ -270,7 +275,7 @@ public class CarteController {
         return new ArrayList<>(cheminLong);
     }
     
-    private void ajoutSansDuplication(List<Long> cible, List<Long> ajout) {
+    public void ajoutSansDuplication(List<Long> cible, List<Long> ajout) {
         if (ajout.isEmpty()) return;
         if (!cible.isEmpty() && cible.get(cible.size() - 1).equals(ajout.get(0))) {
             cible.addAll(ajout.subList(1, ajout.size()));
