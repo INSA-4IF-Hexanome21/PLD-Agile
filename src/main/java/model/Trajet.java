@@ -3,6 +3,12 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
+
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class Trajet {
 
@@ -138,5 +144,67 @@ public class Trajet {
         
         sb.append("\n}");
         return sb.toString();
+    }
+
+    public void genererFeuilleDeRoute(){
+
+        LocalDate localDate = LocalDate.now(ZoneId.of("Europe/Paris"));//For reference
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String date = localDate.format(formatter);
+
+        String rueActuelle = null;
+        Float longueur = null;
+
+        String data = "Feuille de route " + date + "\n\n";
+        data += this.livreur + "\n";
+        data += "Trajet a effectué : \n\n";
+        data += "Départ de l'entrepot (" + troncons.get(0).getOrigine().getId() + ") à 08:00\n";
+        
+        for(Troncon troncon : this.troncons){
+            if(rueActuelle != null && !(troncon.getNomRue().equals(rueActuelle))){
+                data += rueActuelle + " sur " + longueur.intValue() + " m\n";
+            }
+            if(!(troncon.getNomRue().equals(rueActuelle))){
+                rueActuelle = troncon.getNomRue();
+                if(rueActuelle.equals("")){
+                    rueActuelle = "Rue non référencée";
+                }
+                longueur = troncon.getLongueur();
+            }
+            else{
+                longueur += troncon.getLongueur();
+            }
+            
+            //On vérifie si le lieu de destination est un site
+            Site site = getSite(troncon.getDestination().getId());
+            if( site != null && !(site instanceof Entrepot)){
+                data += rueActuelle + " sur " + longueur.intValue() + " m\n";
+                data += "Arrivé sur le lieu de " + site.getTypeSite() + " (" + site.getId()+") à " + site.getArriveeHeure() + "\n";
+                data += "Départ du lieu de " + site.getTypeSite() + " (" + site.getId()+") à " + site.getDepartHeure() + "\n";
+                rueActuelle = null;
+                longueur = 0f;
+            }
+        }
+        data += rueActuelle + " sur " + longueur.intValue() + " m\n";
+        Entrepot entrepot = (Entrepot)getSite(troncons.get(0).getOrigine().getId());
+        data += "Arrivée à l'entrepot (" + troncons.get(0).getOrigine().getId() + ") à " + entrepot.getArriveeHeure() + "\n\n";
+        data += "Temps total du trajet : " + this.dureeTrajet.intValue() + ":" + (int)((this.dureeTrajet%1)*60);
+
+        try {
+            // create a FileWriter object with the file name
+            FileWriter writer = new FileWriter(this.livreur.getNom() + "_" + this.livreur.getPrenom() + ".txt");
+
+            // write the string to the file
+            writer.write(data);
+
+            // close the writer
+            writer.close();
+
+            // System.out.println("Successfully wrote text to file.");
+
+        } catch (IOException e) {
+            System.out.println("Erreur dans l'écriture du fichier");
+            e.printStackTrace();
+        }
     }
 }
