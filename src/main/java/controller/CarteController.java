@@ -147,7 +147,7 @@ public class CarteController {
             // System.out.println("Trajet : "+ trajet);
             // System.out.println("Sites : "+ trajet.getSites());
             this.chercherCheminsMin(trajet.getSites(), trajet);
-            trajet.genererFeuilleDeRoute();
+            // trajet.genererFeuilleDeRoute();
         }
        
         //this.supprimerLivraison(gt, Long.valueOf(25610684), Long.valueOf(21717915), this.getCarte().getTrajets().get(0));
@@ -155,10 +155,10 @@ public class CarteController {
         //this.supprimerLivraison(gt, Long.valueOf(55444018), Long.valueOf(26470086), this.getCarte().getTrajets().get(0));
         //this.supprimerLivraison(gt, Long.valueOf(27362899), Long.valueOf(505061101), this.getCarte().getTrajets().get(0));
         //TEST
-        ajouterLivraison();
-        supprimerLivraison();
-        undo();
-        redo();
+        // ajouterLivraison();
+        // supprimerLivraison();
+        // undo();
+        // redo();
         
     }
 
