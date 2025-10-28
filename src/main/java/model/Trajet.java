@@ -157,8 +157,8 @@ public class Trajet {
 
         String data = "Feuille de route " + date + "\n\n";
         data += this.livreur + "\n";
-        data += "Trajet a effectué : \n\n";
-        data += "Départ de l'entrepot (" + troncons.get(0).getOrigine().getId() + ") à 08:00\n";
+        data += "Trajet à effectuer : \n\n";
+        data += "Départ de l'entrepôt (" + troncons.get(0).getOrigine().getId() + ") à 08:00h\n";
         
         for(Troncon troncon : this.troncons){
             if(rueActuelle != null && !(troncon.getNomRue().equals(rueActuelle))){
@@ -179,7 +179,7 @@ public class Trajet {
             Site site = getSite(troncon.getDestination().getId());
             if( site != null && !(site instanceof Entrepot)){
                 data += rueActuelle + " sur " + longueur.intValue() + " m\n";
-                data += "Arrivé sur le lieu de " + site.getTypeSite() + " (" + site.getId()+") à " + site.getArriveeHeure() + "\n";
+                data += "Arrivée sur le lieu de " + site.getTypeSite() + " (" + site.getId()+") à " + site.getArriveeHeure() + "\n";
                 data += "Départ du lieu de " + site.getTypeSite() + " (" + site.getId()+") à " + site.getDepartHeure() + "\n";
                 rueActuelle = null;
                 longueur = 0f;
@@ -187,8 +187,8 @@ public class Trajet {
         }
         data += rueActuelle + " sur " + longueur.intValue() + " m\n";
         Entrepot entrepot = (Entrepot)getSite(troncons.get(0).getOrigine().getId());
-        data += "Arrivée à l'entrepot (" + troncons.get(0).getOrigine().getId() + ") à " + entrepot.getArriveeHeure() + "\n\n";
-        data += "Temps total du trajet : " + this.dureeTrajet.intValue() + ":" + (int)((this.dureeTrajet%1)*60);
+        data += "Arrivée à l'entrepôt (" + troncons.get(0).getOrigine().getId() + ") à " + entrepot.getArriveeHeure() + "\n\n";
+        data += "Temps total du trajet : " + this.dureeTrajet.intValue() + ":" + (int)((this.dureeTrajet%1)*60) + "h";
 
         try {
             // create a FileWriter object with the file name
