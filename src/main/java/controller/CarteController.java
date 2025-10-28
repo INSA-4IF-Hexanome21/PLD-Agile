@@ -137,16 +137,17 @@ public class CarteController {
         }
 
         // creer graphe total et calculer chemins minimaux
-        System.out.println("Création graphe total");
+        // System.out.println("Création graphe total");
         creerGrapheTotal(carte, e.getId());
         if (gt == null ) {
             throw new IllegalStateException("La création du graphe a échoué");
         }
 
         for(Trajet trajet: this.getCarte().getTrajets()){
-            System.out.println("Trajet : "+ trajet);
-            System.out.println("Sites : "+ trajet.getSites());
+            // System.out.println("Trajet : "+ trajet);
+            // System.out.println("Sites : "+ trajet.getSites());
             this.chercherCheminsMin(trajet.getSites(), trajet);
+            trajet.genererFeuilleDeRoute();
         }
        
         //this.supprimerLivraison(gt, Long.valueOf(25610684), Long.valueOf(21717915), this.getCarte().getTrajets().get(0));
@@ -351,26 +352,26 @@ public class CarteController {
     }
 
     public void chercherCheminsMin(List<Site> sites, Trajet trajet){;
-        System.out.println("ChercherCheminMin (Controller)");
+        // System.out.println("ChercherCheminMin (Controller)");
         gt.RechercheDijkstra(sites);
-        System.out.println("Fin recherche dijkstra");
+        // System.out.println("Fin recherche dijkstra");
         GrapheLivraison gl = new GrapheLivraison(sites.size(), gt.getMapDistances());
         gl.setContrainteHashMap(gt.getContrainteHashMap());
-        System.out.println("Nb Sommet : " + gl.getNbSommets());
+        // System.out.println("Nb Sommet : " + gl.getNbSommets());
         TSP tsp = new TSP2();
         tsp.chercheSolution(60000, gl);
-        System.out.println("Fin cherche solution");
+        // System.out.println("Fin cherche solution");
 
         List<Integer> solution = new ArrayList<Integer>();
         for (int i=0; i<gl.getNbSommets(); i++) {
             solution.add(gl.getIdFromIndex(tsp.getSolution(i)));
         }
         solution.add(solution.get(0));
-        System.out.println("Fin creation solution : " + solution);
+        // System.out.println("Fin creation solution : " + solution);
 
         // Reconstruction du chemin complet : vérifier que getCheminComplet ne renvoie pas null
         List<Integer> cheminComplet = gt.getCheminComplet(solution);
-        System.out.println("Chemin Complet : " + cheminComplet);
+        // System.out.println("Chemin Complet : " + cheminComplet);
         if (cheminComplet == null) {
             // Fournir un message utile pour le debug (indices, taille des maps, etc.)
             String msg = "Erreur: getCheminComplet a renvoyé null. Solution: " + solution
@@ -381,7 +382,7 @@ public class CarteController {
         }
 
         List<Long> cheminCompletConverti = gt.convertirCheminComplet(cheminComplet);
-        System.out.println("cheminCompletConverti : " + cheminCompletConverti);
+        // System.out.println("cheminCompletConverti : " + cheminCompletConverti);
         CarteUtils.majTrajet(carte, gt, cheminCompletConverti, solution, trajet);
     }
 

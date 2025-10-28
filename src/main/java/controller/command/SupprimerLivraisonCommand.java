@@ -28,12 +28,12 @@ public class SupprimerLivraisonCommand implements Command {
     }
 
     public void doCommand() {
-        System.out.println("Suppression de la collecte "+ collecte.getId() +" et du depot "+ depot.getId());
+        // System.out.println("Suppression de la collecte "+ collecte.getId() +" et du depot "+ depot.getId());
         carte.supprimerLivraison(gt, collecte.getId(), depot.getId(), trajet, carte);
     }
 
     public void undoCommand() {
-        System.out.println("Ajout de la collecte "+ collecte.getId() +" et du depot "+ depot.getId());
+        // System.out.println("Ajout de la collecte "+ collecte.getId() +" et du depot "+ depot.getId());
         carte.ajouterLivraison(gt, collecte.getId(), CarteUtils.getPrecSite(collecte, solution), collecte.getDureeRecup(), depot.getId(), CarteUtils.getPrecSite(depot, solution), depot.getDureeRecup(), trajet, carte);
     }
     

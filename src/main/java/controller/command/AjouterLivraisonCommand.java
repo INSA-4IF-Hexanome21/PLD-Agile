@@ -29,7 +29,7 @@ public class AjouterLivraisonCommand implements Command {
     }
 
     public void doCommand() {
-        System.out.println("Ajout de la collecte " + idCollecte + " et du depot " + idDepot);
+        // System.out.println("Ajout de la collecte " + idCollecte + " et du depot " + idDepot);
         carte.ajouterLivraison(
             gt, 
             idCollecte, 
@@ -44,7 +44,7 @@ public class AjouterLivraisonCommand implements Command {
     }
 
     public void undoCommand() {
-        System.out.println("Suppression de la collecte " + idCollecte + " et du depot " + idDepot);
+        // System.out.println("Suppression de la collecte " + idCollecte + " et du depot " + idDepot);
         carte.supprimerLivraison(gt, idCollecte, idDepot, trajet, carte);
     }
     

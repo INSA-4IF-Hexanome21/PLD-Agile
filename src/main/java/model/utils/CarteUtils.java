@@ -31,7 +31,7 @@ public final class CarteUtils {
         if (chemin == null || chemin.isEmpty()) return Collections.emptyList();
 
         List<Long> cheminLong = gt.convertirCheminComplet(chemin);
-        System.out.println("De "+ prec +" à " +suiv+" : "+ cheminLong);
+        // System.out.println("De "+ prec +" à " +suiv+" : "+ cheminLong);
         return new ArrayList<>(cheminLong);
     }
 
