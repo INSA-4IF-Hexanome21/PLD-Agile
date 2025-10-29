@@ -155,7 +155,7 @@ public class CarteController {
         //this.supprimerLivraison(gt, Long.valueOf(55444018), Long.valueOf(26470086), this.getCarte().getTrajets().get(0));
         //this.supprimerLivraison(gt, Long.valueOf(27362899), Long.valueOf(505061101), this.getCarte().getTrajets().get(0));
         //TEST
-        // ajouterLivraison();
+        ajouterLivraison();
         // supprimerLivraison();
         // undo();
         // redo();

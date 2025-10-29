@@ -1,6 +1,7 @@
 package model.utils;
 
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,6 +20,11 @@ import model.Troncon;
  * Classe qui rassemble les principales méthodes utilitaires en rapport avec la carte 
  */
 public final class CarteUtils {
+
+    //plage horaire de tolérance lors d'un changement en minute
+    //Si heure initial = 9h50 alors changement acceptable si nouvelle heure
+    //9h45<nouvelle_heure<9h55
+    static Float PLAGEHORAIRE = 17f; 
 
     private CarteUtils() {}
     
@@ -44,10 +50,11 @@ public final class CarteUtils {
         }
     }
 
-    public static void majTrajet(Carte carte, GrapheTotal gt, List<Long> cheminComplet, List<Integer> solution, Trajet trajet){
+    public static HashMap<Site,Long> majTrajet(Carte carte, GrapheTotal gt, List<Long> cheminComplet, List<Integer> solution, Trajet trajet){
+       
+        //Hashmap servant a stocké l'id d'un site impacté par un changement avec la différence avec la valeur initiale
+        HashMap<Site,Long> sitesImpactes = new HashMap<Site,Long>(); 
         
-        //System.out.println(carte.getTrajets().get(0));
-        // System.out.println(solution);
         trajet.setCheminComplet(cheminComplet);
 
         List<Troncon> troncons = new ArrayList<Troncon>();
@@ -93,22 +100,32 @@ public final class CarteUtils {
             if(siteTrouve != null)
             {   
                 float heure_arrivee = 8 + dureeTrajet;
+                LocalTime ancienneHeureArrivee = siteTrouve.getArriveeHeure();
+                LocalTime nouvelleHeureArrivee = LocalTime.of((int)heure_arrivee,(int)((heure_arrivee%1)*60));
+                if(ancienneHeureArrivee != null){
+                    long difference = ChronoUnit.MINUTES.between(ancienneHeureArrivee,nouvelleHeureArrivee);
+                    if(difference > PLAGEHORAIRE/2f){
+                        sitesImpactes.put(siteTrouve,difference);
+                    }
+                }
+                
+
                 if(siteTrouve instanceof Collecte) {
-                    siteTrouve.setArriveeHeure(LocalTime.of((int)heure_arrivee,(int)((heure_arrivee%1)*60)));
+                    siteTrouve.setArriveeHeure(nouvelleHeureArrivee);
                     dureeTrajet += ((Collecte)siteTrouve).getDureeRecup()/3600f;
                     float heure_depart = 8 + dureeTrajet;
                     siteTrouve.setDepartHeure(LocalTime.of((int)heure_depart,(int)((heure_depart%1)*60)));
                 }
 
                 else if(siteTrouve instanceof Depot) {
-                    siteTrouve.setArriveeHeure(LocalTime.of((int)heure_arrivee,(int)((heure_arrivee%1)*60)));
+                    siteTrouve.setArriveeHeure(nouvelleHeureArrivee);
                     dureeTrajet += ((Depot)siteTrouve).getDureeRecup()/3600f;
                     float heure_depart = 8 + dureeTrajet;
                     siteTrouve.setDepartHeure(LocalTime.of((int)heure_depart,(int)((heure_depart%1)*60)));
                 }
 
                 else if(i==cheminComplet.size()-2){
-                    siteTrouve.setArriveeHeure(LocalTime.of((int)heure_arrivee,(int)((heure_arrivee%1)*60)));
+                    siteTrouve.setArriveeHeure(nouvelleHeureArrivee);
                 }
                 siteTrouve.setNumPassage(numsPassage.get(siteTrouve.getId()));
                 
@@ -120,9 +137,11 @@ public final class CarteUtils {
             }
             
         }
+        
 
         trajet.setTroncons(troncons);
         trajet.setdureeTrajet(dureeTrajet);
+        return sitesImpactes;
     }
 
     public static long getPrecSite(Site site, List<Long> solution) {

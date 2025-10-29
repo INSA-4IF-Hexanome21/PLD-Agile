@@ -156,7 +156,8 @@ public class Carte {
             solution.add(gt.getIndexFromId(id));
         }
         // System.out.println("Nouvelle solution : " + solution);
-        CarteUtils.majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
+        HashMap<Site,Long> sitesImpactes = CarteUtils.majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
+        // System.out.println(sitesImpactes);
 
     }
 
@@ -191,7 +192,7 @@ public class Carte {
         for (var id : nouvSolutionLong) {
             solution.add(gt.getIndexFromId(id));
         }
-        CarteUtils.majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
+        HashMap<Site,Long> sitesImpactes = CarteUtils.majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
     }
 
     public Site getSiteById(Long id) {
