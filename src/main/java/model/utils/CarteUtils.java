@@ -124,9 +124,6 @@ public final class CarteUtils {
                     siteTrouve.setDepartHeure(LocalTime.of((int)heure_depart,(int)((heure_depart%1)*60)));
                 }
 
-                else if(i==cheminComplet.size()-2){
-                    siteTrouve.setArriveeHeure(nouvelleHeureArrivee);
-                }
                 siteTrouve.setNumPassage(numsPassage.get(siteTrouve.getId()));
                 
                 // System.out.println();
@@ -135,7 +132,6 @@ public final class CarteUtils {
                 // System.out.println("Arrivée Sur site: " +siteTrouve.getArriveeHeure());
                 // System.out.println("Départ du site: " +siteTrouve.getDepartHeure());
             }
-            
         }
         
 

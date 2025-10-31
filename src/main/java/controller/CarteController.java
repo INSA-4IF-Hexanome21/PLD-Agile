@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.time.LocalTime;
 
 import tsp.*;
 import controller.command.*;
@@ -155,7 +156,7 @@ public class CarteController {
         //this.supprimerLivraison(gt, Long.valueOf(55444018), Long.valueOf(26470086), this.getCarte().getTrajets().get(0));
         //this.supprimerLivraison(gt, Long.valueOf(27362899), Long.valueOf(505061101), this.getCarte().getTrajets().get(0));
         //TEST
-        ajouterLivraison();
+        // ajouterLivraison();
         // supprimerLivraison();
         // undo();
         // redo();
@@ -276,48 +277,15 @@ public class CarteController {
         }
         json.append("]");
 
-        // -- Sites
-        json.append(",\"sites\":[");
-        boolean firstSite = true;
-        for (Site s : carte.getSites()) {
-            if (!firstSite) json.append(",");
-            firstSite = false;
-            Integer numLivraison = null;
-            if (s instanceof Depot ) numLivraison = ((Depot) s).getNumLivraison();
-            else if (s instanceof Collecte ) numLivraison = ((Collecte) s).getNumLivraison();
-
-            try {
-                double lat = s.getLatitude();
-                double lng = s.getLongitude();
-                json.append(String.format(Locale.US,
-                    "{\"id\":%d,\"lat\":%f,\"lng\":%f,\"type\":\"%s\"",
-                    s.getId(), lat, lng, s.getTypeSite()));
-
-                if (s.getDepartHeure() != null) {
-                    json.append(String.format(",\"depart\":\"%s\"", s.getDepartHeure().toString()));
-                }
-                if (s.getArriveeHeure() != null) {
-                    json.append(String.format(",\"arrivee\":\"%s\"", s.getArriveeHeure().toString()));
-                }
-                if (numLivraison != null) {
-                    json.append(String.format(",\"numLivraison\":%d", numLivraison));
-                }
-                if (s.getNumPassage() != null) {
-                    json.append(String.format(",\"numPassage\":%d", s.getNumPassage()));
-                }
-                json.append("}");
-            } catch (Exception e) {
-                System.err.println("Erreur lors du traitement du site " + s.getId() + ": " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-        json.append("]");
-
         // -- Trajets 
         json.append(",\"trajets\":{");
         List<Trajet> trajets = carte.getTrajets();
+        List<LocalTime> heuresArrivees = new ArrayList<LocalTime>();;
         for (int i = 0; i < trajets.size(); i++) {
             Trajet t = trajets.get(i);
+            if(t.getHeureFin() != null){
+                heuresArrivees.add(t.getHeureFin());
+            }
             json.append("\"").append(i).append("\":[");
             List<Troncon> troncons = t.getTroncons();
             for (int j = 0; j < troncons.size(); j++) {
@@ -332,8 +300,61 @@ public class CarteController {
             if (i < trajets.size() - 1) json.append(","); // <-- virgule entre trajets
         }
         json.append("}");
+
+        // -- Sites
+        json.append(",\"sites\":[");
+        boolean firstSite = true;
+        for (Site s : carte.getSites()) {
+            if (!firstSite) json.append(",");
+            firstSite = false;
+            Integer numLivraison = null;
+            List<LocalTime> heuresArriveesTrajets = null;
+            if (s instanceof Depot ) numLivraison = ((Depot) s).getNumLivraison();
+            else if (s instanceof Collecte ) numLivraison = ((Collecte) s).getNumLivraison();
+            else {
+                ((Entrepot) s).changeHeures(heuresArrivees);
+                heuresArriveesTrajets = ((Entrepot) s).getHeures();
+            }
+            try {
+                double lat = s.getLatitude();
+                double lng = s.getLongitude();
+                json.append(String.format(Locale.US,
+                    "{\"id\":%d,\"lat\":%f,\"lng\":%f,\"type\":\"%s\"",
+                    s.getId(), lat, lng, s.getTypeSite()));
+
+                if (s.getDepartHeure() != null) {
+                    json.append(String.format(",\"depart\":\"%s\"", s.getDepartHeure().toString()));
+                }
+                if (heuresArriveesTrajets == null  && s.getArriveeHeure() != null) {
+                    json.append(String.format(",\"arrivee\":\"%s\"", s.getArriveeHeure().toString()));
+                }
+                if (numLivraison != null) {
+                    json.append(String.format(",\"numLivraison\":%d", numLivraison));
+                }
+                if (s.getNumPassage() != null) {
+                    json.append(String.format(",\"numPassage\":%d", s.getNumPassage()));
+                }
+                if(!(heuresArriveesTrajets == null)){
+                    json.append(",\"heures\": [");
+                    for (int i = 0;i<heuresArriveesTrajets.size();++i){
+                        json.append("\""+ heuresArriveesTrajets.get(i).toString() + "\"");
+                        if(i<heuresArriveesTrajets.size()-1){
+                            json.append(",");
+                        }
+                    }
+                    json.append("]");
+                }
+                json.append("}");
+            } catch (Exception e) {
+                System.err.println("Erreur lors du traitement du site " + s.getId() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        json.append("]");
+        
         
         json.append("}");
+        // System.out.println(json);
         return json.toString();
     }
 

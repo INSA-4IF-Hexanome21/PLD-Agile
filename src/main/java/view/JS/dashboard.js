@@ -419,41 +419,43 @@ function creerMarqueurSite(site, type, color, radius) {
 
   marker.options.siteType = type;
   marker.options.siteId = site.id;
+  if(site.type === 'entrepot'){
+    if(site.heures.length == 0){
+      marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+      var html = `<strong style="color:${color}">${type} ${site.id}</strong>
+        <br>Heure de départ: 08:00`
+      marker.bindPopup(html);
+    }
+    else{
+      marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+      var html = `<strong style="color:${color}">${type} ${site.id}</strong>
+        <br>Heure de départ: 08:00
+        <br>Heures arrivées : `
+      var i = 1;
+      site.heures.forEach(function (heure){
+        console.log(heure);
+        html += `<br>-Trajet ${i} : ${heure}`;
+        i+=1;
+      });
+      marker.bindPopup(html);
+    }
+  }
 
-  if ((site.arrivee == null || site.arrivee === '')) {
-  if (site.type === 'entrepot') {
-
-    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
-    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
-      <br>Heure d'arrivée: Pas encore calculée
-      <br>Heure de départ: 8:00
-      `);
-    
-  } else  {
+  else if ((site.arrivee == null || site.arrivee === '')) {
+  
     marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
     marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
       <br>Heure d'arrivée: Pas encore calculée
       <br>Heure de départ: Pas encore calculée
       `);
-
-  } } else  {
-
-    if (site.type === 'entrepot') {
-
-    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
-    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
-      <br>Heure d'arrivée: ${site.arrivee}
-      <br>Heure de départ: 8:00
-      `);
-    
-  } else  {
+  } 
+  else  {
     marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
     marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
       <br>Heure d'arrivée: ${site.arrivee}
       <br>Heure de départ: ${site.depart} 
       `);
   }
-}
   
   marker.on('click', () => {
     try {
