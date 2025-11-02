@@ -622,7 +622,7 @@ function configurerControlesVisibilite() {
         // Générer les checkboxes pour chaque trajet
         for(const key in trajetLines) {
           const trajet = trajetLines[key];
-          const index = key;
+          const index = parseInt(key,10)+1
           
           const trajetItem = L.DomUtil.create('div', 'control-row trajet-item', controlContainer);
           const label = L.DomUtil.create('label', '', trajetItem);
@@ -634,7 +634,7 @@ function configurerControlesVisibilite() {
           checkbox.checked = true;
           checkbox.disabled = tTraj && !tTraj.checked;
           
-          label.appendChild(document.createTextNode(` Trajet ${parseInt(index,10)+1}`));
+          label.appendChild(document.createTextNode(` Trajet ${index}`));
           
           // Event listener pour afficher/masquer le trajet
           checkbox.addEventListener('change', (e) => {
@@ -779,6 +779,73 @@ function lancerCalcul() {
                 .text('❌ Erreur: ' + err.message);
         });
     };
+
+function lancerTelechargement() {  
+  console.log("Téléchargement roadmap");
+  var trajetsAffiches = getTrajetAffiches();
+  var params = "?"
+  if (trajetsAffiches.length === 0) return;
+  if (trajetsAffiches.length === 1) {
+    params += `file=${trajetsAffiches}.txt`;
+  } 
+  else {
+    params += "files=";
+    var firstT = true;
+    trajetsAffiches.forEach(t => {
+      params += t + ".txt";
+      if (firstT) {
+        params += ',';
+        firstT = false;
+      }
+    });
+  } 
+
+  const endpoint = `/api/roadmap${params}`; 
+  fetch(endpoint)
+        .then(res => {
+            if (!res.ok) throw new Error("Erreur serveur");
+            // Récupérer le nom du fichier depuis les headers
+            const disposition = res.headers.get("Content-Disposition");
+            let filename = "roadmap"; // valeur par défaut
+            
+            if (disposition && disposition.includes("filename=")) {
+              filename = disposition.split("filename=")[1].replace(/["']/g, "");
+            } else {
+              // Si pas de nom dans les headers, deviner le type à partir du mime
+              const contentType = res.headers.get("Content-Type");
+              if (contentType === "application/zip") filename += ".zip";
+              else if (contentType === "text/plain") filename += ".txt";
+              else filename += ".dat"; // fallback
+            }
+
+            return res.blob().then(blob => ({ blob, filename }));
+        })
+        .then(blob => {
+            const url = URL.createObjectURL(blob.blob);
+            const a = document.createElement("a");
+            a.href = url;
+            //a.download = `Bobard_Bobert.txt`; // nom du fichier
+            a.download = blob.filename;
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url); // nettoyer
+        })
+        .catch(err => {
+            console.error("❌ Erreur téléchargement:", err);
+            alert("Erreur lors du téléchargement: " + err.message);
+        });
+
+}
+
+function getTrajetAffiches() {
+  var lTrajAff = new Array();
+  var cond = document.getElementById('toggle-trajets').checked;
+  document.querySelectorAll('[id^="trajet-"]').forEach(input => {
+    if (cond && input.checked) lTrajAff.push(input.id);
+  });
+
+  return lTrajAff ;
+}
 
 function nettoyerCarte() {
   if (carte !== null) {
@@ -942,6 +1009,10 @@ fetch('/components/Sidebar.html')
     document.getElementById('btn-calcul')?.addEventListener('click', () => {
       lancerCalcul();
       chargerComposantPrincipal('/components/Map.html');
+    });
+
+    document.getElementById('btn-roadmap')?.addEventListener('click', () => {
+      lancerTelechargement();
     });
 
     chargerComposantPrincipal('/components/Map.html');

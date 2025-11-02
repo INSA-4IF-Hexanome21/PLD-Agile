@@ -1,6 +1,7 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -15,11 +16,13 @@ public class Trajet {
     // Attributs
     private Livreur livreur;
     private List<Site> sites;
-    private List<Site> nonAccessibles;
+    private HashMap<Site, Long> sitesImpactes;
     private List<Troncon> troncons;
     private Float dureeTrajet;
     private LocalTime heureDebut;
     private LocalTime heureFin;
+    private Integer numTrajet;
+    private static Integer numTrajetTotal = 1;
 
     private List<Long> cheminComplet;
     private List<Long> solution;
@@ -30,20 +33,22 @@ public class Trajet {
         this.livreur = livreur;
         this.sites = new ArrayList<>();
         this.troncons = new ArrayList<>();
-        this.nonAccessibles = new ArrayList<>();
+        this.sitesImpactes = new HashMap<>();
         this.dureeTrajet = null;
         this.heureDebut = LocalTime.of(8, 00); //On part toujours de l'entrpôt à 8h
         this.heureFin = null;
+        this.numTrajet = numTrajetTotal++;
     }
     // Constructeur incomplet
     public Trajet() {
         this.livreur = null;
         this.sites = new ArrayList<>();
         this.troncons = new ArrayList<>();
-        this.nonAccessibles = new ArrayList<>();
+        this.sitesImpactes = new HashMap<>();
         this.dureeTrajet = null;
         this.heureDebut = LocalTime.of(8, 00); //On part toujours de l'entrpôt à 8h
         this.heureFin = null;
+        this.numTrajet = numTrajet++;
     }
 
     // Getters et Setters
@@ -86,8 +91,8 @@ public class Trajet {
         sites.remove(site);
     }
 
-    public List<Site> getSitesNonAccessibles(){
-        return nonAccessibles;
+    public HashMap<Site,Long> getSitesImpactes(){
+        return this.sitesImpactes;
     }
 
     public List<Troncon> getTroncons() {
@@ -104,6 +109,14 @@ public class Trajet {
 
     public void setCheminComplet(List<Long> cheminComplet) {
         this.cheminComplet = cheminComplet;
+    }
+
+    public void setSitesImpactes(HashMap<Site,Long> sites) {
+        this.sitesImpactes = sites;
+    }
+    
+    public Integer getNumTrajet() {
+        return numTrajet;
     }
 
     public List<Long> getSolution() {
@@ -192,7 +205,7 @@ public class Trajet {
 
         try {
             // create a FileWriter object with the file name
-            FileWriter writer = new FileWriter(this.livreur.getNom() + "_" + this.livreur.getPrenom() + ".txt");
+            FileWriter writer = new FileWriter("ressources/downloads/trajet-" + numTrajet + ".txt");
 
             // write the string to the file
             writer.write(data);
