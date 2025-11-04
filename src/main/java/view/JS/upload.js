@@ -131,6 +131,12 @@ function updateUIBasedOnState() {
             '⚠️ Veuillez d\'abord charger un plan de distribution</div>'
         );
     }
+
+    //Choisir les livreurs
+    if(state.canCalculate){
+        
+
+    }
     
     // Afficher les indicateurs de statut
     if (state.carteChargee) {

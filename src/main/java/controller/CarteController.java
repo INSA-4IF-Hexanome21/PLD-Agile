@@ -11,6 +11,7 @@ import model.*;
 
 public class CarteController {
     private Carte carte;
+    private DemandeLivraison demandeLivraison;
 
     public CarteController() {
         this.carte = new Carte();
@@ -49,7 +50,7 @@ public class CarteController {
         System.out.println(">>> CarteController: début chargement demandes, effacement des livraisons existantes...");
         this.effacerLivraison();
 
-        DemandeLivraison demandeLivraison = GestionnaireXML.chargerDemandeLivraisons(
+        demandeLivraison = GestionnaireXML.chargerDemandeLivraisons(
             cheminFichierDemandes, 
             carte.getNoeuds()
         );
@@ -74,7 +75,18 @@ public class CarteController {
                 System.out.println(">>> Site déjà présent, id=" + site.getId());
             }
         }
+        
+       if(ajout == 0){
+            return false;
+        } else {
+            System.out.println(">>> CarteController: demande chargée, sites ajoutés=" + ajout + ", total sites=" + carte.getSites().size());
+            return true;
+        }
+  }
 
+  //Assigner les livreurs
+
+    public void assignerLivreurs() {
         //Assignation des livreurs aléatoire A FAIRE DISPARAITRE
        
         Livreur livreur1 = new Livreur(1, "Bobard", "Bobert");
@@ -91,15 +103,7 @@ public class CarteController {
             
             
         }
-        
-       if(ajout == 0){
-            return false;
-        } else {
-            System.out.println(">>> CarteController: demande chargée, sites ajoutés=" + ajout + ", total sites=" + carte.getSites().size());
-            return true;
-        }
-  }
-
+    }
 
   // --- modifications dans controller/CarteController.java ---
 
@@ -135,7 +139,6 @@ public class CarteController {
             System.out.println("Sites : "+ trajet.getSites());
             this.chercherCheminsMin(gt, trajet.getSites(), trajet);
         }
-       
     }
 
     /**
