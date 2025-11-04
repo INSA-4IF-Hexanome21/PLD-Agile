@@ -78,4 +78,8 @@ public class Controller{
 		carteController.redo();
 		return getCarteJSON();
 	}
+
+	public void resetCarte() {
+		carteController.resetCarte();
+	}
 }

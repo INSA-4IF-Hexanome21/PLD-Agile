@@ -1121,3 +1121,8 @@ fetch('/components/Sidebar.html')
     if (sidebar) sidebar.innerHTML = '<p style="color:#e74c3c;">Erreur de chargement</p>';
     chargerComposantPrincipal('/components/Map.html');
   });
+
+  window.addEventListener("load", () => {
+    fetch("/api/resetCarte", { method: "POST" })
+      .then(() => initialiserCarte());
+});

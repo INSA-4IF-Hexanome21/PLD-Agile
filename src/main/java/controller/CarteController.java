@@ -257,6 +257,7 @@ public class CarteController {
         }
 
         System.out.println(">>> CarteController: livraisons précédentes effacées.");
+        System.out.println(getCarteJSON());
     }
 
     /**
@@ -466,4 +467,14 @@ public class CarteController {
             trajet.genererFeuilleDeRoute();
         }
     }
+
+    public void resetCarte() {
+        this.carte = new Carte();      // New empty map
+        this.history.clear(); // Reset undo/redo
+        this.config = new Configuration();   // Reset config if needed
+        this.gt = null; // reset graphe ou calcul si existait
+
+        System.out.println(">>> Carte réinitialisée.");
+    }
 }
+

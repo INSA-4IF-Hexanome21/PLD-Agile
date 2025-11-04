@@ -527,6 +527,16 @@ public class ServeurHTTP {
             
             System.out.println(">>> Réponse envoyée <<<");
         });
+
+        serveur.createContext("/api/resetCarte", exchange -> {
+            
+            System.out.println(">>> Requête reçue sur /api/resetCarte <<<");
+        
+            controller.resetCarte();
+            exchange.sendResponseHeaders(200, -1);
+            exchange.close();
+            
+        });
     }
     
 
