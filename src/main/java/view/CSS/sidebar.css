@@ -124,3 +124,18 @@ input[type="file"] {
     font-weight: bold;
     display: none;
 }
+
+#btn-toggle-all {
+  background: var(--spie-dark-teal);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#btn-toggle-all:hover {
+  background: var(--spie-medium-teal);
+}
