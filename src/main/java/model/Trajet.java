@@ -1,15 +1,19 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDate;
-
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Trajet {
 
@@ -205,6 +209,10 @@ public class Trajet {
 
         try {
             // create a FileWriter object with the file name
+            Path dossier = Paths.get("ressources/downloads/");
+            if (!Files.exists(dossier)) {
+                Files.createDirectories(dossier);
+            }
             FileWriter writer = new FileWriter("ressources/downloads/trajet-" + numTrajet + ".txt");
 
             // write the string to the file

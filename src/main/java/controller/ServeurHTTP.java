@@ -168,7 +168,7 @@ public class ServeurHTTP {
                 File uploadDir = new File(cheminBaseRessources + "uploads/demandes/");
                 if (!uploadDir.exists()) {
                     boolean created = uploadDir.mkdirs();
-                    System.out.println("Directorio de demandes creado: " + created);
+                    System.out.println("Dossier de demandes créé: " + created);
                 }
                 
                 // Enregistrer le fichier
@@ -295,6 +295,10 @@ public class ServeurHTTP {
             if ((params.get("files") != null)
             ) {
                 Path dossier = Paths.get(cheminBaseRessources + "downloads/");
+                if (!Files.exists(dossier)) {
+                    Files.createDirectories(dossier);
+                    System.out.println("Dossier 'downloads' créé !");
+                } 
                 Map<String, byte[]> fichiers = new HashMap<String, byte[]>();
                 Files.list(dossier)
                     .forEach(f -> {
