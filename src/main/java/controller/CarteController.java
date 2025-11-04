@@ -148,7 +148,7 @@ public class CarteController {
             // System.out.println("Trajet : "+ trajet);
             // System.out.println("Sites : "+ trajet.getSites());
             this.chercherCheminsMin(trajet.getSites(), trajet);
-            trajet.genererFeuilleDeRoute();
+            //trajet.genererFeuilleDeRoute();
         }
        
         //this.supprimerLivraison(gt, Long.valueOf(25610684), Long.valueOf(21717915), this.getCarte().getTrajets().get(0));
@@ -156,7 +156,7 @@ public class CarteController {
         //this.supprimerLivraison(gt, Long.valueOf(55444018), Long.valueOf(26470086), this.getCarte().getTrajets().get(0));
         //this.supprimerLivraison(gt, Long.valueOf(27362899), Long.valueOf(505061101), this.getCarte().getTrajets().get(0));
         //TEST
-        // ajouterLivraison();
+        //ajouterLivraison();
         // supprimerLivraison();
         // undo();
         // redo();
@@ -432,14 +432,14 @@ public class CarteController {
     }
 
     // Exécution d'une commande d'ajout
-    public void ajouterLivraison() {
-        Command alc = new AjouterLivraisonCommand(gt, Long.valueOf(1679901320), Long.valueOf(342873658), Long.valueOf(26086123), Long.valueOf(208769039), carte.getTrajets().get(0), carte);
+    public void ajouterLivraison(Long idCollecte,Long idPrecCollecte, Long idDepot,Long idPrecDepot,Trajet trajet) {
+        Command alc = new AjouterLivraisonCommand(gt, idCollecte, idPrecCollecte, idDepot, idPrecDepot, trajet, carte);
         history.add(alc);
     }
 
     // Exécution d'une commande de suppression
-    public void supprimerLivraison() {
-        Command slc = new SupprimerLivraisonCommand(gt, (Collecte) carte.getSiteById(Long.valueOf(1679901320)), (Depot) carte.getSiteById(Long.valueOf(26086123)), carte.getTrajets().get(0), carte);
+    public void supprimerLivraison(Collecte collecte, Depot depot, Trajet trajet) {
+        Command slc = new SupprimerLivraisonCommand(gt, collecte, depot, trajet, carte);
         history.add(slc);   
     }
 
