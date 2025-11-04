@@ -1,4 +1,3 @@
-// Variables globales
 let carte = null;
 let marqueurs = [];
 let lignes = [];
@@ -15,7 +14,6 @@ const COULEURS_SITES = {
   'default': '#999999'
 };
 
-// Estado de visibilidad
 const visibilityState = {
   entrepot: true,
   collecte: true,
@@ -25,6 +23,51 @@ const visibilityState = {
   trajets: true
 };
 
+
+async function chargerSites() {
+  console.log('🔄 Chargement des sites...');
+  
+  const response = await fetch('/api/carte');
+  if (!response.ok) throw new Error('Erreur lors du chargement des sites');
+  
+  const donnees = await response.json();
+  
+  siteMarkers.forEach(m => { 
+    try { 
+      carte.removeLayer(m); 
+      if (m._orderLabel) carte.removeLayer(m._orderLabel);
+    } catch (e) {} 
+  });
+  siteMarkers = [];
+  
+  if (donnees.sites && donnees.sites.length > 0) {
+    const initialRadius = computeSiteRadius(carte);
+    
+    donnees.sites.forEach(site => {
+      const rawType = (site.type || '').toString().toLowerCase();
+      let normalizedType = rawType;
+      if (rawType === 'livraison' || rawType === 'depot') normalizedType = 'depot';
+      else if (rawType === 'collecte' || rawType === 'pick-up') normalizedType = 'collecte';
+      else if (rawType === 'entrepot' || rawType === 'warehouse') normalizedType = 'entrepot';
+      
+      const color = COULEURS_SITES[normalizedType] || COULEURS_SITES['default'];
+      
+      if (site.lat != null && site.lng != null) {
+        const marker = creerMarqueurSite(site, normalizedType, color, initialRadius);
+        marker.options.numLivraison = site.numLivraison;
+        marker.addTo(carte);
+        siteMarkers.push(marker);
+      }
+    });
+    
+    console.log(`✅ ${siteMarkers.length} sites chargés`);
+  }
+  
+  if (typeof activerEcouteursMarqueurs === 'function') {
+    console.log('🎯 Activation des écouteurs depuis chargerSites...');
+    activerEcouteursMarqueurs();
+  }
+}
 
 /* //! ----------------- UTILIDADES / INIT ----------------- */
 function chargerComposantPrincipal(url) {
@@ -58,7 +101,6 @@ function chargerComposantPrincipal(url) {
               initialiserCarte();
               assignationLivraison();
             } else {
-              // DEBUG
               console.error('Élément #map introuvable après fallback — vérifie ton Map.html (doit contenir <div id="map">) et l\'insertion du composant.');
               main.innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable. Vérifiez Map.html.</p>';
             }
@@ -105,9 +147,7 @@ function initialiserCarte() {
     maxZoom: 19
   }).addTo(carte);
 
-  
-
-  fetch("/api/carte")
+  return fetch("/api/carte")
     .then(res => {
       if (!res.ok) throw new Error('Erreur API: ' + res.status);
       return res.json();
@@ -118,15 +158,25 @@ function initialiserCarte() {
       afficherDonneesSurCarte(donnees);
       configurerControlesVisibilite();
 
-       if (document.getElementById('form-livreurs')) {
+      console.log('✅ Carte initialisée:', {
+        sites: siteMarkers.length,
+        noeuds: noeudMarkers.length,
+        troncons: tronconLines.length
+      });
+
+      if (document.getElementById('form-livreurs')) {
         assignationLivraison();
       }
+      
+      return true; 
     })
     .catch(err => {
       console.error('Erreur lors du chargement des données de la carte:', err);
       alert('Impossible de charger les données de la carte. Vérifiez la console pour plus de détails.');
+      return false;
     });
 }
+
 
 function normaliserTypeSite(type) {
   const rawType = (type || '').toString().toLowerCase();
@@ -163,25 +213,58 @@ function afficherDonneesSurCarte(donnees) {
     });
   }
 
+  
   // 2) Nœuds (medio)
-  if (donnees.noeuds && donnees.noeuds.length > 0) {
-    console.log('Affichage de', donnees.noeuds.length, 'nœuds');
-    donnees.noeuds.forEach(noeud => {
-      const icone = L.divIcon({
-        className: 'marqueur-personnalise',
-        html: `<div class="marqueur-noeud" style="background:#16697A;width:10px;height:10px;border-radius:50%;border:2px solid white;"></div>`,
-        iconSize: [10,10], iconAnchor: [5,5]
-      });
-      const marker = L.marker([noeud.lat, noeud.lng], { icon: icone, zIndexOffset: 100 }).addTo(carte);
-      marker.bindPopup(`<strong>Nœud ${noeud.id}</strong><br>Lat: ${noeud.lat.toFixed(6)}<br>Lng: ${noeud.lng.toFixed(6)}`);
-      noeudMarkers.push(marker);
+if (donnees.noeuds && donnees.noeuds.length > 0) {
+  console.log('Affichage de', donnees.noeuds.length, 'nœuds');
+  donnees.noeuds.forEach(noeud => {
+    const icone = L.divIcon({
+      className: 'marqueur-personnalise',
+      html: `<div class="marqueur-noeud" style="
+        background:#16697A;
+        width:16px;
+        height:16px;
+        border-radius:50%;
+        border:2px solid white;
+        cursor:pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      "></div>`,
+      iconSize: [20, 20], 
+      iconAnchor: [10, 10]
     });
-  }
+    const marker = L.marker([noeud.lat, noeud.lng], { 
+      icon: icone, 
+      zIndexOffset: 5000,
+      interactive: true,
+      bubblingMouseEvents: false
+    }).addTo(carte);
+    
+    marker.bindPopup(`<strong>Nœud ${noeud.id}</strong><br>Lat: ${noeud.lat.toFixed(6)}<br>Lng: ${noeud.lng.toFixed(6)}`);
+    
+    marker.options.siteId = noeud.id;
+    marker.options.siteType = 'noeud';
+    
+    // NO CLICKEAAAA aHH HPTTTA
+    marker.on('click', function(e) {
+      L.DomEvent.stopPropagation(e);
+      console.log('🔵 Click en nœud:', noeud.id);
+      
+      if (typeof gererClicMarqueur === 'function' && modeAjoutActif) {
+        gererClicMarqueur(marker, 'noeud');
+      } else {
+        marker.openPopup();
+      }
+    });
+    
+    noeudMarkers.push(marker);
+  });
+  console.log(`✅ ${noeudMarkers.length} nœuds créés avec handlers`);
+}
 
 // 3) Sites (encima)
   console.log('Sites reçus:', donnees.sites);
   if (donnees.sites && donnees.sites.length > 0) {
-    // Limpiar markers previos
+
     siteMarkers.forEach(m => { try { carte.removeLayer(m); } catch (e) {} });
     siteMarkers.length = 0;
     
@@ -246,7 +329,7 @@ function afficherDonneesSurCarte(donnees) {
         })
       }
     }
-    // resize al zoom (solo una vez)
+
     if (!carte._siteZoomHandlerAdded) {
       configurerZoomSites();
       carte._siteZoomHandlerAdded = true;
@@ -281,14 +364,14 @@ function attachSiteHoverHandlers() {
       const originalColor = jumeau.options.fillColor || '#3388ff';
       const originalWeight = jumeau.options.weight || 2;
 
-      // Cambio instantáneo de color y grosor
+
       jumeau.setStyle({
         color: '#ff6600',
         fillColor: '#ff6600',
         weight: 4
       });
 
-      // Regreso inmediato al estado original (sin animación ni delay largo)
+
       setTimeout(() => {
         jumeau.setStyle({
           color: '#ffffff',
@@ -318,14 +401,12 @@ function attachSiteHoverHandlers() {
       const originalColor = jumeau.options.fillColor || '#3388ff';
       const originalWeight = jumeau.options.weight || 2;
 
-      // Cambio instantáneo de color y grosor
       jumeau.setStyle({
         color: '#ff6600',
         fillColor: '#ff6600',
         weight: 4
       });
 
-      // Regreso inmediato al estado original (sin animación ni delay largo)
       setTimeout(() => {
         jumeau.setStyle({
           color: '#ffffff',
@@ -366,7 +447,6 @@ function creerMarqueurSite(site, type, color, radius) {
   });
 
 
-  // actualizar tooltips/labels y radios al cambiar el zoom (se añade solo una vez)
   if (carte && !carte._siteLabelZoomHandlerAdded) {
     carte.on('zoomend', () => {
       const newR = computeSiteRadius(carte);
@@ -382,7 +462,6 @@ function creerMarqueurSite(site, type, color, radius) {
 
 
 
-  // label fijo debajo del círculo mostrando el "ordre de visite"
   const labelHtml = `<div style="
     display:inline-block;
     background:rgba(255,255,255,0.92);
@@ -395,8 +474,6 @@ function creerMarqueurSite(site, type, color, radius) {
     white-space:nowrap;
   ">${site.numPassage??''}</div>`;
 
-  // Nota: si hay MUCHOS puntos, lo más efectivo es usar clustering (leaflet.markercluster)
-  // y/o técnicas de gestión de etiquetas (labelgun, avoidance plugins) para evitar solapamientos.
 
   const hasArrival = !(site.arrivee == null || site.arrivee === '');
   let labelIcon;
@@ -1028,32 +1105,72 @@ fetch('/components/Sidebar.html')
       chargerComposantPrincipal('/components/Import.html');
     });
 
-      // Botón para añadir livraison
-    document.getElementById('btn-ajouter')?.addEventListener('click', () => {
-      document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
-      document.getElementById('btn-ajouter')?.classList.add('active');
-      
-      // Verificar que estamos en la vista del mapa
-      const mapElement = document.getElementById('map');
-      if (!mapElement || !carte) {
-        alert("⚠️ Veuillez d'abord charger la carte !");
-        document.getElementById('btn-mapa')?.click();
-        setTimeout(() => {
-          if (typeof demarrerAjoutLivraison === 'function') {
-            demarrerAjoutLivraison();
-          }
-        }, 500);
-        return;
+  document.getElementById('btn-ajouter')?.addEventListener('click', async () => {
+  console.log('📝 Bouton Ajouter livraison cliqué');
+  
+  document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-ajouter')?.classList.add('active');
+  
+
+  const mapElement = document.getElementById('map');
+  
+  if (!mapElement) {
+
+    alert("⚠️ Chargement de la carte...");
+    
+
+    chargerComposantPrincipal('/components/Map.html');
+    
+
+    setTimeout(async () => {
+      if (document.getElementById('map')) {
+        await initialiserCarte();
+        
+
+        console.log('Verificación markers:', {
+          sites: siteMarkers ? siteMarkers.length : 0,
+          noeuds: noeudMarkers ? noeudMarkers.length : 0
+        });
+        
+        if (!noeudMarkers || noeudMarkers.length === 0) {
+          alert('❌ Erreur: Aucun nœud chargé. Vérifiez que la carte est bien chargée.');
+          return;
+        }
+        
+        if (typeof demarrerAjoutLivraison === 'function') {
+          demarrerAjoutLivraison();
+        }
       }
-      
-      // Iniciar modo ajout
-      if (typeof demarrerAjoutLivraison === 'function') {
-        demarrerAjoutLivraison();
-      } else {
-        console.error('❌ Module ajouter.js non chargé');
-        alert('❌ Erreur: Module d\'ajout non disponible');
-      }
-    });
+    }, 1000); // donne temps pour charger
+    return;
+  }
+  
+
+  if (!carte) {
+
+    await initialiserCarte();
+  }
+  
+  console.log('🔍 Verificación antes de démarrer:', {
+    carteExists: !!carte,
+    sitesLength: siteMarkers ? siteMarkers.length : 0,
+    noeudsLength: noeudMarkers ? noeudMarkers.length : 0
+  });
+  
+  if (!noeudMarkers || noeudMarkers.length === 0) {
+    alert('❌ Aucun nœud disponible. Chargez d\'abord un plan de distribution.');
+    document.getElementById('btn-filtros')?.click();
+    return;
+  }
+  
+
+  if (typeof demarrerAjoutLivraison === 'function') {
+    demarrerAjoutLivraison();
+  } else {
+    console.error('❌ Module ajouter.js non chargé');
+    alert('❌ Erreur: Module d\'ajout non disponible');
+  }
+});
         
     document.getElementById('btn-estadisticas')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));

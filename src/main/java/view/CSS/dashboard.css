@@ -495,6 +495,32 @@ display: flex;
 }
 
 /* //! Marqueurs personnalisés */
+
+/* Asegurar que los nodos sean clickeables */
+.marqueur-personnalise {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.marqueur-noeud {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  position: relative;
+  z-index: 1000;
+}
+
+/* En modo ajout, hacer más visible */
+.mode-ajout-actif .marqueur-noeud {
+  cursor: crosshair !important;
+  pointer-events: auto !important;
+}
+
+.mode-ajout-actif .marqueur-personnalise {
+  cursor: crosshair !important;
+  pointer-events: auto !important;
+  z-index: 10000 !important;
+}
+
 .marqueur-noeud {
   background: var(--spie-dark-teal);
   border: 3px solid var(--white);

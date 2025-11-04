@@ -275,3 +275,27 @@
     font-size: 14px;
   }
 }
+
+/* Asegurar que los nodos sean clickeables en modo ajout */
+.mode-ajout-actif .marqueur-noeud {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+}
+
+.mode-ajout-actif .leaflet-marker-icon {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Highlight más visible para nodos */
+@keyframes pulse-highlight {
+  0%, 100% { 
+    transform: scale(1); 
+    box-shadow: 0 0 10px #FFA62B;
+  }
+  50% { 
+    transform: scale(1.3); 
+    box-shadow: 0 0 20px #FFA62B, 0 0 30px #FFA62B;
+  }
+}

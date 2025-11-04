@@ -127,11 +127,8 @@ function mettreAJourInstructions() {
   }
 }
 
-/**
- * Resalta los markers que pueden ser seleccionados en esta etapa
- */
+
 function highlightAvailableMarkers() {
-  // Limpiar highlights previos
   clearHighlights();
   
   const etape = ETAPES[etapeAjout];
@@ -139,19 +136,41 @@ function highlightAvailableMarkers() {
   
   if (!Array.isArray(targetMarkers)) return;
   
+  console.log(`🎨 Highlighting ${targetMarkers.length} ${etape.type}s`);
+  
   targetMarkers.forEach(marker => {
     if (etape.type === 'noeud') {
-      // Highlight nodos
+
       const icon = marker.getIcon();
       if (icon && icon.options && icon.options.html) {
-        const newHtml = icon.options.html.replace(
-          'background:#16697A',
-          'background:#FFA62B; box-shadow: 0 0 10px #FFA62B; animation: pulse-highlight 1s infinite'
-        );
+        const newHtml = `<div class="marqueur-noeud marqueur-noeud-highlight" style="
+          background:#FFA62B;
+          width:16px;
+          height:16px;
+          border-radius:50%;
+          border:3px solid white;
+          box-shadow: 0 0 15px #FFA62B, 0 0 25px #FFA62B;
+          animation: pulse-highlight 1.5s infinite;
+          pointer-events:auto;
+          cursor:crosshair;
+          position:relative;
+          z-index:10000;
+        "></div>`;
+        
         marker.setIcon(L.divIcon({
-          ...icon.options,
-          html: newHtml
+          className: 'marqueur-personnalise marqueur-highlight',
+          html: newHtml,
+          iconSize: [16, 16],
+          iconAnchor: [8, 8]
         }));
+        
+
+        marker.options.interactive = true;
+        
+
+        if (marker.setZIndexOffset) {
+          marker.setZIndexOffset(10000);
+        }
       }
     } else {
       // Highlight sites
@@ -164,6 +183,7 @@ function highlightAvailableMarkers() {
             color: '#FFA62B',
             fillOpacity: 0.8
           });
+          marker.setZIndexOffset(5000);
         }
       } catch (e) {
         console.warn('Erreur highlight site:', e);
@@ -171,6 +191,8 @@ function highlightAvailableMarkers() {
     }
     highlightedMarkers.push(marker);
   });
+  
+  console.log(`✅ ${highlightedMarkers.length} markers highlighted`);
 }
 
 /**
@@ -180,22 +202,36 @@ function clearHighlights() {
   highlightedMarkers.forEach(marker => {
     try {
       if (marker.setStyle && marker._originalFillColor) {
+
         marker.setStyle({
           weight: 2,
           color: '#ffffff',
           fillOpacity: 1
         });
-      }
-      // Restaurar icono de nodo si aplica
-      const icon = marker.getIcon && marker.getIcon();
-      if (icon && icon.options && icon.options.html && icon.options.html.includes('pulse-highlight')) {
-        const restoredHtml = icon.options.html
-          .replace(/background:#FFA62B.*?;/g, 'background:#16697A;')
-          .replace(/animation:.*?;/g, '');
-        marker.setIcon(L.divIcon({
-          ...icon.options,
-          html: restoredHtml
-        }));
+        marker.setZIndexOffset(0);
+      } else {
+
+        const icon = marker.getIcon();
+        if (icon && icon.options && icon.options.html) {
+          const restoredHtml = `<div class="marqueur-noeud" style="
+            background:#16697A;
+            width:10px;
+            height:10px;
+            border-radius:50%;
+            border:2px solid white;
+            pointer-events:auto;
+            cursor:pointer;
+          "></div>`;
+          
+          marker.setIcon(L.divIcon({
+            className: 'marqueur-personnalise',
+            html: restoredHtml,
+            iconSize: [14, 14],
+            iconAnchor: [7, 7]
+          }));
+          
+          marker.setZIndexOffset(100);
+        }
       }
     } catch (e) {
       console.warn('Error clearing highlight:', e);
@@ -203,16 +239,26 @@ function clearHighlights() {
   });
   highlightedMarkers = [];
 }
-
 /**
  * Gère le clic sur un marqueur pendant le mode ajout
  */
 function gererClicMarqueur(marker, type) {
-  if (!modeAjoutActif) return;
+  console.log('🎯 gererClicMarqueur appelé:', { 
+    type, 
+    modeActif: modeAjoutActif, 
+    etapeActuelle: etapeAjout,
+    markerId: marker.options.siteId 
+  });
+  
+  if (!modeAjoutActif) {
+    console.warn('⚠️ Mode ajout non actif!');
+    return;
+  }
   
   const etape = ETAPES[etapeAjout];
   
-  console.log('🖱️ Click detectado:', { type, etape: etape.type, marker });
+  console.log('🖱️ Click detectado:', { type, etapeType: etape.type, marker });
+  
   
   // Vérifier que le type correspond à l'étape
   if (etape.type !== type) {
@@ -275,6 +321,12 @@ function demarrerAjoutLivraison() {
   console.log('Sites disponibles:', siteMarkers ? siteMarkers.length : 0);
   console.log('Nœuds disponibles:', noeudMarkers ? noeudMarkers.length : 0);
   
+
+  if (!noeudMarkers || noeudMarkers.length === 0) {
+    alert("⚠️ Aucun nœud disponible ! Chargez d'abord une carte.");
+    return;
+  }
+  
   modeAjoutActif = true;
   etapeAjout = 0;
   selectionData = {
@@ -294,11 +346,11 @@ function demarrerAjoutLivraison() {
     container.classList.add('mode-ajout-actif');
   }
   
-  // Activer les clics sur les marqueurs
+  // listeners avant de highlihgt peut etre?
   activerEcouteursMarqueurs();
-  
-  // Highlight initial
   highlightAvailableMarkers();
+  
+  console.log('✅ Mode ajout activé');
 }
 
 /**
@@ -306,38 +358,60 @@ function demarrerAjoutLivraison() {
  */
 function activerEcouteursMarqueurs() {
   console.log('🎯 Activation des écouteurs...');
+  console.log('Sites disponibles:', siteMarkers ? siteMarkers.length : 0);
+  console.log('Nœuds disponibles:', noeudMarkers ? noeudMarkers.length : 0);
   
-  // Sites - IMPORTANTE: usar namespace específico
+  // Sites
   if (Array.isArray(siteMarkers)) {
     siteMarkers.forEach(marker => {
-      // Remover listener previo si existe
-      marker.off('click');
-      
-      // Agregar nuevo listener
-      marker.on('click', function(e) {
-        L.DomEvent.stopPropagation(e);
-        console.log('🔴 Site clicked:', marker.options.siteId);
-        gererClicMarqueur(marker, 'site');
-      });
+
+      if (!marker._ajoutHandlerAttached) {
+        const existingHandlers = marker._events?.click;
+        if (existingHandlers && existingHandlers.length > 0) {
+          marker._normalClickHandler = existingHandlers[0].fn;
+        }
+        
+        // Remover listeners previos
+        marker.off('click');
+        
+        // add nouvau listener
+        marker.on('click', function(e) {
+          L.DomEvent.stopPropagation(e);
+          console.log('🔴 Site clicked:', marker.options.siteId, 'modeAjout:', modeAjoutActif);
+          
+          if (modeAjoutActif) {
+            gererClicMarqueur(marker, 'site');
+          } else if (marker._normalClickHandler) {
+            marker._normalClickHandler.call(marker, e);
+          } else {
+            marker.openPopup();
+          }
+        });
+        
+        marker._ajoutHandlerAttached = true;
+      }
     });
     console.log(`✅ ${siteMarkers.length} sites activés`);
   }
   
-  // Nœuds
-  if (Array.isArray(noeudMarkers)) {
+  if (Array.isArray(noeudMarkers) && noeudMarkers.length > 0) {
     noeudMarkers.forEach(marker => {
-      marker.off('click');
-      
-      marker.on('click', function(e) {
-        L.DomEvent.stopPropagation(e);
-        console.log('🔵 Nœud clicked:', marker.options.siteId);
-        gererClicMarqueur(marker, 'noeud');
-      });
+      if (!marker._ajoutHandlerAttached) {
+        // NOEUDS PRETs
+        marker._ajoutHandlerAttached = true;
+        
+        console.log('✓ Nœud listo:', marker.options.siteId, {
+          enCarte: carte && carte.hasLayer(marker),
+          position: marker.getLatLng()
+        });
+      }
     });
-    console.log(`✅ ${noeudMarkers.length} nœuds activés`);
+    console.log(`✅ ${noeudMarkers.length} nœuds validés`);
+  } else {
+    console.error('❌ AUCUN NŒUD DISPONIBLE!');
+    console.log('noeudMarkers:', noeudMarkers);
   }
 }
-
 /**
  * Désactive les écouteurs de clics
  */
@@ -460,22 +534,98 @@ function envoyerNouvellesLivraisons() {
     console.log('✅ Livraisons ajoutées avec succès', data);
     alert('✅ Livraisons ajoutées avec succès !');
     
-    // Recharger la carte pour afficher les nouvelles livraisons
-    if (typeof initialiserCarte === 'function') {
-      initialiserCarte();
-    }
+    // Recharger la carte
+    fetch("/api/carte")
+      .then(res => res.json())
+      .then(donnees => {
+        donneesGlobales = donnees;
+        afficherDonneesSurCarte(donnees);
+        configurerControlesVisibilite();
+      });
   })
   .catch(err => {
     console.error('❌ Erreur lors de l\'ajout:', err);
     alert('❌ Erreur : ' + err.message);
   });
 }
+/**
+ * Active les écouteurs de clics sur tous les marqueurs
+ */
+function activerEcouteursMarqueurs() {
+  console.log('🎯 Activation des écouteurs...');
+  
+// Nœuds
+  if (Array.isArray(noeudMarkers) && noeudMarkers.length > 0) {
+    noeudMarkers.forEach(marker => {
 
-// Fonction exportée pour attacher depuis app.js
-function attacherBoutonAjouter() {
-  const btnAjouter = document.getElementById('btn-ajouter');
-  if (btnAjouter) {
-    btnAjouter.addEventListener('click', demarrerAjoutLivraison);
-    console.log('✅ Bouton ajouter livraison attaché');
+      if (!carte.hasLayer(marker)) {
+        console.warn('⚠️ Nœud no está en el mapa:', marker.options.siteId);
+        return;
+      }
+      
+      const existingHandler = marker._events && marker._events.click;
+      if (existingHandler && !marker._normalClickHandler) {
+        marker._normalClickHandler = existingHandler[0].fn;
+      }
+      
+      marker.off('click');
+      marker.off('mousedown');
+      
+
+      marker.on('click', function(e) {
+        L.DomEvent.stopPropagation(e);
+        L.DomEvent.preventDefault(e);
+        
+        console.log('🔵 Nœud clicked:', marker.options.siteId, 'modeAjout:', modeAjoutActif);
+        
+        if (modeAjoutActif) {
+          gererClicMarqueur(marker, 'noeud');
+        } else {
+          if (marker._normalClickHandler) {
+            marker._normalClickHandler.call(marker, e);
+          } else if (marker.openPopup) {
+            marker.openPopup();
+          }
+        }
+      }, marker); 
+      
+      marker.on('mousedown', function(e) {
+        if (modeAjoutActif) {
+          L.DomEvent.stopPropagation(e);
+          console.log('🔵 Nœud mousedown:', marker.options.siteId);
+        }
+      });
+    });
+    console.log(`✅ ${noeudMarkers.length} nœuds activés`);
+  } else {
+    console.warn("⚠️ Aucun nœud marker disponible");
+  }
+  
+  // Nœuds
+  if (Array.isArray(noeudMarkers) && noeudMarkers.length > 0) {
+    noeudMarkers.forEach(marker => {
+      const existingHandler = marker._events && marker._events.click;
+      if (existingHandler && !marker._normalClickHandler) {
+        marker._normalClickHandler = existingHandler[0].fn;
+      }
+      
+      marker.off('click');
+      
+      marker.on('click', function(e) {
+        L.DomEvent.stopPropagation(e);
+        
+        if (modeAjoutActif) {
+          console.log('🔵 Nœud clicked (mode ajout):', marker.options.siteId);
+          gererClicMarqueur(marker, 'noeud');
+        } else {
+          if (marker._normalClickHandler) {
+            marker._normalClickHandler.call(marker, e);
+          } else if (marker.openPopup) {
+            marker.openPopup();
+          }
+        }
+      });
+    });
+    console.log(`✅ ${noeudMarkers.length} nœuds activés`);
   }
 }
