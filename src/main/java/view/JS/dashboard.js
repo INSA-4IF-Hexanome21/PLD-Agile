@@ -42,7 +42,6 @@ function chargerComposantPrincipal(url) {
       main.innerHTML = html;
       if (url.includes('Map.html')) {
         setTimeout(initialiserCarte, 100);
-        creerColonneLivreur(3);
         assignationLivraison();
       }
     })
@@ -609,20 +608,10 @@ function configurerControlesVisibilite() {
   }
 }
 
-function creerColonneLivreur(nbLivreur){
-  for (let i = 1;i <nbLivreur+1; i++){
-    const dropZone = document.createElement(HTMLDivElement);
-    dropZone.className = "dropZone";
-    const nomZone = document.createElement(HTMLHeadElement);
-    nomZone.textContent = "Livreur";
-    document.column.appendChild(dropZone);
-    document.dropZone.appendChild(nomZone);
-  }
-}
 
 function assignationLivraison() {
 var dragItem = document.querySelector('.dragElement');
-var dropZoneSet = Array.from(document.querySelectorAll('.column'));
+var dropZoneSet = Array.from(document.querySelectorAll('.dropZone'));
 
 dropZoneSet.forEach(dropzone => {
   dropzone.addEventListener('dragover', (e) => {
@@ -643,17 +632,6 @@ dropZoneSet.forEach((dropZone) => {
 
 }
 
-function updateTaskCounts() {
-    const counts = tasks.reduce((acc, task) => {
-        acc[task.status]++;
-        return acc;
-    }, { todo: 0, inprogress: 0, done: 0 });
-    
-    // Single DOM update per counter
-    Object.entries(counts).forEach(([status, count]) => {
-        document.getElementById(`${status}Count`).textContent = count;
-    });
-}
 
 /**
  * Lance le calcul
