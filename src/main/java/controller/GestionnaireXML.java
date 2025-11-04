@@ -7,7 +7,6 @@ import model.Entrepot;
 import model.Noeud;
 import model.Collecte;
 import model.DemandeLivraison;
-import model.Trajet;
 import model.Troncon;
 
 import javax.xml.parsers.*;
