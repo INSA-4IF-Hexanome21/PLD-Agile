@@ -196,7 +196,7 @@ public class ServeurHTTP {
                 System.out.println(">>> Demande chargée avec succès <<<");
                 
                 // Répondre au client
-                String response = "{\"status\":\"ok\",\"type\":\"demande\",\"path\":\"uploads/demandes/\""
+                String response = "{\"status\":\"ok\",\"type\":\"demande\",\"path\":\"uploads/demandes/"
                                 + fileName + "\",\"size\":" + bytes.length + ",\"message\":\"Demande chargée avec succès\"}";
                 byte[] responseBytes = response.getBytes("UTF-8");
                 
