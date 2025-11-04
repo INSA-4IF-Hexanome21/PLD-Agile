@@ -17,10 +17,12 @@ public class CarteController {
     private DemandeLivraison demandeLivraison;
     private GrapheTotal gt;
     private final ListOfCommands history;
+    private Configuration config;
 
     public CarteController() {
         this.carte = new Carte();
         this.history = new ListOfCommands();
+        this.config = new Configuration();
         this.gt = null;
     }
 
@@ -458,4 +460,10 @@ public class CarteController {
     public void undo() { history.undo(); }
 
     public void redo() { history.redo(); }
+
+    public void genererFeuillesdeRoute(){
+        for(Trajet trajet: this.getCarte().getTrajets()){
+            trajet.genererFeuilleDeRoute();
+        }
+    }
 }

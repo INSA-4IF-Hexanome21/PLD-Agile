@@ -356,6 +356,7 @@ public class ServeurHTTP {
             String query = exchange.getRequestURI().getQuery();
             Map<String, String> params = parseQuery(query);
             System.out.println(params);
+            controller.genererFeuillesdeRoute();
 
             if ((params.get("files") != null)
             ) {

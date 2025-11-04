@@ -52,6 +52,13 @@ public class Controller{
     }
 
 	/**
+	 * Méthode pour générer les feuilles de routes
+	 */
+    public void genererFeuillesdeRoute() {
+        currentState.genererFeuillesdeRoute(this, carteController);
+    }
+
+	/**
 	 * Méthode pour changer une livraison d'un trajet
 	 */
 	public void changerLivraison() {
