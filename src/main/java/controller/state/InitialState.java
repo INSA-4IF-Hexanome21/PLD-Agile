@@ -35,4 +35,11 @@ public class InitialState implements State {
         System.err.println(">>> [InitialState] ERREUR: Impossible de changer une livraison sans calcul!");
         throw new IllegalStateException("Veuillez d'abord calculer une livraison");
     }
+
+    @Override
+    public void assignerLivreur(Controller c, CarteController carteC) {
+        System.err.println(">>> [InitialState] ERREUR: Impossible de changer une livraison sans calcul!");
+        throw new IllegalStateException("Veuillez d'abord charger une carte et une livraison");
+    }
+
 }

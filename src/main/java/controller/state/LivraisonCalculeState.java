@@ -45,9 +45,6 @@ public class LivraisonCalculeState implements State {
     public void calculerLivraison(Controller c, CarteController carteC) {
         System.out.println(">>> [LivraisonCalculeState] Recalcul de la livraison...");
 
-        //Assigne un livreur à une livraison
-        carteC.assignerLivreurs();
-
         //Calcul la tournée
         try {
             carteC.calculerTournee();

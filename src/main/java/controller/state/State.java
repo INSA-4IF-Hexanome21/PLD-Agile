@@ -33,6 +33,12 @@ public interface State {
      * Méthode appelée par le controlleur pour changer l'emplacement d'une livraison
      * @param c le controlleur
      */
+    public default void assignerLivreur(Controller c, CarteController carteC) {}
+
+    /**
+     * Méthode appelée par le controlleur pour changer l'emplacement d'une livraison
+     * @param c le controlleur
+     */
     public default void changerLivraison(Controller c) {}
 
     /**

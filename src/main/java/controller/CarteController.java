@@ -86,23 +86,38 @@ public class CarteController {
 
   //Assigner les livreurs
 
-    public void assignerLivreurs() {
-        //Assignation des livreurs aléatoire A FAIRE DISPARAITRE
-       
-        Livreur livreur1 = new Livreur(1, "Bobard", "Bobert");
-        Livreur livreur2 = new Livreur(2, "Bobert", "Bobard");
-        Integer nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1, 1, carte);
-        Integer i = 1;
-        while(nbLivraisonsNonAssignees > 0){
-            if(i%2 == 0){
-                nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1,++i, carte);
-            }
-            else{
-                nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur2,++i, carte);
-            }
-            
-            
+    public void assignerLivreurs(String cheminFichier) {
+        // Avant d'ajouter la nouvelle demande, supprimer l'ancienne pour éviter accumulation
+        System.out.println(">>> CarteController: début chargement demandes, effacement des livraisons existantes...");
+
+
+        Assignation assignation = GestionnaireXML.chargerAssignation(cheminFichier);
+        if(assignation == null){
+            throw new NullPointerException("Un site de la demande de livraison n'est pas disponible sur le plan actuellement chargé");
         }
+
+        for (int i=0; i<assignation.getnbLivreur(); ++i){
+
+            Livreur livreur = new Livreur(i+1, "Bobard", "Bobert");
+            List<Integer> idLivraison = assignation.getLivraison(livreur.getId());
+
+            for(Integer id: idLivraison){
+                Integer nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur, id, carte);
+            }
+        }
+
+        // Livreur livreur1 = new Livreur(1, "Bobard", "Bobert");
+        // Livreur livreur2 = new Livreur(2, "Bobert", "Bobard");
+        // Integer nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1, 1, carte);
+        // Integer i = 1;
+        // while(nbLivraisonsNonAssignees > 0){
+        //     if(i%2 == 0){
+        //         nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1,++i, carte);
+        //     }
+        //     else{
+        //         nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur2,++i, carte);
+        //     } 
+        // }
     }
 
   // --- modifications dans controller/CarteController.java ---
@@ -223,7 +238,6 @@ public class CarteController {
 
         System.out.println(">>> CarteController: livraisons précédentes effacées.");
     }
-
     
     /**
      * Génère le JSON complet de la carte avec noeuds, troncons et sites

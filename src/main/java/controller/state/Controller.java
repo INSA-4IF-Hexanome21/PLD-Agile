@@ -52,6 +52,13 @@ public class Controller{
     }
 
 	/**
+	 * Méthode pour calculer une livraison
+	 */
+	public void assignerLivreur(){
+		currentState.assignerLivreur(this, carteController);
+	}
+
+	/**
 	 * Méthode pour changer une livraison d'un trajet
 	 */
 	public void changerLivraison() {
