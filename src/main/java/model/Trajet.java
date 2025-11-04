@@ -175,7 +175,7 @@ public class Trajet {
         String data = "Feuille de route " + date + "\n\n";
         data += this.livreur + "\n";
         data += "Trajet à effectuer : \n\n";
-        data += "Départ de l'entrepôt (" + troncons.get(0).getOrigine().getId() + ") à 08:00h\n";
+        data += "Départ de l'entrepôt (" + troncons.get(0).getOrigine().getId() + ") à 08:00\n";
         
         for(Troncon troncon : this.troncons){
             if(rueActuelle != null && !(troncon.getNomRue().equals(rueActuelle))){
@@ -203,8 +203,7 @@ public class Trajet {
             }
         }
         data += rueActuelle + " sur " + longueur.intValue() + " m\n";
-        Entrepot entrepot = (Entrepot)getSite(troncons.get(0).getOrigine().getId());
-        data += "Arrivée à l'entrepôt (" + troncons.get(0).getOrigine().getId() + ") à " + entrepot.getArriveeHeure() + "\n\n";
+        data += "Arrivée à l'entrepôt (" + troncons.get(0).getOrigine().getId() + ") à " + this.heureFin + "\n\n";
         data += "Temps total du trajet : " + this.dureeTrajet.intValue() + ":" + (int)((this.dureeTrajet%1)*60) + "h";
 
         try {

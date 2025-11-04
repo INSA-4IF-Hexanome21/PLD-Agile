@@ -111,21 +111,12 @@ public class Carte {
 
         for (int i = 0; i<solutionLong.size();++i){
             Long idSite = solutionLong.get(i);
-            // System.out.println();
-            // System.out.println("--------------------------------------------------");
-            // System.out.println("Site en cours :" + idSite);
-            // System.out.println("Site Collecte prec attendu  :" + idPrecCollecte);
-            // System.out.println("Site Depot prec attendu  :" + idPrecDepot);
-            // System.out.println("--------------------------------------------------");
-            // System.out.println();
             nouvSolutionLong.add(idSite);
             if(i<solutionLong.size() - 1 && Objects.equals(idSite, idPrecCollecte)){
-                // System.out.println("Ajout de la collecte");
                 nouvSolutionLong.add(idCollecte);
                 indexCollecteSol = i+1;
             }
             else if(i<solutionLong.size() - 1 && Objects.equals(idSite, idPrecDepot)){
-                // System.out.println("Ajout du depot");
                 nouvSolutionLong.add(idDepot);
                 indexDepotSol = i+2;
             }
@@ -156,8 +147,8 @@ public class Carte {
             solution.add(gt.getIndexFromId(id));
         }
         // System.out.println("Nouvelle solution : " + solution);
-        HashMap<Site,Long> sitesImpactes = CarteUtils.majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
-        // System.out.println(sitesImpactes);
+        CarteUtils.majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
+        // System.out.println(trajet.sitesImpactes);
 
     }
 
@@ -192,7 +183,7 @@ public class Carte {
         for (var id : nouvSolutionLong) {
             solution.add(gt.getIndexFromId(id));
         }
-        HashMap<Site,Long> sitesImpactes = CarteUtils.majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
+        CarteUtils.majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
     }
 
     public Site getSiteById(Long id) {

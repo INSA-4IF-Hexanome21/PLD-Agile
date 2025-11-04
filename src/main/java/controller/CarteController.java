@@ -280,6 +280,7 @@ public class CarteController {
         // -- Trajets 
         json.append(",\"trajets\":{");
         List<Trajet> trajets = carte.getTrajets();
+        HashMap<Site,Long> sitesImpactes = new HashMap<>(); 
         List<LocalTime> heuresArrivees = new ArrayList<LocalTime>();;
         for (int i = 0; i < trajets.size(); i++) {
             Trajet t = trajets.get(i);
@@ -298,6 +299,12 @@ public class CarteController {
 
             json.append("]");
             if (i < trajets.size() - 1) json.append(","); // <-- virgule entre trajets
+            HashMap<Site,Long> sites = t.getSitesImpactes(); 
+            if (!sites.isEmpty()) {
+                for (var key : sites.keySet()) {
+                    sitesImpactes.put(key, sites.get(key));
+                }
+            }
         }
         json.append("}");
 
@@ -352,9 +359,26 @@ public class CarteController {
         }
         json.append("]");
         
-        
+        // -- Sites Impactes 
+        json.append(",\"sitesImpactes\":[");
+        firstSite = true;
+        for (var s : sitesImpactes.keySet()) {
+            if (!firstSite) json.append(",");
+            firstSite = false;
+            var delay = sitesImpactes.get(s);
+            try {
+                json.append(String.format(Locale.US,
+                    "{\"id\":%d,\"delay\":\"%d\"}",
+                    s.getId(), delay));
+                
+            } catch (Exception e) {
+                System.err.println("Erreur lors du traitement du site " + s.getId() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+
+        }
+        json.append("]");
         json.append("}");
-        // System.out.println(json);
         return json.toString();
     }
 
@@ -409,7 +433,7 @@ public class CarteController {
 
     // Exécution d'une commande d'ajout
     public void ajouterLivraison() {
-        Command alc = new AjouterLivraisonCommand(gt, Long.valueOf(1679901320), Long.valueOf(342873658), 120, Long.valueOf(26086123), Long.valueOf(208769039), 180, carte.getTrajets().get(0), carte);
+        Command alc = new AjouterLivraisonCommand(gt, Long.valueOf(1679901320), Long.valueOf(342873658), Long.valueOf(26086123), Long.valueOf(208769039), carte.getTrajets().get(0), carte);
         history.add(alc);
     }
 

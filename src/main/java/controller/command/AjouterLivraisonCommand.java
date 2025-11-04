@@ -4,8 +4,12 @@ import model.Carte;
 import model.GrapheTotal;
 import model.Trajet;
 
+
+
 public class AjouterLivraisonCommand implements Command {
     
+    static Integer DUREE_SITE = 300; //Durée passé sur site
+
     private GrapheTotal gt;
     private Long idCollecte;
     private Long idDepot;
@@ -16,14 +20,14 @@ public class AjouterLivraisonCommand implements Command {
     private Trajet trajet;
     private Carte carte;
 
-    public AjouterLivraisonCommand(GrapheTotal gt, Long idCollecte,Long idPrecCollecte,Integer dureeEnlevement, Long idDepot,Long idPrecDepot, Integer dureeLivraison,Trajet trajet, Carte carte) {
+    public AjouterLivraisonCommand(GrapheTotal gt, Long idCollecte,Long idPrecCollecte, Long idDepot,Long idPrecDepot,Trajet trajet, Carte carte) {
         this.gt = gt;
         this.idCollecte = idCollecte;
         this.idDepot = idDepot;
         this.idPrecCollecte = idPrecCollecte;
         this.idPrecDepot = idPrecDepot;
-        this.dureeEnlevement = dureeEnlevement;
-        this.dureeLivraison = dureeLivraison;
+        this.dureeEnlevement = DUREE_SITE;
+        this.dureeLivraison = DUREE_SITE;
         this.trajet = trajet;
         this.carte = carte;
     }
