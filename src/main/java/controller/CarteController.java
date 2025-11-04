@@ -433,7 +433,7 @@ public class CarteController {
 
     // Exécution d'une commande d'ajout
     public void ajouterLivraison() {
-        Command alc = new AjouterLivraisonCommand(gt, Long.valueOf(1679901320), Long.valueOf(342873658), 120, Long.valueOf(26086123), Long.valueOf(208769039), 180, carte.getTrajets().get(0), carte);
+        Command alc = new AjouterLivraisonCommand(gt, Long.valueOf(1679901320), Long.valueOf(342873658), Long.valueOf(26086123), Long.valueOf(208769039), carte.getTrajets().get(0), carte);
         history.add(alc);
     }
 
