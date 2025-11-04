@@ -26,23 +26,43 @@ const visibilityState = {
 
 
 /* //! ----------------- UTILIDADES / INIT ----------------- */
-
 function chargerComposantPrincipal(url) {
   console.log('Chargement du composant:', url);
   const main = document.getElementById('main-content');
-  if (!main) return;
+  if (!main) {
+    console.error('Element #main-content introuvable');
+    return;
+  }
   main.innerHTML = '<p>Chargement en cours...</p>';
 
   fetch(url)
     .then(res => {
-      if (!res.ok) throw new Error('Erreur de chargement: ' + url);
+      if (!res.ok) throw new Error('Erreur de chargement: ' + url + ' (' + res.status + ')');
       return res.text();
     })
     .then(html => {
       main.innerHTML = html;
       if (url.includes('Map.html')) {
-        setTimeout(initialiserCarte, 100);
-        assignationLivraison();
+        requestAnimationFrame(() => {
+          // Si le map est présent initialiser direcetmenet
+          if (document.getElementById('map')) {
+            initialiserCarte();
+            assignationLivraison();
+            return;
+          }
+          // fallback après un court délai
+          console.warn('#map introuvable au premier passage, tentative de secours...');
+          setTimeout(() => {
+            if (document.getElementById('map')) {
+              initialiserCarte();
+              assignationLivraison();
+            } else {
+              // DEBUG
+              console.error('Élément #map introuvable après fallback — vérifie ton Map.html (doit contenir <div id="map">) et l\'insertion du composant.');
+              main.innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable. Vérifiez Map.html.</p>';
+            }
+          }, 250); 
+        });
       }
     })
     .catch(err => {
@@ -67,7 +87,8 @@ function initialiserCarte() {
 
   if (!elementCarte) {
     console.error('Élément #map non trouvé dans le DOM');
-    document.getElementById('main-content').innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable</p>';
+    const main = document.getElementById('main-content');
+    if (main) main.innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable</p>';
     return;
   }
 
