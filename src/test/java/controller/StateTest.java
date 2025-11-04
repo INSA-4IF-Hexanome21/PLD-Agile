@@ -34,7 +34,7 @@ public class StateTest {
 
     @Test
     public void testCarteChargeState() {
-        boolean loaded = controller.chargerCarte("ressources/uploads/plans/moyenPlan.xml");
+        boolean loaded = controller.chargerCarte("ressources/fichiersXMLCollecteDepot/moyenPlan.xml");
         assertTrue("La carte doit être chargée", loaded);
 
         String json = controller.getCarteJSON();
@@ -46,22 +46,22 @@ public class StateTest {
 
     @Test
     public void testLivraisonChargeState() {
-        controller.chargerCarte("ressources/uploads/plans/moyenPlan.xml");
-        boolean loadedLivraison = controller.chargerLivraison("ressources/uploads/demandes/demandeMoyen5.xml");
+        controller.chargerCarte("ressources/fichiersXMLCollecteDepot/moyenPlan.xml");
+        boolean loadedLivraison = controller.chargerLivraison("ressources/fichiersXMLCollecteDepot/demandeMoyen5.xml");
         assertTrue("La livraison doit être chargée", loadedLivraison);
     }
 
     @Test
     public void testLivraisonCalculeState() {
-        controller.chargerCarte("ressources/uploads/plans/moyenPlan.xml");
-        controller.chargerLivraison("ressources/uploads/demandes/demandeMoyen5.xml");
+        controller.chargerCarte("ressources/fichiersXMLCollecteDepot/moyenPlan.xml");
+        controller.chargerLivraison("ressources/fichiersXMLCollecteDepot/demandeMoyen5.xml");
         controller.calculerLivraison();
     }
 
     @Test
     public void testChangerLivraison() {
-        controller.chargerCarte("ressources/uploads/plans/moyenPlan.xml");
-        controller.chargerLivraison("ressources/uploads/demandes/demandeMoyen5.xml");
+        controller.chargerCarte("ressources/fichiersXMLCollecteDepot/moyenPlan.xml");
+        controller.chargerLivraison("ressources/fichiersXMLCollecteDepot/demandeMoyen5.xml");
         controller.calculerLivraison();
         controller.changerLivraison();
     }
