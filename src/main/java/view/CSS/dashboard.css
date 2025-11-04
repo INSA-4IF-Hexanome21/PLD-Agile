@@ -460,7 +460,8 @@ display: flex;
 }
 
 /* //! Styles pour les contrôles de Leaflet */
-.leaflet-control-zoom a {
+.leaflet-control-zoom a,
+.leaflet-control-undoRedo a {
   background: var(--spie-dark-teal) !important;
   color: var(--white) !important;
   border: none !important;
@@ -468,9 +469,33 @@ display: flex;
   transition: all 0.3s ease !important;
 }
 
-.leaflet-control-zoom a:hover {
+.leaflet-control-zoom a:hover,
+.leaflet-control-undoRedo a:hover {
   background: var(--spie-medium-teal) !important;
   transform: scale(1.05);
+}
+
+/* Container du zoom */
+.leaflet-bar {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 4px; 
+}
+
+/* Boutons zoom */
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.undo-btn, 
+.redo-btn {
+  width: 32px;  
+  height: 32px;
+  line-height: 32px;
+  text-align: center;
+}
+
+.leaflet-top.leaflet-left {
+  display: flex;       
+  gap: 5px;            
 }
 
 /* //! Personnalisation des popups Leaflet */

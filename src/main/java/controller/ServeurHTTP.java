@@ -429,6 +429,38 @@ public class ServeurHTTP {
             exchange.getResponseBody().write(octets);
             exchange.close();
         });
+
+        serveur.createContext("/api/undoAction", exchange -> {
+            
+            System.out.println(">>> Requête reçue sur /api/undoAction <<<");
+        
+            String jsonResponse = controller.undoAction();
+            byte[] octets = jsonResponse.getBytes("UTF-8");
+            
+            exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            exchange.sendResponseHeaders(200, octets.length);
+            exchange.getResponseBody().write(octets);
+            exchange.close();
+            
+            System.out.println(">>> Réponse envoyée <<<");
+        });
+
+        serveur.createContext("/api/redoAction", exchange -> {
+            
+            System.out.println(">>> Requête reçue sur /api/redoAction <<<");
+        
+            String jsonResponse = controller.redoAction();
+            byte[] octets = jsonResponse.getBytes("UTF-8");
+            
+            exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            exchange.sendResponseHeaders(200, octets.length);
+            exchange.getResponseBody().write(octets);
+            exchange.close();
+            
+            System.out.println(">>> Réponse envoyée <<<");
+        });
     }
     
 

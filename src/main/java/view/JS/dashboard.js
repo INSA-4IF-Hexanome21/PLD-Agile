@@ -105,6 +105,44 @@ function initialiserCarte() {
     maxZoom: 19
   }).addTo(carte);
 
+  // Définir un nouveau contrôle Leaflet
+  const UndoRedoControl = L.Control.extend({
+    options: {
+      position: 'topleft' 
+    },
+
+    onAdd: function (map) {
+      const container = L.DomUtil.create('div', ' leaflet-control-undoRedo leaflet-bar leaflet-control');
+
+      const undoBtn = L.DomUtil.create('a', 'undo-btn', container);
+      undoBtn.href = '#';
+      undoBtn.title = 'Annuler (Ctrl+Z)';
+      undoBtn.innerHTML = '⟲';
+
+      const redoBtn = L.DomUtil.create('a', 'redo-btn', container);
+      redoBtn.href = '#';
+      redoBtn.title = 'Rétablir (Ctrl+Y)';
+      redoBtn.innerHTML = '⟳';
+
+      // Empêche la propagation des clics pour ne pas déclencher le zoom/pan de Leaflet
+      L.DomEvent.disableClickPropagation(container);
+
+      // Ajouter les événements
+      L.DomEvent.on(undoBtn, 'click', L.DomEvent.stop)
+                .on(undoBtn, 'click', () => undoAction());
+
+      L.DomEvent.on(redoBtn, 'click', L.DomEvent.stop)
+                .on(redoBtn, 'click', () => redoAction());
+
+      return container;
+    }
+  });
+
+  // Ajouter le contrôle à la carte
+  const undoRedoControl = new UndoRedoControl();
+  undoRedoControl.addTo(carte);
+
+
   fetch("/api/carte")
     .then(res => {
       if (!res.ok) throw new Error('Erreur API: ' + res.status);
@@ -874,6 +912,32 @@ function getTrajetAffiches() {
   });
 
   return lTrajAff ;
+}
+
+function undoAction() {
+  fetch('/api/undoAction', { method: 'POST' })
+    .then(res => res.json())
+    .then(donnees => {
+      // Mettre à jour les données globales
+      donneesGlobales = donnees;
+
+      // Réinitialiser la carte
+      initialiserCarte();
+    })
+    .catch(err => console.error(err));
+}
+
+function redoAction() {
+  fetch('/api/redoAction', { method: 'POST' })
+    .then(res => res.json())
+    .then(donnees => {
+      // Mettre à jour les données globales
+      donneesGlobales = donnees;
+
+      // Réinitialiser la carte
+      initialiserCarte();
+    })
+    .catch(err => console.error(err));
 }
 
 function nettoyerCarte() {
