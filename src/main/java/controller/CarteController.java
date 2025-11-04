@@ -360,7 +360,7 @@ public class CarteController {
         json.append("]");
         
         // -- Sites Impactes 
-        json.append("},\"sitesImpactes\":[");
+        json.append(",\"sitesImpactes\":[");
         firstSite = true;
         for (var s : sitesImpactes.keySet()) {
             if (!firstSite) json.append(",");
@@ -379,7 +379,6 @@ public class CarteController {
         }
         json.append("]");
         json.append("}");
-        // System.out.println(json);
         return json.toString();
     }
 
