@@ -55,6 +55,19 @@ public class LivraisonCalculeState implements State {
     }
 
     @Override
+    public void genererFeuillesdeRoute(Controller c, CarteController carteC) {
+        System.out.println(">>> [LivraisonCalculeState] génération des feuilles de routes...");
+        try {
+            carteC.genererFeuillesdeRoute();
+            c.setCurrentState(c.livraisonCalculeState);
+        } catch (Exception ex) {
+            System.err.println(">>> [LivraisonCalculeState] ERREUR pendant la génération: " + ex.getMessage());
+            c.setCurrentState(c.carteChargeState);
+            throw new RuntimeException("Erreur lors de la génération des feuilles de routes : " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
     public void changerLivraison(Controller c) {
         System.out.println(">>> [LivraisonCalculeState] Changement d'une livraison dans la tournée...");
         // TODO: Modifier une livraison de la tournée calculée
