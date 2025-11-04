@@ -69,7 +69,7 @@ public class CarteController {
         System.out.println(">>> CarteController: début chargement demandes, effacement des livraisons existantes...");
         this.effacerLivraison();
 
-        DemandeLivraison demandeLivraison = GestionnaireXML.chargerDemandeLivraisons(
+        demandeLivraison = GestionnaireXML.chargerDemandeLivraisons(
             cheminFichierDemandes, 
             carte.getNoeuds()
         );

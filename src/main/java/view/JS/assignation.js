@@ -1,7 +1,3 @@
-/* =====================================================
-   ASSIGNATION DE LIVREURS - Module séparé
-   ===================================================== */
-
 let livraisonsData = [];
 let assignationsState = {}; // { livreurId: [livraisonId, ...] }
 
@@ -30,10 +26,30 @@ function assignationLivraison() {
   }
 }
 
+function envoyerAssignations() {
+  fetch('/api/assignations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(assignationsState)
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log('✅ Assignations envoyées:', data);
+  })
+  .catch(err => {
+    console.error('❌ Erreur lors de l’envoi des assignations:', err);
+  });
+}
+
 /**
  * Extrae livraisons de los sites y las agrupa
  */
 function extraerYMostrarLivraisons(sites) {
+  
+  document.getElementById('envoyer-assignations').addEventListener('click', () => {
+  envoyerAssignations();
+});
+
   console.log('📦 Extrayendo livraisons de sites...', sites);
   
   const livraisonsMap = new Map();
