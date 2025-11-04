@@ -28,4 +28,13 @@ public class Livreur {
     public String getPrenom() {
         return prenom;
     }
+
+    @Override
+    public String toString() {
+        String data = "Livreur n°" + this.id + "\n";
+        data += "Nom : " + this.nom + "\n";
+        data += "Prénom : " + this.prenom + "\n";
+
+        return data;
+    }
 }

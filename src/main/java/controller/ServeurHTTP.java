@@ -2,10 +2,16 @@
 package controller;
 import com.sun.net.httpserver.HttpServer;
 import controller.state.Controller;
+import utils.ZipUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Serveur HTTP pour servir les fichiers statiques et l'API
@@ -162,7 +168,7 @@ public class ServeurHTTP {
                 File uploadDir = new File(cheminBaseRessources + "uploads/demandes/");
                 if (!uploadDir.exists()) {
                     boolean created = uploadDir.mkdirs();
-                    System.out.println("Directorio de demandes creado: " + created);
+                    System.out.println("Dossier de demandes créé: " + created);
                 }
                 
                 // Enregistrer le fichier
@@ -276,6 +282,73 @@ public class ServeurHTTP {
         
         System.out.println(">>> Réponse envoyée <<<");
     });
+
+    // Endpoint pour télécharger feuille de route
+    serveur.createContext("/api/roadmap", exchange -> {
+        System.out.println(">>> Requête reçue sur /api/roadmap <<<");
+
+        try {
+            String query = exchange.getRequestURI().getQuery();
+            Map<String, String> params = parseQuery(query);
+            System.out.println(params);
+
+            if ((params.get("files") != null)
+            ) {
+                Path dossier = Paths.get(cheminBaseRessources + "downloads/");
+                if (!Files.exists(dossier)) {
+                    Files.createDirectories(dossier);
+                    System.out.println("Dossier 'downloads' créé !");
+                } 
+                Map<String, byte[]> fichiers = new HashMap<String, byte[]>();
+                Files.list(dossier)
+                    .forEach(f -> {
+                        try {
+                            String nomFichier = f.getFileName().toString();
+                            byte[] contenu = Files.readAllBytes(f);
+                            if (params.get("files").contains(f.getFileName().toString())) {
+                                fichiers.put(nomFichier, contenu);
+                            } 
+                        } catch (Exception e) {
+                            System.err.println("ERREUR lors du téléchargement des fichiers: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                        
+                });
+                String nomZipFic = cheminBaseRessources+"downloads/roadmap.zip";
+                ZipUtils.createZip(fichiers, nomZipFic); 
+                File zipFic = new File(nomZipFic);
+                byte[] octets = Files.readAllBytes(zipFic.toPath());
+
+                exchange.getResponseHeaders().set("Content-Type", "application/zip");
+                exchange.getResponseHeaders().set("Content-Disposition", "attachment; filename=\"roadmap.zip\"");
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+
+                exchange.sendResponseHeaders(200, octets.length);
+                exchange.getResponseBody().write(octets);
+
+            } else if (params.get("file") != null) {
+                String nomFichier = params.get("file");
+                File fichier = new File(cheminBaseRessources + "downloads/" + nomFichier);
+                byte[] octets = Files.readAllBytes(fichier.toPath());
+                exchange.getResponseHeaders().add("Content-Type", "text/plain; charset=UTF-8");
+                exchange.getResponseHeaders().add("Content-Disposition", "attachment; filename=\"roadmap.txt\"");
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+
+                exchange.sendResponseHeaders(200, octets.length);
+                exchange.getResponseBody().write(octets);
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            exchange.sendResponseHeaders(500, -1);
+        } finally {
+            
+            exchange.close();
+            System.out.println(">>> Réponse envoyée <<<");
+        }
+    });
+
         //  Route pour les fichiers JavaScript
         serveur.createContext("/js/", exchange -> {
             String chemin = exchange.getRequestURI().getPath().replaceFirst("/js/", "");
@@ -376,5 +449,16 @@ public class ServeurHTTP {
     public void arreter() {
         serveur.stop(0);
         System.out.println("Serveur arrêté");
+    }
+
+    private static Map<String, String> parseQuery(String query) {
+        Map<String, String> map = new HashMap<>();
+        if (query == null) return map;
+        for (String param : query.split("&")) {
+            String[] pair = param.split("=");
+            if (pair.length == 2)
+                map.put(pair[0], pair[1]);
+        }
+        return map;
     }
 }

@@ -42,6 +42,7 @@ public class DemandeLivraison {
         if(!livraisonsAssignees.get(idLivraison)){
             livraisonsAssignees.put(idLivraison,true);
             --this.nbLivraisonsNonAssignees;
+            carte.setNbLivraisons(carte.getNbLivraisons()+1);
         }
         
         Trajet trajet = carte.getTrajetParLivreur(livreur.getId());
