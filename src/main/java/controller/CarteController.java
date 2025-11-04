@@ -16,10 +16,12 @@ public class CarteController {
     private Carte carte;
     private GrapheTotal gt;
     private final ListOfCommands history;
+    private Configuration config;
 
     public CarteController() {
         this.carte = new Carte();
         this.history = new ListOfCommands();
+        this.config = new Configuration();
         this.gt = null;
     }
 
