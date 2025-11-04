@@ -69,6 +69,22 @@
   background: var(--spie-medium-teal);
 }
 
+
+#envoyer-assignations {
+  background: var(--spie-dark-teal);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 700; /* bold */
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#envoyer-assignations:hover {
+  background: var(--spie-medium-teal);
+}
+
 /* Layout - Pool arriba, zones abajo */
 #deliverer-content {
   display: flex;

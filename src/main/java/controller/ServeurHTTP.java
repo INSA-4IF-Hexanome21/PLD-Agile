@@ -4,7 +4,9 @@ import com.sun.net.httpserver.HttpServer;
 import controller.state.Controller;
 import utils.ZipUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.io.File;
 import java.io.IOException;
@@ -267,6 +269,69 @@ public class ServeurHTTP {
             exchange.close();
         }
     });
+
+    serveur.createContext("/api/assignations", exchange -> {
+        System.out.println(">>> Requête reçue sur /api/assignations <<<");
+
+        if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            try {
+                byte[] bytes = exchange.getRequestBody().readAllBytes();
+                String body = new String(bytes, "UTF-8");
+                System.out.println("Body reçu: " + body);
+
+                // Parse simple: { "1": ["L001","L003"], "2": ["L002"] }
+                Map<String, List<String>> assignations = new HashMap<>(); //LUCIE, tu travailles avec ca!
+
+                body = body.trim();
+                if (body.startsWith("{") && body.endsWith("}")) {
+                    body = body.substring(1, body.length() - 1); // SUPRRIMER {}
+                    String[] entries = body.split("(?<=\\]),"); // separer keywords
+
+                    for (String entry : entries) {
+                        String[] parts = entry.split(":", 2);
+                        if (parts.length == 2) {
+                            String livreurId = parts[0].trim().replaceAll("\"", "");
+                            String values = parts[1].trim();
+                            values = values.replaceAll("\\[|\\]|\"", ""); // suprimer [], "
+                            List<String> livraisonIds = new ArrayList<>();
+                            if (!values.isEmpty()) {
+                                for (String id : values.split(",")) {
+                                    livraisonIds.add(id.trim());
+                                }
+                            }
+                            assignations.put(livreurId, livraisonIds);
+                        }
+                    }
+                }
+
+                // Por ahora solo log
+                System.out.println("Assignations reçues: " + assignations);
+
+                // Responder
+                String response = "{\"status\":\"ok\",\"message\":\"Assignations reçues\"}";
+                byte[] responseBytes = response.getBytes("UTF-8");
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                exchange.sendResponseHeaders(200, responseBytes.length);
+                exchange.getResponseBody().write(responseBytes);
+                exchange.close();
+
+            } catch (Exception e) {
+                String errorResponse = "{\"status\":\"error\",\"message\":\"" 
+                                        + e.getMessage().replace("\"", "'") + "\"}";
+                byte[] errorBytes = errorResponse.getBytes("UTF-8");
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.sendResponseHeaders(500, errorBytes.length);
+                exchange.getResponseBody().write(errorBytes);
+                exchange.close();
+            }
+        } else {
+            exchange.sendResponseHeaders(405, -1);
+            exchange.close();
+        }
+    });
+
+
 
     serveur.createContext("/api/carte", exchange -> {
         System.out.println(">>> Requête reçue sur /api/carte <<<");
