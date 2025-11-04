@@ -50,7 +50,7 @@ public final class CarteUtils {
         }
     }
 
-    public static HashMap<Site,Long> majTrajet(Carte carte, GrapheTotal gt, List<Long> cheminComplet, List<Integer> solution, Trajet trajet){
+    public static void majTrajet(Carte carte, GrapheTotal gt, List<Long> cheminComplet, List<Integer> solution, Trajet trajet){
        
         //Hashmap servant a stocké l'id d'un site impacté par un changement avec la différence avec la valeur initiale
         HashMap<Site,Long> sitesImpactes = new HashMap<Site,Long>(); 
@@ -137,7 +137,7 @@ public final class CarteUtils {
 
         trajet.setTroncons(troncons);
         trajet.setdureeTrajet(dureeTrajet);
-        return sitesImpactes;
+        trajet.setSitesImpactes(sitesImpactes);
     }
 
     public static long getPrecSite(Site site, List<Long> solution) {
