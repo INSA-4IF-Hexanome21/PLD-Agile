@@ -827,7 +827,7 @@ function lancerCalcul() {
                       // Afficher message et proposer d'aller à la carte
                       setTimeout(() => {
                           if (confirm('✅ Livraison Calculé! Voulez-vous voir la carte?')) {
-                              $('#btn-mapa').trigger('click');
+                              $('#btn-map').trigger('click');
                           }
                       }, 500);
                 } catch (err) {
@@ -1078,9 +1078,9 @@ fetch('/components/Sidebar.html')
       setTimeout(updateUIBasedOnState, 50);
     }
 
-    document.getElementById('btn-mapa')?.addEventListener('click', () => {
+    document.getElementById('btn-map')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
-      document.getElementById('btn-mapa')?.classList.add('active');
+      document.getElementById('btn-map')?.classList.add('active');
       document.getElementById('btn-calcul')?.classList.add('active');
       chargerComposantPrincipal('/components/Map.html');
     });

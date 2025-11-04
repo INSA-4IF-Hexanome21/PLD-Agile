@@ -93,7 +93,7 @@ $(document).ready(function() {
     // Bouton de retour
     $(document).on('click', '#btn-retour-carte', function() {
         console.log('🔙 Retour à la carte');
-        $('#btn-mapa').trigger('click');
+        $('#btn-map').trigger('click');
     });
 });
 
