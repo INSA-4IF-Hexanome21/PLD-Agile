@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import java.util.*;
 
+import model.utils.*;
+
 public class CarteTest {
 
     @Test
@@ -81,7 +83,7 @@ public class CarteTest {
         Carte carte = new Carte();
 
         // Appel de la méthode
-        carte.majTrajetDepuisChemin(graphe, cheminComplet, solution, trajet);
+        CarteUtils.majTrajet(carte, graphe, cheminComplet, solution, trajet);
 
         // Assertions
         for (Site s : trajet.getSites()) {

@@ -21,8 +21,8 @@ public class TrajetTest {
         assertTrue(trajet.getSites().isEmpty());
         assertNotNull(trajet.getTroncons());
         assertTrue(trajet.getTroncons().isEmpty());
-        assertNotNull(trajet.getSitesNonAccessibles());
-        assertTrue(trajet.getSitesNonAccessibles().isEmpty());
+        assertNotNull(trajet.getSitesImpactes());
+        assertTrue(trajet.getSitesImpactes().isEmpty());
     }
 
     @Test
@@ -52,8 +52,12 @@ public class TrajetTest {
         String s1 = trajet1.toString();
         String s2 = trajet2.toString();
 
+
+        
         assertEquals(2.5f, trajet1.getdureeTrajet(), 0.001f);
-        assertTrue(s1.contains("Livreur: model.Livreur@"));
+        assertTrue(s1.contains("Livreur: Livreur n°0"));
+        assertTrue(s1.contains("Nom : Petit"));
+        assertTrue(s1.contains("Prénom : Bobert"));
         assertTrue(s1.contains("Heure de début: 08:00"));
         assertTrue(s1.contains("Heure de fin: 10:30"));
         assertTrue(s1.contains("Durée du trajet: 2,50 heures") || s1.contains("Durée du trajet: 2.50 heures"));
@@ -66,6 +70,7 @@ public class TrajetTest {
         assertTrue(s2.contains("Durée du trajet: Non calculée"));
         assertTrue(s2.contains("Nombre de sites : 0"));
         assertTrue(s2.contains("[]"));
+        
     }
 
 }
