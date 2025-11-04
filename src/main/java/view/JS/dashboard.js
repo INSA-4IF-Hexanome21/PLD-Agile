@@ -105,6 +105,8 @@ function initialiserCarte() {
     maxZoom: 19
   }).addTo(carte);
 
+  
+
   fetch("/api/carte")
     .then(res => {
       if (!res.ok) throw new Error('Erreur API: ' + res.status);
@@ -377,8 +379,6 @@ function creerMarqueurSite(site, type, color, radius) {
     });
     carte._siteLabelZoomHandlerAdded = true;
   }
-
-
 
 
 
@@ -1027,7 +1027,34 @@ fetch('/components/Sidebar.html')
       document.getElementById('btn-calcul')?.classList.add('active');
       chargerComposantPrincipal('/components/Import.html');
     });
-    
+
+      // Botón para añadir livraison
+    document.getElementById('btn-ajouter')?.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-ajouter')?.classList.add('active');
+      
+      // Verificar que estamos en la vista del mapa
+      const mapElement = document.getElementById('map');
+      if (!mapElement || !carte) {
+        alert("⚠️ Veuillez d'abord charger la carte !");
+        document.getElementById('btn-mapa')?.click();
+        setTimeout(() => {
+          if (typeof demarrerAjoutLivraison === 'function') {
+            demarrerAjoutLivraison();
+          }
+        }, 500);
+        return;
+      }
+      
+      // Iniciar modo ajout
+      if (typeof demarrerAjoutLivraison === 'function') {
+        demarrerAjoutLivraison();
+      } else {
+        console.error('❌ Module ajouter.js non chargé');
+        alert('❌ Erreur: Module d\'ajout non disponible');
+      }
+    });
+        
     document.getElementById('btn-estadisticas')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-estadisticas')?.classList.add('active');
@@ -1044,9 +1071,6 @@ fetch('/components/Sidebar.html')
       lancerTelechargement();
     });
 
-    document.getElementById('btn-roadmap')?.addEventListener('click', () => {
-      lancerTelechargement();
-    });
     chargerComposantPrincipal('/components/Map.html');
     attachDropHandlers();
 
