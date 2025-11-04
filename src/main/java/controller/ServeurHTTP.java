@@ -230,29 +230,6 @@ public class ServeurHTTP {
                 byte[] bytes = exchange.getRequestBody().readAllBytes();
                 System.out.println("Bytes recibidos: " + bytes.length);
                 
-                // Obtenir le nom du fichier de l'en-tête
-                String fileName = exchange.getRequestHeaders().getFirst("X-File-Name");
-                if (fileName != null) {
-                    fileName = java.net.URLDecoder.decode(fileName, "UTF-8");
-                    System.out.println("Nombre del archivo: " + fileName);
-                } else {
-                    fileName = "assignation_" + System.currentTimeMillis() + ".xml";
-                    System.out.println("Nombre generado: " + fileName);
-                }
-                
-                
-                // Créer un répertoire s'il n'existe pas
-                File uploadDir = new File(cheminBaseRessources + "calcul");
-                if (!uploadDir.exists()) {
-                    boolean created = uploadDir.mkdirs();
-                    System.out.println("Directorio de demandes creado: " + created);
-                }
-
-                // Enregistrer le fichier
-                File outFile = new File(uploadDir, fileName);
-                Files.write(outFile.toPath(), bytes);
-                System.out.println("Assignation enregistrée dans : " + outFile.getAbsolutePath());
-                
                 // Lancer le calcul de la livraison par le contrôleur
                 System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
                 controller.calculerLivraison();

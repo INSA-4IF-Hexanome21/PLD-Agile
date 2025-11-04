@@ -170,38 +170,6 @@ public class GestionnaireXML {
         }
         return demandeLivraison;
     }
-
-    public static Assignation chargerAssignation(String cheminFichier){
-        Assignation assignation = new Assignation();
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(new File(cheminFichier));
-            document.getDocumentElement().normalize();
-
-            // nbLivreur
-            Element livreurElem = (Element) document.getElementsByTagName("nbLivreur").item(0);
-            int nbLivreur = Integer.parseInt(livreurElem.getAttribute("nb"));
-            assignation.setnbLivreur(nbLivreur);
-
-            // Livraisons
-            NodeList livraisonsXML = document.getElementsByTagName("livraison");
-            for (int i = 0; i < livraisonsXML.getLength(); i++) {
-                Element elem = (Element) livraisonsXML.item(i);
-
-                long livreur = Long.parseLong(elem.getAttribute("livreur"));
-                int idLivraison = Integer.parseInt(elem.getAttribute("id"));
-                
-                assignation.addLivraison(idLivraison, livreur);
-            }
-
-        } catch (Exception e) {
-            System.err.println("Erreur lors du chargement de l'assignation des livraisons : " + e.getMessage());
-            e.printStackTrace();
-        }
-        return assignation;
-    }
-
     // --- Méthode utilitaire ---
     private static Noeud trouverNoeud(String idStr, HashMap<Long, Noeud> mapNoeuds) {
         try {

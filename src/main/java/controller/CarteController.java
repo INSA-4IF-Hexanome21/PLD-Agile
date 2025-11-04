@@ -110,7 +110,7 @@ public class CarteController {
         System.out.println(">>> CarteController: début chargement demandes, effacement des livraisons existantes...");
 
 
-        Assignation assignation = GestionnaireXML.chargerAssignation(cheminFichier);
+        /*Assignation assignation = GestionnaireXML.chargerAssignation(cheminFichier);
         if(assignation == null){
             throw new NullPointerException("Un site de la demande de livraison n'est pas disponible sur le plan actuellement chargé");
         }
@@ -123,7 +123,7 @@ public class CarteController {
             for(Integer id: idLivraison){
                 Integer nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur, id, carte);
             }
-        }
+        }*/
 
         // Livreur livreur1 = new Livreur(1, "Bobard", "Bobert");
         // Livreur livreur2 = new Livreur(2, "Bobert", "Bobard");
