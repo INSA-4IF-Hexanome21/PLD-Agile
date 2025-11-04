@@ -5,30 +5,39 @@ import static org.junit.Assert.*;
 import model.Noeud;
 import model.DemandeLivraison;
 import model.Troncon;
+import model.Site;
+import model.Collecte;
+import model.Entrepot;
 
 import java.util.HashMap;
 import java.util.List;
 import org.junit.Test;
+import org.junit.Before;
+
+import java.time.LocalTime;
 
 public class GestionnaireXMLTest {
+    GestionnaireXML gestionnaire;
+
+    @Before
+    public void TestDeCreationDeGestionnaire(){
+        gestionnaire = new GestionnaireXML();
+    }
+
 
     @Test
     public void chargerPlan_noeudsEtTroncons_petitsFichiers() {
         String cheminPlan = "ressources/fichiersXMLCollecteDepot/petitPlan.xml";
 
-        HashMap<Long, Noeud> mapNoeuds = GestionnaireXML.chargerPlanNoeuds(cheminPlan);
+        HashMap<Long, Noeud> mapNoeuds = gestionnaire.chargerPlanNoeuds(cheminPlan);
         assertNotNull(mapNoeuds);
         assertFalse("La carte doit contenir des noeuds", mapNoeuds.isEmpty());
+        assertEquals("Nombre de noeuds incorrect", 308, mapNoeuds.size());
 
-        // Vérification du nombre attendu de noeuds (exemple : 5)
-        assertEquals("Nombre de noeuds incorrect", 5, mapNoeuds.size());
-
-        List<Troncon> troncons = GestionnaireXML.chargerPlanTroncons(cheminPlan, mapNoeuds);
+        List<Troncon> troncons = gestionnaire.chargerPlanTroncons(cheminPlan, mapNoeuds);
         assertNotNull(troncons);
         assertFalse("Le plan doit contenir des tronçons", troncons.isEmpty());
-
-        // Vérification du nombre attendu de tronçons (exemple : 6)
-        assertEquals("Nombre de tronçons incorrect", 6, troncons.size());
+        assertEquals("Nombre de tronçons incorrect", 616, troncons.size());
     }
     
     @Test
@@ -38,18 +47,56 @@ public class GestionnaireXMLTest {
 
         // Cas 1: format heure H:m:s
         String cheminLivraison1 = "ressources/fichiersXMLCollecteDepot/demandePetit1.xml";
-        DemandeLivraison demande1 = GestionnaireXML.chargerDemandeLivraisons(cheminLivraison1, mapNoeuds);
+        DemandeLivraison demande1 = gestionnaire.chargerDemandeLivraisons(cheminLivraison1, mapNoeuds);
         assertNotNull(demande1);
         assertNotNull(demande1.getSites());
-        //assertNotNull(demande1.getSitesNonAccessibles());
-        // Doit au minimum inclure l'entrepôt dans sites ou non accessibles
-        //assertTrue(demande1.getSites().size() + demande1.getSitesNonAccessibles().size() >= 1);
 
-        // Cas 2: format heure H:m et adresses potentiellement manquantes
-        String cheminLivraison2 = "ressources/fichiersXMLCollecteDepot/myDeliverRequest.xml";
-        DemandeLivraison demande2 = GestionnaireXML.chargerDemandeLivraisons(cheminLivraison2, mapNoeuds);
-        assertNotNull(demande2);
-        // Il devrait y avoir au moins une adresse non accessible dans ce fichier de test
-       // assertTrue(demande2.getSitesNonAccessibles().size() >= 0);
+        //Cas 2: format heure H:m
+        String cheminLivraison2 = "ressources/fichiersXMLCollecteDepot/demandePetit1Test.xml";
+        DemandeLivraison demande2 = gestionnaire.chargerDemandeLivraisons(cheminLivraison2, mapNoeuds);
+        assertNotNull(demande1);
+        assertNotNull(demande1.getSites());
+
+        // Cas 3: adresses manquantes
+        String cheminLivraison3 = "ressources/fichiersXMLCollecteDepot/myDeliverRequest.xml";
+        DemandeLivraison demande3 = gestionnaire.chargerDemandeLivraisons(cheminLivraison3, mapNoeuds);
+        assertNull(demande3);
+
+        //Cas 4: heure invalide
+        String cheminLivraison4 = "ressources/fichiersXMLCollecteDepot/demandePetitTestErr.xml";
+        DemandeLivraison demande4 = gestionnaire.chargerDemandeLivraisons(cheminLivraison4, mapNoeuds);
+        Site e = null;
+        for (Site site : demande4.getSites()) {
+            if (site.getTypeSite()== "entrepot") {
+                e = site;
+                break;
+            }
+        }
+        assertNotNull("L'entrepôt doit exister dans la demande", e);
+        assertEquals("L'heure de départ est correctement mise à jour", LocalTime.of(8, 0), e.getDepartHeure());
+
+        //Cas 5: Collecte Inexistant
+        String cheminLivraison5 = "ressources/fichiersXMLCollecteDepot/demandeCollecteInexistantTest.xml";
+        DemandeLivraison demande5 = gestionnaire.chargerDemandeLivraisons(cheminLivraison5, mapNoeuds);
+        assertNull(demande5);
+
+        //Cas 5: Depot Inexistant
+        String cheminLivraison6 = "ressources/fichiersXMLCollecteDepot/demandeDepotInexistantTest.xml";
+        DemandeLivraison demande6 = gestionnaire.chargerDemandeLivraisons(cheminLivraison6, mapNoeuds);
+        assertNull(demande6);
     }
+
+    @Test
+    public void TestPlanInnexistant() {
+        String cheminPlan = "ressources/fichiersXMLCollecteDepot/fichierInexistant.xml";
+
+        HashMap<Long, Noeud> mapNoeuds = gestionnaire.chargerPlanNoeuds(cheminPlan);
+        assertNotNull(mapNoeuds);
+        assertTrue("La carte doit être vide si le fichier n'existe pas", mapNoeuds.isEmpty());
+
+        List<Troncon> troncons = gestionnaire.chargerPlanTroncons(cheminPlan, mapNoeuds);
+        assertNotNull(troncons);
+        assertTrue("La liste de tronçons doit être vide si le fichier n'existe pas", troncons.isEmpty());
+    }
+
 }
