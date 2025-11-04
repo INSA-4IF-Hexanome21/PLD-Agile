@@ -8,7 +8,6 @@ import model.Noeud;
 import model.Collecte;
 import model.DemandeLivraison;
 import model.Troncon;
-import model.Assignation;
 
 import javax.xml.parsers.*;
 import java.io.File;

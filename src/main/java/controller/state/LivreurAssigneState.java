@@ -5,18 +5,18 @@ import java.util.List;
 
 import controller.CarteController;
 
-public class LivraisonChargeState implements State {
-    // État: livraison chargée - peut recalculer, recharger carte/livraison, ou calculer livraison
+public class LivreurAssigneState implements State {
+    // État: livreur assigné - peut calculer, recharger carte/livraison, réassigner des livreurs ou calculer livraison
     
     @Override
    public boolean chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
-		System.out.println(">>> [LivraisonChargeState] Rechargement de la carte...");
+		System.out.println(">>> [LivreurAssigneState] Rechargement de la carte...");
 		// Nettoyer livraisons et calculs précédents
 		carteC.effacerLivraison();
 		boolean chargementCarteReussi = carteC.chargerCarteDepuisXML(cheminFichier);
         if (chargementCarteReussi == true){
             c.setCurrentState(c.carteChargeState);
-            System.out.println(">>> [LivraisonChargeState] Transition vers CarteChargeState");
+            System.out.println(">>> [LivreurAssigneState] Transition vers CarteChargeState");
             return true;
         } else {
             c.setCurrentState(c.initialState);
@@ -26,17 +26,17 @@ public class LivraisonChargeState implements State {
 
   @Override
     public boolean chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
-        System.out.println(">>> [LivraisonChargeState] Rechargement de la livraison...");
+        System.out.println(">>> [LivreurAssigneState] Rechargement de la livraison...");
 
         // Effacer la livraison précédente avant de charger la nouvelle
-        System.out.println(">>> [LivraisonChargeState] Effacement des livraisons précédentes...");
+        System.out.println(">>> [LivreurAssigneState] Effacement des livraisons précédentes...");
         carteC.effacerLivraison();
 
         // Charger la nouvelle demande (idempotent après effacerLivraison)
         boolean chargementLivrasonReussi = carteC.chargerDemandesDepuisXML(cheminFichier);
         if (chargementLivrasonReussi == true){
             c.setCurrentState(c.livraisonChargeState);
-            System.out.println(">>> [LivraisonChargeState] Transition vers LivraisonChargeState");
+            System.out.println(">>> [LivreurAssigneState] Transition vers LivraisonChargeState");
             return true;
         } else {
             c.setCurrentState(c.carteChargeState);
@@ -48,20 +48,32 @@ public class LivraisonChargeState implements State {
     public void assignerLivreur(Controller c, CarteController carteC, HashMap<String, List<String>> assignations) {
         carteC.assignerLivreurs(assignations);
         c.setCurrentState(c.livreurAssigneState);
-        System.out.println(">>> [LivraisonChargeState] Transition vers LivreurAssigneState");
+        System.out.println(">>> [LivreurAssigneState] Transition vers LivreurAssigneState");
     }
 
 
 
     @Override
     public void calculerLivraison(Controller c, CarteController carteC) {
-        System.err.println(">>> [InitialState] ERREUR: Impossible de calculer sans carte et livraison!");
-        throw new IllegalStateException("Veuillez d'abord charger une carte et une livraison");
+        System.out.println(">>> [LivreurAssigneState] Calcul de la livraison...");
+
+        //Calcul la tournée
+        try {
+            System.out.println(">>> [LivreurAssigneState] Lancement du calcul de la tournée...");
+            carteC.calculerTournee(); 
+            c.setCurrentState(c.livraisonCalculeState);
+            System.out.println(">>> [LivreurAssigneState] Calcul terminé, transition vers LivraisonCalculeState");
+        } catch (Exception ex) {
+            System.err.println(">>> [LivreurAssigneState] ERREUR pendant le calcul: " + ex.getMessage());
+            throw new RuntimeException("Erreur lors du calcul de la tournée : " + ex.getMessage(), ex);
+        }
+        c.setCurrentState(c.livraisonCalculeState);
+        System.out.println(">>> [LivreurAssigneState] Transition vers LivraisonCalculeState");
     }
     
     @Override
     public void changerLivraison(Controller c) {
-        System.err.println(">>> [LivraisonChargeState] ERREUR: Impossible de changer une livraison sans calcul!");
+        System.err.println(">>> [LivreurAssigneState] ERREUR: Impossible de changer une livraison sans calcul!");
         throw new IllegalStateException("Veuillez d'abord calculer la livraison");
     }
 }

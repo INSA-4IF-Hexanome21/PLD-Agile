@@ -258,7 +258,7 @@ function crearZoneLivreur(numero) {
       mostrarLivraisonsDisponibles(livraisonsData);
       
       // Enviar al backend
-      assignerLivraisonAuLivreur(livraisonId, numero);
+      //assignerLivraisonAuLivreur(livraisonId, numero);
     }
   });
   

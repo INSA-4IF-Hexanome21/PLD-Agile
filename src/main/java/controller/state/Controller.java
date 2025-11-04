@@ -1,15 +1,22 @@
 package controller.state;
 
+
+import java.util.HashMap;
+import java.util.List;
+
 import controller.CarteController;
 
 public class Controller{
 	private State currentState;
 	private CarteController carteController;
+	
+	private int verifAssignation; //VerifAssignation : temp, juste pour pouvoir tester une fois (et une seule avant de devoir recompiler)
 
      // Instances associées avec chaque état possible du controlleur 
 	protected final InitialState initialState = new InitialState();
 	protected final CarteChargeState carteChargeState = new CarteChargeState();
 	protected final LivraisonChargeState livraisonChargeState = new LivraisonChargeState();
+	protected final LivreurAssigneState livreurAssigneState = new LivreurAssigneState();
 	protected final LivraisonCalculeState livraisonCalculeState = new LivraisonCalculeState();
 
     /**
@@ -19,6 +26,7 @@ public class Controller{
 	public Controller() {
 		currentState = initialState;
 		carteController = new CarteController();
+		verifAssignation = 0; 
 	}
 
     /**
@@ -52,10 +60,14 @@ public class Controller{
     }
 
 	/**
-	 * Méthode pour calculer une livraison
+	 * Méthode pour assigner les livraisons aux livreurs
+	 * VerifAssignation : temp, juste pour pouvoir tester une fois (et une seule avant de devoir recompiler)
 	 */
-	public void assignerLivreur(){
-		currentState.assignerLivreur(this, carteController);
+	public void assignerLivreur(HashMap<String, List<String>> assignations){
+		if (verifAssignation == 0){
+			currentState.assignerLivreur(this, carteController, assignations);
+			verifAssignation ++;
+		} 
 	}
 
 	/**

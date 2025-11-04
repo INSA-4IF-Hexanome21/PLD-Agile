@@ -66,13 +66,15 @@ public class Configuration {
             for(int i = livreurs.size() - 1;i>=nbLiv;--i){
                 livreurs.remove(i);
             }
+            this.nbLivreurs=nbLiv;
             return true;
         }
         else{
-            for(int i = this.nbLivreurs - 1;i<nbLiv;++i){
+            for(int i = this.nbLivreurs;i<nbLiv+1;++i){
                 Livreur livreur = obtenirNouveauLivreur(i);
                 livreurs.add(livreur);
             }
+            this.nbLivreurs=nbLiv;
             return true;
         }
     }
@@ -83,6 +85,11 @@ public class Configuration {
 
     public Livreur getLivreurbyId(Integer id){
         return this.livreurs.get(id);
+    }
+
+    public String getNomPrenom(Integer id){
+        Livreur nom = this.livreurs.get(id);
+        return nom.getNom();
     }
     
 

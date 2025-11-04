@@ -1,5 +1,8 @@
 package controller.state;
 
+import java.util.HashMap;
+import java.util.List;
+
 import controller.CarteController;
 
 public class InitialState implements State {
@@ -37,7 +40,7 @@ public class InitialState implements State {
     }
 
     @Override
-    public void assignerLivreur(Controller c, CarteController carteC) {
+    public void assignerLivreur(Controller c, CarteController carteC, HashMap<String, List<String>> assignations) {
         System.err.println(">>> [InitialState] ERREUR: Impossible de changer une livraison sans calcul!");
         throw new IllegalStateException("Veuillez d'abord charger une carte et une livraison");
     }
