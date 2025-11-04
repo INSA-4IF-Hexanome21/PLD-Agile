@@ -5,7 +5,7 @@ let lignes = [];
 let siteMarkers = [];
 let noeudMarkers = [];
 let tronconLines = [];
-let trajetLines = [];
+let trajetLines = {};
 let donneesGlobales = null;
 
 const COULEURS_SITES = {
@@ -21,7 +21,8 @@ const visibilityState = {
   collecte: true,
   depot: true,
   noeuds: true,
-  troncons: true
+  troncons: true,
+  trajets: true
 };
 
 /* //! ----------------- UTILIDADES / INIT ----------------- */
@@ -176,40 +177,45 @@ function afficherDonneesSurCarte(donnees) {
 
     // 4.trajets (si hay)
     console.log('Trajets reçus:', donnees.trajets);
-    if (donnees.trajets && donnees.trajets.length > 0) {
-      donnees.trajets.forEach((trajet) => {
-        const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.from);
-        const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.to);
-        if (depart && arrivee) {
-          const ligne = L.polyline(
-            [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
-            { color: '#00c82bff', weight: 5, opacity: 1, smoothFactor: 1 }
-          ).addTo(carte);
-          
-          // Ajouter le décorateur pour les flèches
-          const decorator = L.polylineDecorator(ligne, {
-            patterns: [
-              {
-                offset: '50%', // Position de la flèche (milieu de la ligne)
-                repeat: 0, // Ne pas répéter la flèche
-                symbol: L.Symbol.arrowHead({
-                  pixelSize: 15, // Taille de la flèche en pixels
-                  polygon: false,
-                  pathOptions: {
-                    stroke: true,
-                    color: '#0a6a1fff',
-                    weight: 1.5
-                  }
-                })
-              }
-            ]
-          }).addTo(carte);
+    if (donnees.trajets) {
+      for (const key in donnees.trajets) {
+        const color = getRandomHexColor();
+        trajetLines[key] = [];
+        donnees.trajets[key].forEach((trajet) => {
 
-          ligne.bindPopup(`<strong>Trajet</strong><br>De: ${trajet.from}<br>À: ${trajet.to}`);
-          trajetLines.push(ligne);
-          trajetLines.push(decorator); 
-        }
-      })
+          const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.from);
+          const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.to);
+          if (depart && arrivee) {
+            const ligne = L.polyline(
+              [[depart.lat, depart.lng], [arrivee.lat, arrivee.lng]],
+              { color: color, weight: 3, opacity: 0.8, smoothFactor: 1 }
+            ).addTo(carte);
+            
+            // Ajouter le décorateur pour les flèches
+            const decorator = L.polylineDecorator(ligne, {
+              patterns: [
+                {
+                  offset: '50%', // Position de la flèche (milieu de la ligne)
+                  repeat: 0, // Ne pas répéter la flèche
+                  symbol: L.Symbol.arrowHead({
+                    pixelSize: 15, // Taille de la flèche en pixels
+                    polygon: false,
+                    pathOptions: {
+                      stroke: true,
+                      color: color,
+                      weight: 1
+                    }
+                  })
+                }
+              ]
+            }).addTo(carte);
+
+            ligne.bindPopup(`<strong>Trajet</strong><br>De: ${trajet.from}<br>À: ${trajet.to}`);
+            trajetLines[key].push(ligne);
+            trajetLines[key].push(decorator); 
+          }
+        })
+      }
     }
     // resize al zoom (solo una vez)
     if (!carte._siteZoomHandlerAdded) {
@@ -228,6 +234,43 @@ function afficherDonneesSurCarte(donnees) {
     }
   } catch (e) {}
 }
+
+function attachSiteHoverHandlers() {
+  if (!Array.isArray(siteMarkers) || !carte) return;
+
+  siteMarkers.forEach(marker => {
+    if (marker._siteHandlersAttached) return;
+    marker._siteHandlersAttached = true;
+
+    marker.on('click', () => {
+      const numLivraison = marker.options.numLivraison;
+      if (numLivraison == null) return;
+
+      const jumeau = siteMarkers.find(m => m !== marker && m.options.numLivraison === numLivraison);
+      if (!jumeau) return;
+
+      const originalColor = jumeau.options.fillColor || '#3388ff';
+      const originalWeight = jumeau.options.weight || 2;
+
+      // Cambio instantáneo de color y grosor
+      jumeau.setStyle({
+        color: '#ff6600',
+        fillColor: '#ff6600',
+        weight: 4
+      });
+
+      // Regreso inmediato al estado original (sin animación ni delay largo)
+      setTimeout(() => {
+        jumeau.setStyle({
+          color: '#ffffff',
+          fillColor: originalColor,
+          weight: originalWeight
+        });
+      }, 250);
+    });
+  });
+}
+
 
 function attachSiteHoverHandlers() {
   if (!Array.isArray(siteMarkers) || !carte) return;
@@ -376,41 +419,43 @@ function creerMarqueurSite(site, type, color, radius) {
 
   marker.options.siteType = type;
   marker.options.siteId = site.id;
+  if(site.type === 'entrepot'){
+    if(site.heures.length == 0){
+      marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+      var html = `<strong style="color:${color}">${type} ${site.id}</strong>
+        <br>Heure de départ: 08:00`
+      marker.bindPopup(html);
+    }
+    else{
+      marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
+      var html = `<strong style="color:${color}">${type} ${site.id}</strong>
+        <br>Heure de départ: 08:00
+        <br>Heures arrivées : `
+      var i = 1;
+      site.heures.forEach(function (heure){
+        console.log(heure);
+        html += `<br>-Trajet ${i} : ${heure}`;
+        i+=1;
+      });
+      marker.bindPopup(html);
+    }
+  }
 
-  if ((site.arrivee == null || site.arrivee === '')) {
-  if (site.type === 'entrepot') {
-
-    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
-    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
-      <br>Heure d'arrivée: Pas encore calculée
-      <br>Heure de départ: 8:00
-      `);
-    
-  } else  {
+  else if ((site.arrivee == null || site.arrivee === '')) {
+  
     marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
     marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
       <br>Heure d'arrivée: Pas encore calculée
       <br>Heure de départ: Pas encore calculée
       `);
-
-  } } else  {
-
-    if (site.type === 'entrepot') {
-
-    marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
-    marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
-      <br>Heure d'arrivée: ${site.arrivee}
-      <br>Heure de départ: 8:00
-      `);
-    
-  } else  {
+  } 
+  else  {
     marker.bindTooltip(`${site.id}`, { permanent: false, direction: 'top', offset: [0, -radius - 6] });
     marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
       <br>Heure d'arrivée: ${site.arrivee}
       <br>Heure de départ: ${site.depart} 
       `);
   }
-}
   
   marker.on('click', () => {
     try {
@@ -425,6 +470,9 @@ function creerMarqueurSite(site, type, color, radius) {
 }
 
 /* //! ----------------- PANE / HOVER / DIM ----------------- */
+function getRandomHexColor() {
+  return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+}
 
 function ensureSitePane() {
   if (!carte) return;
@@ -495,6 +543,18 @@ function updateVisibility() {
       if (carte.hasLayer(line)) carte.removeLayer(line);
     }
   });
+
+  // FR: Gestion de la visibilité des trajets
+  for (const key in trajetLines) {
+    const trajet = trajetLines[key]; 
+    trajet.forEach((t) => {
+      if (visibilityState.trajets) {
+        if (!carte.hasLayer(t)) t.addTo(carte);
+      } else {
+        if (carte.hasLayer(t)) carte.removeLayer(t);
+      }
+    })
+  };
 }
 
 function configurerControlesVisibilite() {
@@ -530,6 +590,101 @@ function configurerControlesVisibilite() {
     });
   }
 
+  // FR: Toggle pour les trajets
+  const tTraj = document.getElementById('toggle-trajets');
+  if (tTraj) {
+    tTraj.checked = visibilityState.trajets;
+    tTraj.addEventListener('change', (e) => {
+      visibilityState.trajets = e.target.checked;
+      updateVisibility();
+    });
+  }
+
+  // FR: Créer un contrôle Leaflet flottant pour les trajets
+  L.Control.TrajetsFlottant = L.Control.extend({
+    onAdd: function(map) {
+      const container = L.DomUtil.create('div', 'control-trajets');
+      
+      // En-tête
+      const header = L.DomUtil.create('div', 'trajets-header', container);
+      header.innerHTML = '<strong>Gestion des trajets</strong>';
+      
+      // Corps avec les contrôles
+      const body = L.DomUtil.create('div', 'trajets-body', container);
+      
+      if (Object.keys(trajetLines).length === 0) {
+        const emptyBody = L.DomUtil.create('div', 'empty-body', body);
+        emptyBody.innerHTML = " Aucun trajet disponible. ";
+      }
+      else {
+        // Conteneur des sous-trajets
+        const controlContainer = L.DomUtil.create('div', 'trajets-list', body);
+        controlContainer.id = 'trajet-controls-floating';
+        
+        // Générer les checkboxes pour chaque trajet
+        for(const key in trajetLines) {
+          const trajet = trajetLines[key];
+          const index = parseInt(key,10)+1
+          
+          const trajetItem = L.DomUtil.create('div', 'control-row trajet-item', controlContainer);
+          const label = L.DomUtil.create('label', '', trajetItem);
+          label.setAttribute('for', `trajet-${index}`);
+          
+          const checkbox = L.DomUtil.create('input', '', label);
+          checkbox.type = 'checkbox';
+          checkbox.id = `trajet-${index}`;
+          checkbox.checked = true;
+          checkbox.disabled = tTraj && !tTraj.checked;
+          
+          label.appendChild(document.createTextNode(` Trajet ${index}`));
+          
+          // Event listener pour afficher/masquer le trajet
+          checkbox.addEventListener('change', (e) => {
+            trajet.forEach((t) => {
+              if (e.target.checked) {
+                t.addTo(carte);
+              } else {
+                carte.removeLayer(t);
+              }
+            });
+          });
+        }
+      }
+      
+      
+      // Synchronisation dynamique du disabled sur le toggle principal
+      if (tTraj) {
+        tTraj.addEventListener('change', () => {
+          const condition = !tTraj.checked;
+          document.querySelectorAll('[id^="trajet-"]').forEach(input => {
+            input.disabled = condition;
+            if (condition && !input.checked) {
+              input.checked = true;
+            }
+          });
+        });
+      }
+      
+      // Empêcher la propagation des événements
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+      
+      return container;
+    },
+    
+    onRemove: function(map) {
+      // Nettoyage si nécessaire
+    }
+  });
+
+  // Créer la fonction d'initialisation
+  L.control.trajetsFlottant = function(opts) {
+    return new L.Control.TrajetsFlottant(opts);
+  };
+
+  // Ajouter le contrôle à la carte
+  L.control.trajetsFlottant({ position: 'topright' }).addTo(carte);
+
   // FR: Bouton pour recentrer la vue (utilise donneesGlobales)
   const btnReset = document.getElementById('btn-reset-view');
   if (btnReset) {
@@ -549,11 +704,11 @@ function configurerControlesVisibilite() {
   const btnToggleAll = document.getElementById('btn-toggle-all');
   if (btnToggleAll) {
     btnToggleAll.addEventListener('click', () => {
-      const all = ['entrepot','collecte','depot','noeuds','troncons'].every(k => visibilityState[k] === true);
+      const all = ['entrepot','collecte','depot','noeuds','troncons','trajets'].every(k => visibilityState[k] === true);
       const newState = !all;
       Object.keys(visibilityState).forEach(k => visibilityState[k] = newState);
       // FR: mettre à jour l'état visuel des checkboxes si elles existent
-      ['entrepot','collecte','depot','noeuds','troncons'].forEach(k => {
+      ['entrepot','collecte','depot','noeuds','troncons','trajets'].forEach(k => {
         const el = document.getElementById(`toggle-${k}`);
         if (el) el.checked = visibilityState[k];
       });
@@ -627,6 +782,73 @@ function lancerCalcul() {
         });
     };
 
+function lancerTelechargement() {  
+  console.log("Téléchargement roadmap");
+  var trajetsAffiches = getTrajetAffiches();
+  var params = "?"
+  if (trajetsAffiches.length === 0) return;
+  if (trajetsAffiches.length === 1) {
+    params += `file=${trajetsAffiches}.txt`;
+  } 
+  else {
+    params += "files=";
+    var firstT = true;
+    trajetsAffiches.forEach(t => {
+      params += t + ".txt";
+      if (firstT) {
+        params += ',';
+        firstT = false;
+      }
+    });
+  } 
+
+  const endpoint = `/api/roadmap${params}`; 
+  fetch(endpoint)
+        .then(res => {
+            if (!res.ok) throw new Error("Erreur serveur");
+            // Récupérer le nom du fichier depuis les headers
+            const disposition = res.headers.get("Content-Disposition");
+            let filename = "roadmap"; // valeur par défaut
+            
+            if (disposition && disposition.includes("filename=")) {
+              filename = disposition.split("filename=")[1].replace(/["']/g, "");
+            } else {
+              // Si pas de nom dans les headers, deviner le type à partir du mime
+              const contentType = res.headers.get("Content-Type");
+              if (contentType === "application/zip") filename += ".zip";
+              else if (contentType === "text/plain") filename += ".txt";
+              else filename += ".dat"; // fallback
+            }
+
+            return res.blob().then(blob => ({ blob, filename }));
+        })
+        .then(blob => {
+            const url = URL.createObjectURL(blob.blob);
+            const a = document.createElement("a");
+            a.href = url;
+            //a.download = `Bobard_Bobert.txt`; // nom du fichier
+            a.download = blob.filename;
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url); // nettoyer
+        })
+        .catch(err => {
+            console.error("❌ Erreur téléchargement:", err);
+            alert("Erreur lors du téléchargement: " + err.message);
+        });
+
+}
+
+function getTrajetAffiches() {
+  var lTrajAff = new Array();
+  var cond = document.getElementById('toggle-trajets').checked;
+  document.querySelectorAll('[id^="trajet-"]').forEach(input => {
+    if (cond && input.checked) lTrajAff.push(input.id);
+  });
+
+  return lTrajAff ;
+}
+
 function nettoyerCarte() {
   if (carte !== null) {
     try { carte.off(); carte.remove(); } catch (e) { console.warn('Erreur nettoyage carte:', e); }
@@ -636,6 +858,7 @@ function nettoyerCarte() {
   siteMarkers = [];
   noeudMarkers = [];
   tronconLines = [];
+  trajetLines = {};
   donneesGlobales = null;
 }
 
@@ -788,6 +1011,10 @@ fetch('/components/Sidebar.html')
     document.getElementById('btn-calcul')?.addEventListener('click', () => {
       lancerCalcul();
       chargerComposantPrincipal('/components/Map.html');
+    });
+
+    document.getElementById('btn-roadmap')?.addEventListener('click', () => {
+      lancerTelechargement();
     });
 
     chargerComposantPrincipal('/components/Map.html');

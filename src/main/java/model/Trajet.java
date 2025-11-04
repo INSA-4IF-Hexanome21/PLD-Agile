@@ -1,19 +1,33 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Trajet {
 
     // Attributs
     private Livreur livreur;
     private List<Site> sites;
-    private List<Site> nonAccessibles;
+    private HashMap<Site, Long> sitesImpactes;
     private List<Troncon> troncons;
     private Float dureeTrajet;
     private LocalTime heureDebut;
     private LocalTime heureFin;
+    private Integer numTrajet;
+    private static Integer numTrajetTotal = 1;
+
+    private List<Long> cheminComplet;
+    private List<Long> solution;
 
 
     // Constructeur complet
@@ -21,20 +35,22 @@ public class Trajet {
         this.livreur = livreur;
         this.sites = new ArrayList<>();
         this.troncons = new ArrayList<>();
-        this.nonAccessibles = new ArrayList<>();
+        this.sitesImpactes = new HashMap<>();
         this.dureeTrajet = null;
         this.heureDebut = LocalTime.of(8, 00); //On part toujours de l'entrpôt à 8h
         this.heureFin = null;
+        this.numTrajet = numTrajetTotal++;
     }
     // Constructeur incomplet
     public Trajet() {
         this.livreur = null;
         this.sites = new ArrayList<>();
         this.troncons = new ArrayList<>();
-        this.nonAccessibles = new ArrayList<>();
+        this.sitesImpactes = new HashMap<>();
         this.dureeTrajet = null;
         this.heureDebut = LocalTime.of(8, 00); //On part toujours de l'entrpôt à 8h
         this.heureFin = null;
+        this.numTrajet = numTrajet++;
     }
 
     // Getters et Setters
@@ -69,8 +85,16 @@ public class Trajet {
         return sites;
     }
 
-    public List<Site> getSitesNonAccessibles(){
-        return nonAccessibles;
+    public void addSite(Site site){
+        sites.add(site);
+    }
+
+    public void removeSite(Site site) {
+        sites.remove(site);
+    }
+
+    public HashMap<Site,Long> getSitesImpactes(){
+        return this.sitesImpactes;
     }
 
     public List<Troncon> getTroncons() {
@@ -79,6 +103,41 @@ public class Trajet {
 
     public void setTroncons(List<Troncon> troncons) {
         this.troncons = troncons;
+    }
+
+    public void setSolution(List<Long> solution) {
+        this.solution = solution;
+    }
+
+    public void setCheminComplet(List<Long> cheminComplet) {
+        this.cheminComplet = cheminComplet;
+    }
+
+    public void setSitesImpactes(HashMap<Site,Long> sites) {
+        this.sitesImpactes = sites;
+    }
+    
+    public Integer getNumTrajet() {
+        return numTrajet;
+    }
+
+    public List<Long> getSolution() {
+        return this.solution;
+    }
+
+    public List<Long> getCheminComplet() {
+        return this.cheminComplet;
+    }
+
+    public Site getSite(Long id){
+        Site siteTrouve = null;
+        for(Site site: sites){
+            if(site.getId() == id){
+                siteTrouve = site;
+                break;
+            }
+        }
+        return siteTrouve;
     }
 
     @Override
@@ -100,5 +159,70 @@ public class Trajet {
         
         sb.append("\n}");
         return sb.toString();
+    }
+
+    public void genererFeuilleDeRoute(){
+
+        LocalDate localDate = LocalDate.now(ZoneId.of("Europe/Paris"));//For reference
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String date = localDate.format(formatter);
+
+        String rueActuelle = null;
+        Float longueur = null;
+
+        String data = "Feuille de route " + date + "\n\n";
+        data += this.livreur + "\n";
+        data += "Trajet à effectuer : \n\n";
+        data += "Départ de l'entrepôt (" + troncons.get(0).getOrigine().getId() + ") à 08:00\n";
+        
+        for(Troncon troncon : this.troncons){
+            if(rueActuelle != null && !(troncon.getNomRue().equals(rueActuelle))){
+                data += rueActuelle + " sur " + longueur.intValue() + " m\n";
+            }
+            if(!(troncon.getNomRue().equals(rueActuelle))){
+                rueActuelle = troncon.getNomRue();
+                if(rueActuelle.equals("")){
+                    rueActuelle = "Rue non référencée";
+                }
+                longueur = troncon.getLongueur();
+            }
+            else{
+                longueur += troncon.getLongueur();
+            }
+            
+            //On vérifie si le lieu de destination est un site
+            Site site = getSite(troncon.getDestination().getId());
+            if( site != null && !(site instanceof Entrepot)){
+                data += rueActuelle + " sur " + longueur.intValue() + " m\n";
+                data += "Arrivée sur le lieu de " + site.getTypeSite() + " (" + site.getId()+") à " + site.getArriveeHeure() + "\n";
+                data += "Départ du lieu de " + site.getTypeSite() + " (" + site.getId()+") à " + site.getDepartHeure() + "\n";
+                rueActuelle = null;
+                longueur = 0f;
+            }
+        }
+        data += rueActuelle + " sur " + longueur.intValue() + " m\n";
+        data += "Arrivée à l'entrepôt (" + troncons.get(0).getOrigine().getId() + ") à " + this.heureFin + "\n\n";
+        data += "Temps total du trajet : " + this.dureeTrajet.intValue() + ":" + (int)((this.dureeTrajet%1)*60) + "h";
+
+        try {
+            // create a FileWriter object with the file name
+            Path dossier = Paths.get("ressources/downloads/");
+            if (!Files.exists(dossier)) {
+                Files.createDirectories(dossier);
+            }
+            FileWriter writer = new FileWriter("ressources/downloads/trajet-" + numTrajet + ".txt");
+
+            // write the string to the file
+            writer.write(data);
+
+            // close the writer
+            writer.close();
+
+            // System.out.println("Successfully wrote text to file.");
+
+        } catch (IOException e) {
+            System.out.println("Erreur dans l'écriture du fichier");
+            e.printStackTrace();
+        }
     }
 }
