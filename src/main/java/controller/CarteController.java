@@ -449,4 +449,10 @@ public class CarteController {
     public void undo() { history.undo(); }
 
     public void redo() { history.redo(); }
+
+    public void genererFeuillesdeRoute(){
+        for(Trajet trajet: this.getCarte().getTrajets()){
+            trajet.genererFeuilleDeRoute();
+        }
+    }
 }

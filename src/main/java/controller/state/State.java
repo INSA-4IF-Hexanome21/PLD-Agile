@@ -36,6 +36,12 @@ public interface State {
     public default void changerLivraison(Controller c) {}
 
     /**
+     * Méthode appelée par le controlleur pour changer l'emplacement d'une livraison
+     * @param c le controlleur
+     */
+    public default void genererFeuillesdeRoute(Controller c, CarteController carteC) {}
+
+    /**
      * Méthode pour obtenir le JSON de la carte
      * @param c le controlleur
      * @param carteC le controlleur de carte
