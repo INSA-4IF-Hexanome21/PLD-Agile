@@ -1,34 +1,80 @@
-#livraison-container {
-  display: flex;
-  flex-direction: column;
+#deliverer {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.deliverer-header {
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  margin-bottom: 0.5rem;
+}
+
+#btn-generate-zones {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.livraisons-container {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: #f7fafc;
+  border-radius: 6px;
+}
+
+.livraison-card {
+  background: white;
+  border: 2px solid #e2e8f0;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  border-radius: 4px;
+  cursor: move;
+  transition: all 0.2s;
+}
+
+.livraison-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.livraison-card.dragging {
+  opacity: 0.5;
+}
+
+.livreurs-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
-  padding: 1rem;
+  margin-top: 1rem;
 }
 
-.column {
-  border: 2px dashed #ccc;
-  border-radius: 12px;
-  padding: 1rem;
-  min-height: 150px;
-  transition: border-color 0.3s;
+.livreur-zone {
+  background: #f7fafc;
+  border: 2px dashed #cbd5e0;
+  border-radius: 6px;
+  padding: 0.75rem;
 }
 
-.dropZone {
+.dropzone-content {
   min-height: 100px;
-  border: 1px dashed #aaa;
-  border-radius: 8px;
   padding: 0.5rem;
-  background-color: #fafafa;
 }
 
-.dragElement {
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  padding: 0.5rem;
-  cursor: grab;
+.dropzone-content.dragover {
+  background: #edf2f7;
+  border: 2px dashed #667eea;
 }
 
-.hoverOver {
-  border-color: #3498db;
-  background-color: #ecf6fd;
+.empty-state {
+  color: #a0aec0;
+  text-align: center;
+  font-size: 0.875rem;
 }
+
