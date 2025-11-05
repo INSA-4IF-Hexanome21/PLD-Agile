@@ -303,7 +303,19 @@ public class ServeurHTTP {
                         }
                     }
                 }
-
+                
+                 // Vérifier si assignations est vide
+                boolean empty = assignations.isEmpty() || assignations.values().stream().allMatch(List::isEmpty);
+                if (empty) {
+                    String errorResponse = "{\"status\":\"error\",\"message\":\"Aucune assignation fournie\"}";
+                    byte[] errorBytes = errorResponse.getBytes("UTF-8");
+                    exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                    exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                    exchange.sendResponseHeaders(400, errorBytes.length);
+                    exchange.getResponseBody().write(errorBytes);
+                    exchange.close();
+                    return;
+                }
                 // Por ahora solo log
                 System.out.println("Assignations reçues: " + assignations);
 

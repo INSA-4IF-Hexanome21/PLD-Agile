@@ -32,12 +32,18 @@ function envoyerAssignations() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(assignationsState)
   })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ Assignations envoyées:', data);
+  .then(res => res.json().then(data => ({ ok: res.ok, data })))
+  .then(({ ok, data }) => {
+      if (!ok) {
+          console.error('❌ Erreur assignations:', data.message);
+          return;
+      }
+
+      console.log('✅ Assignations envoyées:', data);
+      document.getElementById('envoyer-assignations').style.display = 'none';
   })
   .catch(err => {
-    console.error('❌ Erreur lors de l’envoi des assignations:', err);
+      console.error('❌ Erreur lors de l’envoi des assignations:', err);
   });
 }
 
