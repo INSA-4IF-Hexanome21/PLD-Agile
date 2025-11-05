@@ -1,6 +1,3 @@
-// --- ajouter.js ---
-// Gestion de l'ajout interactif de livraisons
-
 let modeAjoutActif = false;
 let etapeAjout = 0;
 let selectionData = {
@@ -10,9 +7,8 @@ let selectionData = {
   depotSitePrecedent: null
 };
 
-// Overlay d'instructions sur la carte
 let instructionOverlay = null;
-let highlightedMarkers = []; // Pour trackear markers resaltados
+let highlightedMarkers = []; 
 
 const ETAPES = [
   { 
@@ -182,7 +178,7 @@ function highlightAvailableMarkers() {
         console.warn('Erreur highlight noeud:', e);
       }
     } else {
-      // Highlight sites - AUGMENTER EL TAMAÑO
+      // Highlight sites
       try {
         if (marker.setStyle && marker.setRadius) {
           const originalColor = marker.options.fillColor;
@@ -190,7 +186,6 @@ function highlightAvailableMarkers() {
           marker._originalFillColor = originalColor;
           marker._originalRadius = originalRadius;
           
-          // AUMENTAR tamaño significativamente
           const newRadius = Math.max(originalRadius * 2, 16);
           marker.setRadius(newRadius);
           
@@ -202,7 +197,6 @@ function highlightAvailableMarkers() {
           });
           marker.setZIndexOffset(5000);
           
-          // Actualizar tooltip con nuevo offset
           const tip = marker.getTooltip && marker.getTooltip();
           if (tip) {
             const content = tip.getContent ? tip.getContent() : (marker.options && marker.options.siteId ? marker.options.siteId : '');
@@ -225,13 +219,12 @@ function highlightAvailableMarkers() {
 }
 
 /**
- * Limpia los highlights
+Restaure les styles originaux des marqueurs mis en évidence
  */
 function clearHighlights() {
   highlightedMarkers.forEach(marker => {
     try {
       if (marker.setStyle && marker._originalFillColor) {
-        // Restaurar sites
         const originalRadius = marker._originalRadius || computeSiteRadius(carte);
         if (marker.setRadius) {
           marker.setRadius(originalRadius);
@@ -245,7 +238,7 @@ function clearHighlights() {
         });
         marker.setZIndexOffset(0);
         
-        // Restaurar tooltip
+
         const tip = marker.getTooltip && marker.getTooltip();
         if (tip) {
           const content = tip.getContent ? tip.getContent() : (marker.options && marker.options.siteId ? marker.options.siteId : '');
@@ -257,7 +250,6 @@ function clearHighlights() {
           });
         }
       } else if (marker._originalStyle) {
-        // Restaurar nœuds
         const iconElement = marker.getElement();
         if (iconElement) {
           const noeudDiv = iconElement.querySelector('.marqueur-noeud');
@@ -337,17 +329,15 @@ function gererClicMarqueur(marker, type) {
     }, 500);
   }
   
-  // Nettoyer highlights actuels avant de passer à l'étape suivante
+
   clearHighlights();
-  
-  // Passer à l'étape suivante
   etapeAjout++;
   
   if (etapeAjout >= ETAPES.length) {
     terminerAjout();
   } else {
     mettreAJourInstructions();
-    // Attendre un peu pour que le feedback visuel soit visible
+
     setTimeout(() => {
       highlightAvailableMarkers();
     }, 100);
@@ -397,7 +387,6 @@ function demarrerAjoutLivraison() {
     container.classList.add('mode-ajout-actif');
   }
   
-  // listeners avant de highlihgt peut etre?
   activerEcouteursMarqueurs();
   highlightAvailableMarkers();
   
@@ -502,7 +491,7 @@ function desactiverEcouteursMarqueurs() {
   if (Array.isArray(siteMarkers)) {
     siteMarkers.forEach(marker => {
       marker.off('click');
-      // Reattacher el handler normal si existe
+      // Reattacher el handler normal si ca existe
       if (marker._normalClickHandler) {
         marker.on('click', marker._normalClickHandler);
       }
@@ -540,10 +529,10 @@ function terminerAjout() {
     container.classList.remove('mode-ajout-actif');
   }
   
-  // Désactiver les écouteurs
+
   desactiverEcouteursMarqueurs();
   
-  // Déterminer le trajet à partir du site précédent de la collecte
+  // Déterminer le trajet à partir du site précédent de la collecte (j'ai laisse ca pour l'avoir quand on fixe les autres bugs)
   let numeroTrajet = null;
   if (selectionData.collecteSitePrecedent) {
     // Chercher le numéro de livraison/trajet du site précédent
