@@ -126,7 +126,7 @@ public class CarteController {
 
                 Integer idLivraison = Integer.parseInt(e.getValue().get(i));
                 System.out.println("Id : " + idLivraison);
-                // Integer nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(config.getLivreurbyId(idLivreur), idLivraison, carte);
+                demandeLivraison.assignerLivreur(config.getLivreurbyId(idLivreur), idLivraison, carte);
 
                 System.out.println(">>> CarteController: Trajets" + this.getCarte().getTrajets().getLast().getLivreur().getNom());
                 System.out.println(">>> CarteController: Sites" + this.getCarte().getTrajets().getLast().getSites());
