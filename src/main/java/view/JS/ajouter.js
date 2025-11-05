@@ -115,13 +115,13 @@ function mettreAJourInstructions() {
   if (recapEl) {
     let html = '<small><strong>Sélections:</strong></small><ul class="recap-list">';
     if (selectionData.collecteNoeud) 
-      html += `<li>✅ Nœud collecte: <code>${selectionData.collecteNoeud.options.siteId || 'N/A'}</code></li>`;
+      html += `<li>✅ Nœud collecte: <code>${selectionData.collecteNoeud.siteId || 'N/A'}</code></li>`;
     if (selectionData.collecteSitePrecedent) 
-      html += `<li>✅ Site précédent collecte: <code>${selectionData.collecteSitePrecedent.options.siteId || 'N/A'}</code></li>`;
+      html += `<li>✅ Site précédent collecte: <code>${selectionData.collecteSitePrecedent.siteId || 'N/A'}</code></li>`;
     if (selectionData.depotNoeud) 
-      html += `<li>✅ Nœud dépôt: <code>${selectionData.depotNoeud.options.siteId || 'N/A'}</code></li>`;
+      html += `<li>✅ Nœud dépôt: <code>${selectionData.depotNoeud.siteId || 'N/A'}</code></li>`;
     if (selectionData.depotSitePrecedent) 
-      html += `<li>✅ Site précédent dépôt: <code>${selectionData.depotSitePrecedent.options.siteId || 'N/A'}</code></li>`;
+      html += `<li>✅ Site précédent dépôt: <code>${selectionData.depotSitePrecedent.siteId || 'N/A'}</code></li>`;
     html += '</ul>';
     recapEl.innerHTML = html;
   }
@@ -136,11 +136,11 @@ function highlightAvailableMarkers() {
   
   if (!Array.isArray(targetMarkers)) return;
   
-  console.log(`🎨 Highlighting ${targetMarkers.length} ${etape.type}s`);
+  console.log(`🎨 Highlighting ${targetMarkers.length} ${etape.type}s pour l'étape ${etape.numero}`);
   
   targetMarkers.forEach(marker => {
     if (etape.type === 'noeud') {
-      // NO cambiar el icono, solo modificar el estilo del elemento existente
+      // Highlight des nœuds
       try {
         const iconElement = marker.getElement();
         if (iconElement) {
@@ -154,16 +154,14 @@ function highlightAvailableMarkers() {
               height: noeudDiv.style.height
             };
             
-            // Aplicar highlight sin cambiar tamaño
+            // Aplicar highlight
             noeudDiv.style.background = '#FFA62B';
             noeudDiv.style.boxShadow = '0 0 15px #FFA62B, 0 0 25px #FFA62B';
             noeudDiv.classList.add('marqueur-noeud-highlight');
             
-            // Asegurar que sea clickeable
             marker.options.interactive = true;
             marker.options.bubblingMouseEvents = false;
             
-            // Reattach handlers
             marker.off('click');
             marker.off('mousedown');
             marker.on('click', function(e) {
@@ -184,17 +182,37 @@ function highlightAvailableMarkers() {
         console.warn('Erreur highlight noeud:', e);
       }
     } else {
-      // Highlight sites
+      // Highlight sites - AUGMENTER EL TAMAÑO
       try {
-        if (marker.setStyle) {
+        if (marker.setStyle && marker.setRadius) {
           const originalColor = marker.options.fillColor;
+          const originalRadius = marker.options.radius;
           marker._originalFillColor = originalColor;
+          marker._originalRadius = originalRadius;
+          
+          // AUMENTAR tamaño significativamente
+          const newRadius = Math.max(originalRadius * 2, 16);
+          marker.setRadius(newRadius);
+          
           marker.setStyle({
-            weight: 3,
+            weight: 4,
             color: '#FFA62B',
-            fillOpacity: 0.8
+            fillColor: originalColor,
+            fillOpacity: 0.9
           });
           marker.setZIndexOffset(5000);
+          
+          // Actualizar tooltip con nuevo offset
+          const tip = marker.getTooltip && marker.getTooltip();
+          if (tip) {
+            const content = tip.getContent ? tip.getContent() : (marker.options && marker.options.siteId ? marker.options.siteId : '');
+            marker.unbindTooltip();
+            marker.bindTooltip(content, { 
+              permanent: false, 
+              direction: 'top', 
+              offset: [0, -newRadius - 8] 
+            });
+          }
         }
       } catch (e) {
         console.warn('Erreur highlight site:', e);
@@ -205,6 +223,7 @@ function highlightAvailableMarkers() {
   
   console.log(`✅ ${highlightedMarkers.length} markers highlighted`);
 }
+
 /**
  * Limpia los highlights
  */
@@ -212,35 +231,41 @@ function clearHighlights() {
   highlightedMarkers.forEach(marker => {
     try {
       if (marker.setStyle && marker._originalFillColor) {
-
+        // Restaurar sites
+        const originalRadius = marker._originalRadius || computeSiteRadius(carte);
+        if (marker.setRadius) {
+          marker.setRadius(originalRadius);
+        }
+        
         marker.setStyle({
           weight: 2,
           color: '#ffffff',
+          fillColor: marker._originalFillColor,
           fillOpacity: 1
         });
         marker.setZIndexOffset(0);
-      } else {
-
-        const icon = marker.getIcon();
-        if (icon && icon.options && icon.options.html) {
-          const restoredHtml = `<div class="marqueur-noeud" style="
-            background:#16697A;
-            width:10px;
-            height:10px;
-            border-radius:50%;
-            border:2px solid white;
-            pointer-events:auto;
-            cursor:pointer;
-          "></div>`;
-          
-          marker.setIcon(L.divIcon({
-            className: 'marqueur-personnalise',
-            html: restoredHtml,
-            iconSize: [14, 14],
-            iconAnchor: [7, 7]
-          }));
-          
-          marker.setZIndexOffset(100);
+        
+        // Restaurar tooltip
+        const tip = marker.getTooltip && marker.getTooltip();
+        if (tip) {
+          const content = tip.getContent ? tip.getContent() : (marker.options && marker.options.siteId ? marker.options.siteId : '');
+          marker.unbindTooltip();
+          marker.bindTooltip(content, { 
+            permanent: false, 
+            direction: 'top', 
+            offset: [0, -originalRadius - 6] 
+          });
+        }
+      } else if (marker._originalStyle) {
+        // Restaurar nœuds
+        const iconElement = marker.getElement();
+        if (iconElement) {
+          const noeudDiv = iconElement.querySelector('.marqueur-noeud');
+          if (noeudDiv) {
+            noeudDiv.style.background = marker._originalStyle.background || '#16697A';
+            noeudDiv.style.boxShadow = marker._originalStyle.boxShadow || '0 2px 4px rgba(0,0,0,0.3)';
+            noeudDiv.classList.remove('marqueur-noeud-highlight');
+          }
         }
       }
     } catch (e) {
@@ -249,6 +274,7 @@ function clearHighlights() {
   });
   highlightedMarkers = [];
 }
+
 /**
  * Gère le clic sur un marqueur pendant le mode ajout
  */
@@ -283,7 +309,7 @@ function gererClicMarqueur(marker, type) {
     siteId: marker.options.siteId,
     lat: marker.getLatLng ? marker.getLatLng().lat : null,
     lng: marker.getLatLng ? marker.getLatLng().lng : null,
-    type: marker.options.type || null,
+    type: marker.options.siteType || marker.options.type || null,
     numLivraison: marker.options.numLivraison || null
   };
   
@@ -308,8 +334,11 @@ function gererClicMarqueur(marker, type) {
         weight: 2,
         color: '#ffffff'
       });
-    }, 1500);
+    }, 500);
   }
+  
+  // Nettoyer highlights actuels avant de passer à l'étape suivante
+  clearHighlights();
   
   // Passer à l'étape suivante
   etapeAjout++;
@@ -318,7 +347,10 @@ function gererClicMarqueur(marker, type) {
     terminerAjout();
   } else {
     mettreAJourInstructions();
-    highlightAvailableMarkers();
+    // Attendre un peu pour que le feedback visuel soit visible
+    setTimeout(() => {
+      highlightAvailableMarkers();
+    }, 100);
   }
 }
 
@@ -413,167 +445,7 @@ function activerEcouteursMarqueurs() {
     console.log(`✅ ${siteMarkers.length} sites activés`);
   }
   
-  if (Array.isArray(noeudMarkers) && noeudMarkers.length > 0) {
-    noeudMarkers.forEach(marker => {
-      if (!marker._ajoutHandlerAttached) {
-        // NOEUDS PRETs
-        marker._ajoutHandlerAttached = true;
-        
-        console.log('✓ Nœud listo:', marker.options.siteId, {
-          enCarte: carte && carte.hasLayer(marker),
-          position: marker.getLatLng()
-        });
-      }
-    });
-    console.log(`✅ ${noeudMarkers.length} nœuds validés`);
-  } else {
-    console.error('❌ AUCUN NŒUD DISPONIBLE!');
-    console.log('noeudMarkers:', noeudMarkers);
-  }
-}
-/**
- * Désactive les écouteurs de clics
- */
-function desactiverEcouteursMarqueurs() {
-  console.log('🔇 Désactivation des écouteurs...');
-  
-  if (Array.isArray(siteMarkers)) {
-    siteMarkers.forEach(marker => {
-      marker.off('click');
-      // Reattacher el handler normal si existe
-      if (marker._normalClickHandler) {
-        marker.on('click', marker._normalClickHandler);
-      }
-    });
-  }
-  
-  if (Array.isArray(noeudMarkers)) {
-    noeudMarkers.forEach(marker => {
-      marker.off('click');
-      if (marker._normalClickHandler) {
-        marker.on('click', marker._normalClickHandler);
-      }
-    });
-  }
-  
-  clearHighlights();
-}
-
-/**
- * Termine le processus d'ajout
- */
-function terminerAjout() {
-  modeAjoutActif = false;
-  
-  // Retirer l'overlay
-  if (instructionOverlay && carte) {
-    carte.removeControl(instructionOverlay);
-    instructionOverlay = null;
-  }
-  
-  const container = document.querySelector('.leaflet-container');
-  if (container) {
-    container.classList.remove('mode-ajout-actif');
-  }
-  
-  // Désactiver les écouteurs
-  desactiverEcouteursMarqueurs();
-  
-  // Afficher un résumé
-  const recap = `
-🎉 Sélection terminée !
-
-📋 Récapitulatif :
-• Nœud collecte : ${selectionData.collecteNoeud?.options.siteId || 'N/A'}
-• Site précédent (collecte) : ${selectionData.collecteSitePrecedent?.options.siteId || 'N/A'}
-• Nœud dépôt : ${selectionData.depotNoeud?.options.siteId || 'N/A'}
-• Site précédent (dépôt) : ${selectionData.depotSitePrecedent?.options.siteId || 'N/A'}
-
-Voulez-vous enregistrer ces modifications ?
-  `;
-  
-  if (confirm(recap)) {
-    envoyerNouvellesLivraisons();
-  } else {
-    console.log('Ajout annulé par l\'utilisateur');
-  }
-}
-
-/**
- * Annule le processus d'ajout
- */
-function annulerAjout() {
-  if (!confirm("❌ Voulez-vous vraiment annuler l'ajout de livraison ?")) return;
-  
-  modeAjoutActif = false;
-  etapeAjout = 0;
-  
-  if (instructionOverlay && carte) {
-    carte.removeControl(instructionOverlay);
-    instructionOverlay = null;
-  }
-  
-  const container = document.querySelector('.leaflet-container');
-  if (container) {
-    container.classList.remove('mode-ajout-actif');
-  }
-  
-  desactiverEcouteursMarqueurs();
-  
-  console.log('Mode ajout annulé');
-}
-
-/**
- * Envoie les nouvelles livraisons au serveur
- */
-function envoyerNouvellesLivraisons() {
-  console.log('📤 Envoi des nouvelles livraisons...', selectionData);
-  
-  const payload = {
-    collecte: {
-      noeudId: selectionData.collecteNoeud?.options.siteId,
-      sitePrecedentId: selectionData.collecteSitePrecedent?.options.siteId
-    },
-    depot: {
-      noeudId: selectionData.depotNoeud?.options.siteId,
-      sitePrecedentId: selectionData.depotSitePrecedent?.options.siteId
-    }
-  };
-  
-  fetch('/api/ajouter-livraison', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
-  .then(res => {
-    if (!res.ok) throw new Error('Erreur serveur: ' + res.status);
-    return res.json();
-  })
-  .then(data => {
-    console.log('✅ Livraisons ajoutées avec succès', data);
-    alert('✅ Livraisons ajoutées avec succès !');
-    
-    // Recharger la carte
-    fetch("/api/carte")
-      .then(res => res.json())
-      .then(donnees => {
-        donneesGlobales = donnees;
-        afficherDonneesSurCarte(donnees);
-        configurerControlesVisibilite();
-      });
-  })
-  .catch(err => {
-    console.error('❌ Erreur lors de l\'ajout:', err);
-    alert('❌ Erreur : ' + err.message);
-  });
-}
-/**
- * Active les écouteurs de clics sur tous les marqueurs
- */
-function activerEcouteursMarqueurs() {
-  console.log('🎯 Activation des écouteurs...');
-  
-// Nœuds
+  // Nœuds
   if (Array.isArray(noeudMarkers) && noeudMarkers.length > 0) {
     noeudMarkers.forEach(marker => {
 
@@ -619,32 +491,183 @@ function activerEcouteursMarqueurs() {
   } else {
     console.warn("⚠️ Aucun nœud marker disponible");
   }
+}
+
+/**
+ * Désactive les écouteurs de clics
+ */
+function desactiverEcouteursMarqueurs() {
+  console.log('🔇 Désactivation des écouteurs...');
   
-  // Nœuds
-  if (Array.isArray(noeudMarkers) && noeudMarkers.length > 0) {
-    noeudMarkers.forEach(marker => {
-      const existingHandler = marker._events && marker._events.click;
-      if (existingHandler && !marker._normalClickHandler) {
-        marker._normalClickHandler = existingHandler[0].fn;
-      }
-      
+  if (Array.isArray(siteMarkers)) {
+    siteMarkers.forEach(marker => {
       marker.off('click');
-      
-      marker.on('click', function(e) {
-        L.DomEvent.stopPropagation(e);
-        
-        if (modeAjoutActif) {
-          console.log('🔵 Nœud clicked (mode ajout):', marker.options.siteId);
-          gererClicMarqueur(marker, 'noeud');
-        } else {
-          if (marker._normalClickHandler) {
-            marker._normalClickHandler.call(marker, e);
-          } else if (marker.openPopup) {
-            marker.openPopup();
-          }
-        }
-      });
+      // Reattacher el handler normal si existe
+      if (marker._normalClickHandler) {
+        marker.on('click', marker._normalClickHandler);
+      }
     });
-    console.log(`✅ ${noeudMarkers.length} nœuds activés`);
   }
+  
+  if (Array.isArray(noeudMarkers)) {
+    noeudMarkers.forEach(marker => {
+      marker.off('click');
+      if (marker._normalClickHandler) {
+        marker.on('click', marker._normalClickHandler);
+      }
+    });
+  }
+  
+  clearHighlights();
+}
+
+/**
+ * Termine le processus d'ajout
+ */
+function terminerAjout() {
+  console.log('🎉 Terminer ajout - Données:', selectionData);
+  
+  modeAjoutActif = false;
+  
+  // Retirer l'overlay
+  if (instructionOverlay && carte) {
+    carte.removeControl(instructionOverlay);
+    instructionOverlay = null;
+  }
+  
+  const container = document.querySelector('.leaflet-container');
+  if (container) {
+    container.classList.remove('mode-ajout-actif');
+  }
+  
+  // Désactiver les écouteurs
+  desactiverEcouteursMarqueurs();
+  
+  // Déterminer le trajet à partir du site précédent de la collecte
+  let numeroTrajet = null;
+  if (selectionData.collecteSitePrecedent) {
+    // Chercher le numéro de livraison/trajet du site précédent
+    const sitePrecedent = siteMarkers.find(m => 
+      m.options.siteId === selectionData.collecteSitePrecedent.siteId
+    );
+    
+    if (sitePrecedent && sitePrecedent.options.numLivraison != null) {
+      numeroTrajet = parseInt(sitePrecedent.options.numLivraison);
+      console.log('📍 Trajet détecté:', numeroTrajet);
+    }
+  }
+  
+  // Si on n'a pas trouvé le trajet, demander à l'utilisateur
+  if (numeroTrajet == null) {
+    const input = prompt("⚠️ Numéro de trajet non détecté. Entrez le numéro du trajet (1, 2, 3, etc.):");
+    if (input) {
+      numeroTrajet = parseInt(input);
+    }
+  }
+  
+  // Afficher un résumé détaillé
+  const recap = `
+🎉 Sélection terminée !
+
+📋 Récapitulatif :
+━━━━━━━━━━━━━━━━━━━━━
+🟢 COLLECTE
+  • Nœud : ${selectionData.collecteNoeud?.siteId || 'N/A'}
+  • Site précédent : ${selectionData.collecteSitePrecedent?.siteId || 'N/A'}
+
+🔴 DÉPÔT
+  • Nœud : ${selectionData.depotNoeud?.siteId || 'N/A'}
+  • Site précédent : ${selectionData.depotSitePrecedent?.siteId || 'N/A'}
+
+🚚 TRAJET : ${numeroTrajet || 'Non défini'}
+━━━━━━━━━━━━━━━━━━━━━
+
+Voulez-vous enregistrer ces modifications ?
+  `;
+  
+  if (confirm(recap)) {
+    envoyerNouvellesLivraisons(numeroTrajet);
+  } else {
+    console.log('Ajout annulé par l\'utilisateur');
+  }
+}
+
+/**
+ * Annule le processus d'ajout
+ */
+function annulerAjout() {
+  if (!confirm("❌ Voulez-vous vraiment annuler l'ajout de livraison ?")) return;
+  
+  modeAjoutActif = false;
+  etapeAjout = 0;
+  
+  if (instructionOverlay && carte) {
+    carte.removeControl(instructionOverlay);
+    instructionOverlay = null;
+  }
+  
+  const container = document.querySelector('.leaflet-container');
+  if (container) {
+    container.classList.remove('mode-ajout-actif');
+  }
+  
+  desactiverEcouteursMarqueurs();
+  
+  console.log('Mode ajout annulé');
+}
+
+/**
+ * Envoie les nouvelles livraisons au serveur
+ */
+function envoyerNouvellesLivraisons(numeroTrajet) {
+  console.log('📤 Envoi des nouvelles livraisons...', selectionData);
+  
+  // Préparer le payload selon le format requis
+  const payload = {
+    idCollecte: selectionData.collecteNoeud?.siteId,
+    idPrecCollecte: selectionData.collecteSitePrecedent?.siteId,
+    idDepot: selectionData.depotNoeud?.siteId,
+    idPrecDepot: selectionData.depotSitePrecedent?.siteId,
+    Trajet: numeroTrajet
+  };
+  
+  console.log('📦 Payload préparé:', payload);
+  console.log('📦 Payload JSON:', JSON.stringify(payload, null, 2));
+  
+  // POUR L'INSTANT: Juste afficher dans la console
+  alert(`✅ Données prêtes à envoyer !
+
+📦 Format:
+${JSON.stringify(payload, null, 2)}
+
+(Vérifiez la console pour voir les détails)`);
+  
+
+  fetch('/api/ajouter-livraison', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Erreur serveur: ' + res.status);
+    return res.json();
+  })
+  .then(data => {
+    console.log('✅ Livraisons ajoutées avec succès', data);
+    alert('✅ Livraisons ajoutées avec succès !');
+    
+    // Recharger la carte
+    fetch("/api/carte")
+      .then(res => res.json())
+      .then(donnees => {
+        donneesGlobales = donnees;
+        afficherDonneesSurCarte(donnees);
+        configurerControlesVisibilite();
+      });
+  })
+  .catch(err => {
+    console.error('❌ Erreur lors de l\'ajout:', err);
+    alert('❌ Erreur : ' + err.message);
+  });
+
 }
