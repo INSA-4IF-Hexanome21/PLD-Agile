@@ -493,6 +493,16 @@ display: flex;
   text-align: center;
 }
 
+.undo-btn, 
+.redo-btn {
+  display: flex;             
+  justify-content: center;   
+  align-items: center;       
+  width: 32px;  
+  height: 32px;
+}
+
+
 .leaflet-top.leaflet-left {
   display: flex;       
   gap: 5px;            
