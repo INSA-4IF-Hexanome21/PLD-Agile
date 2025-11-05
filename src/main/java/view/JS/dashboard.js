@@ -395,6 +395,19 @@ function creerMarqueurSite(site, type, color, radius) {
     white-space:nowrap;
   ">${site.numPassage??''}</div>`;
 
+  // label fijo debajo del círculo mostrando el "num livraison"
+  const labelHtmlNum = `<div style="
+    display:inline-block;
+    background:rgba(255,255,255,0.92);
+    padding:2px 6px;
+    border-radius:4px;
+    border:1px solid rgba(0,0,0,0.08);
+    font-size:12px;
+    color:#222;
+    box-shadow:0 1px 2px rgba(0,0,0,0.06);
+    white-space:nowrap;
+  ">${site.numLivraison??''}</div>`;
+
   // Nota: si hay MUCHOS puntos, lo más efectivo es usar clustering (leaflet.markercluster)
   // y/o técnicas de gestión de etiquetas (labelgun, avoidance plugins) para evitar solapamientos.
 
@@ -402,13 +415,24 @@ function creerMarqueurSite(site, type, color, radius) {
   let labelIcon;
 
   if (!hasArrival) {
-    labelIcon = L.divIcon({
-      className: 'site-order-label-hidden',
-      html: '',
-      iconSize: [0, 0],
-      iconAnchor: [0, 0]
-    });
-  } else {
+    const _siteTypeLower = (site.type || '').toString().toLowerCase();
+    if (_siteTypeLower !== 'entrepot') {
+      labelIcon = L.divIcon({
+        className: 'site-order-label',
+        html: labelHtmlNum,
+        iconSize: null,
+        iconAnchor: [0, -radius - 8]
+      });
+    } else {
+      labelIcon = L.divIcon({
+        className: 'site-order-label-hidden',
+        html: '',
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+      });
+    } 
+  }
+  else {
     const _siteTypeLower = (site.type || '').toString().toLowerCase();
     if (_siteTypeLower !== 'entrepot') {
       labelIcon = L.divIcon({
