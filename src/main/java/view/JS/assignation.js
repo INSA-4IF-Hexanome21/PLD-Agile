@@ -169,7 +169,7 @@ function genererZonesLivreurs(nombre) {
     estadoActual[livreurId] = cards.map(c => parseInt(c.dataset.livraisonId));
   });
   
-  // Merge con el estado guardado
+  // Fusionner avec l’état enregistré
   Object.keys(estadoActual).forEach(key => {
     if (!assignationsState[key]) assignationsState[key] = [];
     estadoActual[key].forEach(id => {
@@ -235,6 +235,7 @@ function crearZoneLivreur(numero) {
   });
   
   dropzone.addEventListener('drop', (e) => {
+    console.log(e);
     e.preventDefault();
     dropzone.classList.remove('dragover');
     
@@ -242,21 +243,33 @@ function crearZoneLivreur(numero) {
     const draggedEl = document.querySelector(`[data-livraison-id="${livraisonId}"]`);
     
     if (draggedEl) {
+      console.log(draggedEl);
       // Quitar empty state si existe
       const emptyState = dropzone.querySelector('.empty-state');
       if (emptyState) emptyState.remove();
       
       // Mover el elemento
       dropzone.appendChild(draggedEl);
+
+      //On supprime l'assignation faîtes éventuellement à d'autres livreurs
+      Object.keys(assignationsState).forEach(function(key) {
+        if(assignationsState[key].includes(livraisonId)){
+          const index = assignationsState[key].indexOf(livraisonId);
+          assignationsState[key].splice(index,1);
+        }
+      });
       
       // Actualizar estado
       if (!assignationsState[numero]) assignationsState[numero] = [];
       if (!assignationsState[numero].includes(livraisonId)) {
         assignationsState[numero].push(livraisonId);
       }
+
+      
       
       // Actualizar contador
-      actualizarContadorLivreur(numero);
+      // actualizarContadorLivreur(numero);
+      actualiserAllConteneurs()
       
       // Actualizar pool
       mostrarLivraisonsDisponibles(livraisonsData);
@@ -269,6 +282,12 @@ function crearZoneLivreur(numero) {
   return div;
 }
 
+function actualiserAllConteneurs(){
+  var zones = document.querySelectorAll(`.livreur-zone`);
+  zones.forEach(function(zone){
+    actualizarContadorLivreur(zone.attributes[1].value)
+  });
+}
 /**
  * Actualiza el contador de livraisons de un livreur
  */
