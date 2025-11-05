@@ -9,7 +9,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.07);
 } */
 
-/* Estilos adicionales para indicadores de trajets */
+/* Styles additionnels pour les indicateurs de trajets */
 .site-indicator.trajets {
   width: 30px;
   height: 4px; 
@@ -18,7 +18,7 @@
   border-radius: 2px;
 }
 
-/* Highlight cuando se puede soltar */
+/* Highlight si on peut déposer */
 .file-area.dragover {
   outline: 3px dashed rgba(34, 150, 243, 0.9);
   background: rgba(34,150,243,0.06);
@@ -26,14 +26,14 @@
   border-radius: 6px;
 }
 
-/* Si no está permitido soltar */
+/* Si on ne peut pas déposer */
 .file-area.drag-disabled {
   outline: 3px dashed rgba(220, 53, 69, 0.9);
   background: rgba(220,53,69,0.04);
   opacity: 0.9;
 }
 
-/* Pequeña etiqueta flotante dentro del área al arrastrar */
+/* Etiquette floattante dans la zone du site */
 .file-area .drop-hint {
   display: none;
   font-size: 0.85rem;
@@ -48,12 +48,12 @@
 .file-area.drag-disabled .drop-hint { display: inline-block; color: #811; }
 
 
-/* Animación sutil para el checkbox de trajets */
+/* Animation pour les checkbox de trajets */
 #toggle-trajets:checked + label .site-indicator.trajets {
   animation: trajets-pulse 2s ease-in-out infinite;
 }
 
-/* Estilos adicionales para indicadores de troncons */
+/* Styles additionnels pour les indicateurs de troncons */
 .site-indicator.troncons {
   width: 30px;
   height: 4px; 
@@ -62,7 +62,7 @@
   border-radius: 2px;
 }
 
-/* Animación sutil para el checkbox de trajets */
+/* Animation pour les checkbox de troncons */
 #toggle-troncons:checked + label .site-indicator.troncons {
   animation: troncons-pulse 2s ease-in-out infinite;
 }
@@ -123,4 +123,19 @@ input[type="file"] {
     color: #00a8ff;
     font-weight: bold;
     display: none;
+}
+
+#btn-toggle-all {
+  background: var(--spie-dark-teal);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#btn-toggle-all:hover {
+  background: var(--spie-medium-teal);
 }

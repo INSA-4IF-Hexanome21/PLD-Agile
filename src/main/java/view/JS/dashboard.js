@@ -1,5 +1,6 @@
 // Variables globales
 let carte = null;
+let trajetsFlottantControl;
 let marqueurs = [];
 let lignes = [];
 let siteMarkers = [];
@@ -25,23 +26,45 @@ const visibilityState = {
   trajets: true
 };
 
-/* //! ----------------- UTILIDADES / INIT ----------------- */
 
+/* //! ----------------- UTILIDADES / INIT ----------------- */
 function chargerComposantPrincipal(url) {
   console.log('Chargement du composant:', url);
   const main = document.getElementById('main-content');
-  if (!main) return;
+  if (!main) {
+    console.error('Element #main-content introuvable');
+    return;
+  }
   main.innerHTML = '<p>Chargement en cours...</p>';
 
   fetch(url)
     .then(res => {
-      if (!res.ok) throw new Error('Erreur de chargement: ' + url);
+      if (!res.ok) throw new Error('Erreur de chargement: ' + url + ' (' + res.status + ')');
       return res.text();
     })
     .then(html => {
       main.innerHTML = html;
       if (url.includes('Map.html')) {
-        setTimeout(initialiserCarte, 100);
+        requestAnimationFrame(() => {
+          // Si le map est présent initialiser direcetmenet
+          if (document.getElementById('map')) {
+            initialiserCarte();
+            assignationLivraison();
+            return;
+          }
+          // fallback après un court délai
+          console.warn('#map introuvable au premier passage, tentative de secours...');
+          setTimeout(() => {
+            if (document.getElementById('map')) {
+              initialiserCarte();
+              assignationLivraison();
+            } else {
+              // DEBUG
+              console.error('Élément #map introuvable après fallback — vérifie ton Map.html (doit contenir <div id="map">) et l\'insertion du composant.');
+              main.innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable. Vérifiez Map.html.</p>';
+            }
+          }, 250); 
+        });
       }
     })
     .catch(err => {
@@ -66,7 +89,8 @@ function initialiserCarte() {
 
   if (!elementCarte) {
     console.error('Élément #map non trouvé dans le DOM');
-    document.getElementById('main-content').innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable</p>';
+    const main = document.getElementById('main-content');
+    if (main) main.innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable</p>';
     return;
   }
 
@@ -82,6 +106,70 @@ function initialiserCarte() {
     maxZoom: 19
   }).addTo(carte);
 
+  // --- Contrôle Undo/Redo ---
+  const UndoRedoControl = L.Control.extend({
+    options: {
+      position: 'topleft' 
+    },
+
+    onAdd: function () {
+      const container = L.DomUtil.create('div', 'leaflet-control-undoRedo leaflet-bar leaflet-control');
+
+      const undoBtn = L.DomUtil.create('a', 'undo-btn', container);
+      undoBtn.href = '#';
+      undoBtn.title = 'Annuler (Ctrl+Z)';
+      undoBtn.innerHTML = `<img src="/images/undo.svg" style="width:18px;height:18px;margin:6px;" />`
+
+      const redoBtn = L.DomUtil.create('a', 'redo-btn', container);
+      redoBtn.href = '#';
+      redoBtn.title = 'Rétablir (Ctrl+Y)';
+      redoBtn.innerHTML = '<img src="/images/redo.svg" style="width:18px;height:18px;margin:6px;" />';
+
+      // Empêche la propagation des clics pour ne pas déclencher le zoom/pan de Leaflet
+      L.DomEvent.disableClickPropagation(container);
+
+      // Ajouter les événements
+      L.DomEvent.on(undoBtn, 'click', L.DomEvent.stop)
+                .on(undoBtn, 'click', () => undoAction());
+
+      L.DomEvent.on(redoBtn, 'click', L.DomEvent.stop)
+                .on(redoBtn, 'click', () => redoAction());
+
+      return container;
+    }
+  });
+  new UndoRedoControl().addTo(carte);
+
+  // --- Créer le panneau flottant des trajets (unique) ---
+  L.Control.TrajetsFlottant = L.Control.extend({
+    onAdd: function(map) {
+      const container = L.DomUtil.create('div', 'control-trajets');
+
+      // En-tête
+      const header = L.DomUtil.create('div', 'trajets-header', container);
+      header.innerHTML = 'Gestion des trajets';
+
+      // Corps
+      const body = L.DomUtil.create('div', 'trajets-body', container);
+      container._body = body;
+
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+
+      return container;
+    },
+    onRemove: function(map) {}
+  });
+
+  L.control.trajetsFlottant = function(opts) {
+    return new L.Control.TrajetsFlottant(opts);
+  };
+
+  trajetsFlottantControl = L.control.trajetsFlottant({ position: 'topright' });
+  trajetsFlottantControl.addTo(carte);
+  
+
+  // --- Charger les données ---
   fetch("/api/carte")
     .then(res => {
       if (!res.ok) throw new Error('Erreur API: ' + res.status);
@@ -92,6 +180,10 @@ function initialiserCarte() {
       donneesGlobales = donnees;
       afficherDonneesSurCarte(donnees);
       configurerControlesVisibilite();
+      mettreAJourTrajetsFlottant();
+       if (document.getElementById('form-livreurs')) {
+        assignationLivraison();
+      }
     })
     .catch(err => {
       console.error('Erreur lors du chargement des données de la carte:', err);
@@ -178,6 +270,10 @@ function afficherDonneesSurCarte(donnees) {
     // 4.trajets (si hay)
     console.log('Trajets reçus:', donnees.trajets);
     if (donnees.trajets) {
+      //desactiver noeuds et troncons affichage
+      visibilityState.troncons = false;
+      visibilityState.noeuds = false;
+      configurerControlesVisibilite();
       for (const key in donnees.trajets) {
         const color = getRandomHexColor();
         trajetLines[key] = [];
@@ -368,6 +464,19 @@ function creerMarqueurSite(site, type, color, radius) {
     white-space:nowrap;
   ">${site.numPassage??''}</div>`;
 
+  // label fijo debajo del círculo mostrando el "num livraison"
+  const labelHtmlNum = `<div style="
+    display:inline-block;
+    background:rgba(255,255,255,0.92);
+    padding:2px 6px;
+    border-radius:4px;
+    border:1px solid rgba(0,0,0,0.08);
+    font-size:12px;
+    color:#222;
+    box-shadow:0 1px 2px rgba(0,0,0,0.06);
+    white-space:nowrap;
+  ">${site.numLivraison??''}</div>`;
+
   // Nota: si hay MUCHOS puntos, lo más efectivo es usar clustering (leaflet.markercluster)
   // y/o técnicas de gestión de etiquetas (labelgun, avoidance plugins) para evitar solapamientos.
 
@@ -375,13 +484,24 @@ function creerMarqueurSite(site, type, color, radius) {
   let labelIcon;
 
   if (!hasArrival) {
-    labelIcon = L.divIcon({
-      className: 'site-order-label-hidden',
-      html: '',
-      iconSize: [0, 0],
-      iconAnchor: [0, 0]
-    });
-  } else {
+    const _siteTypeLower = (site.type || '').toString().toLowerCase();
+    if (_siteTypeLower !== 'entrepot') {
+      labelIcon = L.divIcon({
+        className: 'site-order-label',
+        html: labelHtmlNum,
+        iconSize: null,
+        iconAnchor: [0, -radius - 8]
+      });
+    } else {
+      labelIcon = L.divIcon({
+        className: 'site-order-label-hidden',
+        html: '',
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+      });
+    } 
+  }
+  else {
     const _siteTypeLower = (site.type || '').toString().toLowerCase();
     if (_siteTypeLower !== 'entrepot') {
       labelIcon = L.divIcon({
@@ -558,134 +678,26 @@ function updateVisibility() {
 }
 
 function configurerControlesVisibilite() {
-  // FR: On attend des checkboxes avec ids toggle-entrepot, toggle-collecte, toggle-depot
-  ['entrepot', 'collecte', 'depot'].forEach(type => {
+  // Synchroniser les checkboxes principales
+  ['entrepot','collecte','depot','noeuds','troncons','trajets'].forEach(type => {
     const cb = document.getElementById(`toggle-${type}`);
     if (cb) {
       cb.checked = visibilityState[type];
-      cb.addEventListener('change', (e) => {
+      cb.addEventListener('change', e => {
         visibilityState[type] = e.target.checked;
         updateVisibility();
+        // Si c'est le toggle trajets, mettre à jour le panneau flottant
+        if (type === 'trajets') {
+          mettreAJourTrajetsFlottant();
+        }
       });
     }
   });
 
-  // FR: Toggle pour les nœuds
-  const tNoeuds = document.getElementById('toggle-noeuds');
-  if (tNoeuds) {
-    tNoeuds.checked = visibilityState.noeuds;
-    tNoeuds.addEventListener('change', (e) => {
-      visibilityState.noeuds = e.target.checked;
-      updateVisibility();
-    });
-  }
+  // Mettre à jour le contenu du panneau flottant
+  mettreAJourTrajetsFlottant();
 
-  // FR: Toggle pour les tronçons
-  const tTron = document.getElementById('toggle-troncons');
-  if (tTron) {
-    tTron.checked = visibilityState.troncons;
-    tTron.addEventListener('change', (e) => {
-      visibilityState.troncons = e.target.checked;
-      updateVisibility();
-    });
-  }
-
-  // FR: Toggle pour les trajets
-  const tTraj = document.getElementById('toggle-trajets');
-  if (tTraj) {
-    tTraj.checked = visibilityState.trajets;
-    tTraj.addEventListener('change', (e) => {
-      visibilityState.trajets = e.target.checked;
-      updateVisibility();
-    });
-  }
-
-  // FR: Créer un contrôle Leaflet flottant pour les trajets
-  L.Control.TrajetsFlottant = L.Control.extend({
-    onAdd: function(map) {
-      const container = L.DomUtil.create('div', 'control-trajets');
-      
-      // En-tête
-      const header = L.DomUtil.create('div', 'trajets-header', container);
-      header.innerHTML = '<strong>Gestion des trajets</strong>';
-      
-      // Corps avec les contrôles
-      const body = L.DomUtil.create('div', 'trajets-body', container);
-      
-      if (Object.keys(trajetLines).length === 0) {
-        const emptyBody = L.DomUtil.create('div', 'empty-body', body);
-        emptyBody.innerHTML = " Aucun trajet disponible. ";
-      }
-      else {
-        // Conteneur des sous-trajets
-        const controlContainer = L.DomUtil.create('div', 'trajets-list', body);
-        controlContainer.id = 'trajet-controls-floating';
-        
-        // Générer les checkboxes pour chaque trajet
-        for(const key in trajetLines) {
-          const trajet = trajetLines[key];
-          const index = parseInt(key,10)+1
-          
-          const trajetItem = L.DomUtil.create('div', 'control-row trajet-item', controlContainer);
-          const label = L.DomUtil.create('label', '', trajetItem);
-          label.setAttribute('for', `trajet-${index}`);
-          
-          const checkbox = L.DomUtil.create('input', '', label);
-          checkbox.type = 'checkbox';
-          checkbox.id = `trajet-${index}`;
-          checkbox.checked = true;
-          checkbox.disabled = tTraj && !tTraj.checked;
-          
-          label.appendChild(document.createTextNode(` Trajet ${index}`));
-          
-          // Event listener pour afficher/masquer le trajet
-          checkbox.addEventListener('change', (e) => {
-            trajet.forEach((t) => {
-              if (e.target.checked) {
-                t.addTo(carte);
-              } else {
-                carte.removeLayer(t);
-              }
-            });
-          });
-        }
-      }
-      
-      
-      // Synchronisation dynamique du disabled sur le toggle principal
-      if (tTraj) {
-        tTraj.addEventListener('change', () => {
-          const condition = !tTraj.checked;
-          document.querySelectorAll('[id^="trajet-"]').forEach(input => {
-            input.disabled = condition;
-            if (condition && !input.checked) {
-              input.checked = true;
-            }
-          });
-        });
-      }
-      
-      // Empêcher la propagation des événements
-      L.DomEvent.disableClickPropagation(container);
-      L.DomEvent.disableScrollPropagation(container);
-      
-      return container;
-    },
-    
-    onRemove: function(map) {
-      // Nettoyage si nécessaire
-    }
-  });
-
-  // Créer la fonction d'initialisation
-  L.control.trajetsFlottant = function(opts) {
-    return new L.Control.TrajetsFlottant(opts);
-  };
-
-  // Ajouter le contrôle à la carte
-  L.control.trajetsFlottant({ position: 'topright' }).addTo(carte);
-
-  // FR: Bouton pour recentrer la vue (utilise donneesGlobales)
+  // Bouton pour recentrer la vue
   const btnReset = document.getElementById('btn-reset-view');
   if (btnReset) {
     btnReset.addEventListener('click', () => {
@@ -700,21 +712,63 @@ function configurerControlesVisibilite() {
     });
   }
 
-  // FR: Bouton bascule « tout afficher / tout cacher »
+  // Bouton bascule « tout afficher / tout cacher »
   const btnToggleAll = document.getElementById('btn-toggle-all');
   if (btnToggleAll) {
     btnToggleAll.addEventListener('click', () => {
       const all = ['entrepot','collecte','depot','noeuds','troncons','trajets'].every(k => visibilityState[k] === true);
       const newState = !all;
       Object.keys(visibilityState).forEach(k => visibilityState[k] = newState);
-      // FR: mettre à jour l'état visuel des checkboxes si elles existent
       ['entrepot','collecte','depot','noeuds','troncons','trajets'].forEach(k => {
         const el = document.getElementById(`toggle-${k}`);
         if (el) el.checked = visibilityState[k];
       });
       updateVisibility();
+      mettreAJourTrajetsFlottant();
     });
   }
+}
+
+// Fonction auxiliaire pour mettre à jour le panneau flottant des trajets
+function mettreAJourTrajetsFlottant() {
+  if (!trajetsFlottantControl) return;
+  const container = trajetsFlottantControl.getContainer();
+  if (!container) return;
+
+  let body = container.querySelector('.trajets-body');
+  if (!body) {
+    body = L.DomUtil.create('div', 'trajets-body', container);
+  }
+  body.innerHTML = '';
+
+  if (!trajetLines || Object.keys(trajetLines).length === 0) {
+    const empty = L.DomUtil.create('div', 'empty-body', body);
+    empty.innerHTML = ' Aucun trajet disponible. ';
+    return;
+  }
+
+  const controlContainer = L.DomUtil.create('div', 'trajets-list', body);
+  Object.keys(trajetLines).forEach((key, i) => {
+    const trajet = trajetLines[key];
+    const item = L.DomUtil.create('div', 'control-row trajet-item', controlContainer);
+    const label = L.DomUtil.create('label', '', item);
+    label.setAttribute('for', `trajet-${i}`);
+
+    const checkbox = L.DomUtil.create('input', '', label);
+    checkbox.type = 'checkbox';
+    checkbox.id = `trajet-${i}`;
+    checkbox.checked = true;
+    checkbox.disabled = !visibilityState.trajets;
+
+    label.appendChild(document.createTextNode(` Trajet ${parseInt(key,10)+1}`));
+
+    checkbox.addEventListener('change', e => {
+      trajet.forEach(t => {
+        if (e.target.checked) t.addTo(carte);
+        else carte.removeLayer(t);
+      });
+    });
+  });
 }
 
 /**
@@ -762,7 +816,7 @@ function lancerCalcul() {
                       // Afficher message et proposer d'aller à la carte
                       setTimeout(() => {
                           if (confirm('✅ Livraison Calculé! Voulez-vous voir la carte?')) {
-                              $('#btn-mapa').trigger('click');
+                              $('#btn-map').trigger('click');
                           }
                       }, 500);
                 } catch (err) {
@@ -847,6 +901,32 @@ function getTrajetAffiches() {
   });
 
   return lTrajAff ;
+}
+
+function undoAction() {
+  fetch('/api/undoAction', { method: 'POST' })
+    .then(res => res.json())
+    .then(donnees => {
+      // Mettre à jour les données globales
+      donneesGlobales = donnees;
+
+      // Réinitialiser la carte
+      initialiserCarte();
+    })
+    .catch(err => console.error(err));
+}
+
+function redoAction() {
+  fetch('/api/redoAction', { method: 'POST' })
+    .then(res => res.json())
+    .then(donnees => {
+      // Mettre à jour les données globales
+      donneesGlobales = donnees;
+
+      // Réinitialiser la carte
+      initialiserCarte();
+    })
+    .catch(err => console.error(err));
 }
 
 function nettoyerCarte() {
@@ -987,9 +1067,9 @@ fetch('/components/Sidebar.html')
       setTimeout(updateUIBasedOnState, 50);
     }
 
-    document.getElementById('btn-mapa')?.addEventListener('click', () => {
+    document.getElementById('btn-map')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
-      document.getElementById('btn-mapa')?.classList.add('active');
+      document.getElementById('btn-map')?.classList.add('active');
       document.getElementById('btn-calcul')?.classList.add('active');
       chargerComposantPrincipal('/components/Map.html');
     });
@@ -1018,7 +1098,6 @@ fetch('/components/Sidebar.html')
     });
 
     chargerComposantPrincipal('/components/Map.html');
-    
     attachDropHandlers();
 
   })
@@ -1028,3 +1107,8 @@ fetch('/components/Sidebar.html')
     if (sidebar) sidebar.innerHTML = '<p style="color:#e74c3c;">Erreur de chargement</p>';
     chargerComposantPrincipal('/components/Map.html');
   });
+
+  window.addEventListener("load", () => {
+    fetch("/api/resetCarte", { method: "POST" })
+      .then(() => initialiserCarte());
+});

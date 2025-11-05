@@ -1,15 +1,21 @@
 package controller.state;
 
+
+import java.util.HashMap;
+import java.util.List;
+
 import controller.CarteController;
 
 public class Controller{
 	private State currentState;
 	private CarteController carteController;
+	
 
      // Instances associées avec chaque état possible du controlleur 
 	protected final InitialState initialState = new InitialState();
 	protected final CarteChargeState carteChargeState = new CarteChargeState();
 	protected final LivraisonChargeState livraisonChargeState = new LivraisonChargeState();
+	protected final LivreurAssigneState livreurAssigneState = new LivreurAssigneState();
 	protected final LivraisonCalculeState livraisonCalculeState = new LivraisonCalculeState();
 
     /**
@@ -52,6 +58,14 @@ public class Controller{
     }
 
 	/**
+	 * Méthode pour assigner les livraisons aux livreurs
+	 * VerifAssignation : temp, juste pour pouvoir tester une fois (et une seule avant de devoir recompiler)
+	 */
+	public void assignerLivreur(HashMap<String, List<String>> assignations){
+			currentState.assignerLivreur(this, carteController, assignations);
+	}
+
+	/**
 	 * Méthode pour générer les feuilles de routes
 	 */
     public void genererFeuillesdeRoute() {
@@ -65,7 +79,21 @@ public class Controller{
         currentState.changerLivraison(this);
     }
 
-	 public String getCarteJSON() {
+	public String getCarteJSON() {
 		return carteController.getCarteJSON();
-	 }
+	}
+
+	public String undoAction() {
+		carteController.undo();
+		return getCarteJSON();
+	}
+
+	public String redoAction() {
+		carteController.redo();
+		return getCarteJSON();
+	}
+
+	public void resetCarte() {
+		carteController.resetCarte();
+	}
 }

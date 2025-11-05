@@ -26,4 +26,8 @@ public class ListOfCommands {
     public void redo() {
         l.get(++i).doCommand();
     }
+
+    public void clear() {
+        l.clear();
+    }
 }

@@ -80,17 +80,6 @@ public class Carte {
         this.trajets.remove(trajet);
     }
 
-    public Trajet getTrajetParLivreur(Long idLivreur){
-        Trajet trajetLivreur = null;
-        for(Trajet trajet: this.getTrajets()){
-            if(trajet.getLivreur().getId() == idLivreur){
-                trajetLivreur = trajet;
-                break;
-            }
-        }
-        return trajetLivreur;
-    }
-
     public void ajouterLivraison(GrapheTotal gt, long idCollecte, long idPrecCollecte, Integer dureeEnlevement, long idDepot, long idPrecDepot, Integer dureeLivraison, Trajet trajet, Carte carte) {
         //Creation des nouveaux sites
         Noeud noeudCollecte = gt.trouverNoeud(idCollecte);
@@ -191,5 +180,22 @@ public class Carte {
             if (Objects.equals(s.getId(),id)) return s;
         }
         return null;
+    }
+
+    public Trajet getTrajetParLivreur(Long idLivreur){
+        Trajet trajetLivreur = null;
+        for(Trajet trajet: this.getTrajets()){
+            if(trajet.getLivreur().getId() == idLivreur){
+                trajetLivreur = trajet;
+                break;
+            }
+        }
+        return trajetLivreur;
+    }
+
+    public void resetTournee(){
+        this.trajets.clear();
+        this.sites.clear();
+        System.out.println("Carte reset");
     }
 }

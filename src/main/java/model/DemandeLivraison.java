@@ -35,7 +35,7 @@ public class DemandeLivraison {
 
     //Fonction permettant d'assigner un livreur à une livraison
     //Elle renvoie le nombre de livraisons qu'il reste à assigner
-    public Integer assignerLivreur(Livreur livreur, Integer idLivraison, Carte carte ){
+    public void assignerLivreur(Livreur livreur, Integer idLivraison, Carte carte ){
         
         List<Long> idsSiteslivraison = livraisons.get(idLivraison);
         //On vérifie si la livraison a déjà été assignée si ce n'est pas le cas on la défini comme assignée
@@ -60,7 +60,7 @@ public class DemandeLivraison {
         for(Long id : idsSiteslivraison){
             trajet.addSite(sites.get(id));
         }
-        return this.nbLivraisonsNonAssignees;
+        //return this.nbLivraisonsNonAssignees;
     }
 
     //Permet d'ajouter un site
