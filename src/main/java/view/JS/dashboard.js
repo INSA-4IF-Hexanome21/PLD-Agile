@@ -696,7 +696,7 @@ function configurerControlesVisibilite() {
       
       // En-tête
       const header = L.DomUtil.create('div', 'trajets-header', container);
-      header.innerHTML = '<strong>Gestion des trajets</strong>';
+      header.innerHTML = 'Gestion des trajets';
       
       // Corps avec les contrôles
       const body = L.DomUtil.create('div', 'trajets-body', container);
