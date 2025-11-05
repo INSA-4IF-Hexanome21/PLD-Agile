@@ -13,18 +13,31 @@ public class ListOfCommands {
     }
 
     public void add(Command c) {
-        l.add(++i,c);
+        // Supprimer toutes les commandes après i
+        while (l.size() > i + 1) {
+            l.removeLast();
+        }
+        i++;
+        l.add(c);
         c.doCommand();
     }
 
     public void undo() {
         if (i >= 0) {
-            l.get(i--).undoCommand();
+            l.get(i).undoCommand();
+            i--;
+        } else {
+            System.out.println("Rien à annuler !");
         }
     }
 
     public void redo() {
-        l.get(++i).doCommand();
+        if (i + 1 < l.size()) {  // Vérifier qu'il y a un élément à refaire
+            i++;
+            l.get(i).doCommand();
+        } else {
+            System.out.println("Rien à refaire !");
+        }
     }
 
     public void clear() {

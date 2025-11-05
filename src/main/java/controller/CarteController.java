@@ -463,7 +463,24 @@ public class CarteController {
     }
 
     // Exécution d'une commande de suppression
-    public void supprimerLivraison(Collecte collecte, Depot depot, Trajet trajet) {
+    public void supprimerLivraison(Long idSite, String typeSite, Integer numLivraison) {
+        Trajet trajet = null;
+        for (var t : carte.getTrajets()) {
+            if (t.getSite(idSite) != null) {trajet = t; break;}
+        }
+        Collecte collecte;
+        Depot depot;
+        Long idSiteAssocie = demandeLivraison.getSiteAssocie(numLivraison, idSite);
+        
+        if (typeSite == "collecte") {
+            collecte = (Collecte) carte.getSiteById(idSite) ;
+            depot = (Depot) carte.getSiteById(idSiteAssocie); 
+        }
+        else {
+            depot = (Depot) carte.getSiteById(idSite);
+            collecte = (Collecte) carte.getSiteById(idSiteAssocie);
+        }
+        
         Command slc = new SupprimerLivraisonCommand(gt, collecte, depot, trajet, carte);
         history.add(slc);   
     }

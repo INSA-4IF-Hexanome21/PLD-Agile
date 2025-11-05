@@ -574,6 +574,11 @@ function creerMarqueurSite(site, type, color, radius) {
     marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
       <br>Heure d'arrivée: ${site.arrivee}
       <br>Heure de départ: ${site.depart} 
+      <div class="delete-control">
+        <button id="delete-btn" onclick="deleteSite(${site.id}, '${type}', ${site.numLivraison})" title="Supprimer">
+          <img src="/images/delete.svg" style="color:#e74c3c;width:18px;height:18px;"></img>
+        </button>
+      </div>
       `);
   }
   
@@ -903,29 +908,26 @@ function getTrajetAffiches() {
   return lTrajAff ;
 }
 
+function deleteSite(idSite, typeSite, numLivraison) {
+  fetch('api/deleteSite', {
+    method: 'POST' ,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify( {"idSite":idSite, "typeSite": typeSite, "numLivraison": numLivraison} )
+  })
+    .then(res => res.json())
+    .then(initialiserCarte())
+    .catch(err => console.error(err));
+}
+
 function undoAction() {
   fetch('/api/undoAction', { method: 'POST' })
-    .then(res => res.json())
-    .then(donnees => {
-      // Mettre à jour les données globales
-      donneesGlobales = donnees;
-
-      // Réinitialiser la carte
-      initialiserCarte();
-    })
+    .then(() => initialiserCarte())
     .catch(err => console.error(err));
 }
 
 function redoAction() {
   fetch('/api/redoAction', { method: 'POST' })
-    .then(res => res.json())
-    .then(donnees => {
-      // Mettre à jour les données globales
-      donneesGlobales = donnees;
-
-      // Réinitialiser la carte
-      initialiserCarte();
-    })
+    .then(() => initialiserCarte())
     .catch(err => console.error(err));
 }
 
