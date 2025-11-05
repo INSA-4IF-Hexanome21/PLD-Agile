@@ -1,5 +1,6 @@
 // Variables globales
 let carte = null;
+let trajetsFlottantControl;
 let marqueurs = [];
 let lignes = [];
 let siteMarkers = [];
@@ -105,14 +106,14 @@ function initialiserCarte() {
     maxZoom: 19
   }).addTo(carte);
 
-  // Définir un nouveau contrôle Leaflet
+  // --- Contrôle Undo/Redo ---
   const UndoRedoControl = L.Control.extend({
     options: {
       position: 'topleft' 
     },
 
-    onAdd: function (map) {
-      const container = L.DomUtil.create('div', ' leaflet-control-undoRedo leaflet-bar leaflet-control');
+    onAdd: function () {
+      const container = L.DomUtil.create('div', 'leaflet-control-undoRedo leaflet-bar leaflet-control');
 
       const undoBtn = L.DomUtil.create('a', 'undo-btn', container);
       undoBtn.href = '#';
@@ -137,12 +138,38 @@ function initialiserCarte() {
       return container;
     }
   });
+  new UndoRedoControl().addTo(carte);
 
-  // Ajouter le contrôle à la carte
-  const undoRedoControl = new UndoRedoControl();
-  undoRedoControl.addTo(carte);
+  // --- Créer le panneau flottant des trajets (unique) ---
+  L.Control.TrajetsFlottant = L.Control.extend({
+    onAdd: function(map) {
+      const container = L.DomUtil.create('div', 'control-trajets');
 
+      // En-tête
+      const header = L.DomUtil.create('div', 'trajets-header', container);
+      header.innerHTML = 'Gestion des trajets';
 
+      // Corps
+      const body = L.DomUtil.create('div', 'trajets-body', container);
+      container._body = body;
+
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+
+      return container;
+    },
+    onRemove: function(map) {}
+  });
+
+  L.control.trajetsFlottant = function(opts) {
+    return new L.Control.TrajetsFlottant(opts);
+  };
+
+  trajetsFlottantControl = L.control.trajetsFlottant({ position: 'topright' });
+  trajetsFlottantControl.addTo(carte);
+  
+
+  // --- Charger les données ---
   fetch("/api/carte")
     .then(res => {
       if (!res.ok) throw new Error('Erreur API: ' + res.status);
@@ -153,7 +180,7 @@ function initialiserCarte() {
       donneesGlobales = donnees;
       afficherDonneesSurCarte(donnees);
       configurerControlesVisibilite();
-
+      mettreAJourTrajetsFlottant();
        if (document.getElementById('form-livreurs')) {
         assignationLivraison();
       }
@@ -243,6 +270,10 @@ function afficherDonneesSurCarte(donnees) {
     // 4.trajets (si hay)
     console.log('Trajets reçus:', donnees.trajets);
     if (donnees.trajets) {
+      //desactiver noeuds et troncons affichage
+      visibilityState.troncons = false;
+      visibilityState.noeuds = false;
+      configurerControlesVisibilite();
       for (const key in donnees.trajets) {
         const color = getRandomHexColor();
         trajetLines[key] = [];
@@ -647,134 +678,26 @@ function updateVisibility() {
 }
 
 function configurerControlesVisibilite() {
-  // FR: On attend des checkboxes avec ids toggle-entrepot, toggle-collecte, toggle-depot
-  ['entrepot', 'collecte', 'depot'].forEach(type => {
+  // Synchroniser les checkboxes principales
+  ['entrepot','collecte','depot','noeuds','troncons','trajets'].forEach(type => {
     const cb = document.getElementById(`toggle-${type}`);
     if (cb) {
       cb.checked = visibilityState[type];
-      cb.addEventListener('change', (e) => {
+      cb.addEventListener('change', e => {
         visibilityState[type] = e.target.checked;
         updateVisibility();
+        // Si c'est le toggle trajets, mettre à jour le panneau flottant
+        if (type === 'trajets') {
+          mettreAJourTrajetsFlottant();
+        }
       });
     }
   });
 
-  // FR: Toggle pour les nœuds
-  const tNoeuds = document.getElementById('toggle-noeuds');
-  if (tNoeuds) {
-    tNoeuds.checked = visibilityState.noeuds;
-    tNoeuds.addEventListener('change', (e) => {
-      visibilityState.noeuds = e.target.checked;
-      updateVisibility();
-    });
-  }
+  // Mettre à jour le contenu du panneau flottant
+  mettreAJourTrajetsFlottant();
 
-  // FR: Toggle pour les tronçons
-  const tTron = document.getElementById('toggle-troncons');
-  if (tTron) {
-    tTron.checked = visibilityState.troncons;
-    tTron.addEventListener('change', (e) => {
-      visibilityState.troncons = e.target.checked;
-      updateVisibility();
-    });
-  }
-
-  // FR: Toggle pour les trajets
-  const tTraj = document.getElementById('toggle-trajets');
-  if (tTraj) {
-    tTraj.checked = visibilityState.trajets;
-    tTraj.addEventListener('change', (e) => {
-      visibilityState.trajets = e.target.checked;
-      updateVisibility();
-    });
-  }
-
-  // FR: Créer un contrôle Leaflet flottant pour les trajets
-  L.Control.TrajetsFlottant = L.Control.extend({
-    onAdd: function(map) {
-      const container = L.DomUtil.create('div', 'control-trajets');
-      
-      // En-tête
-      const header = L.DomUtil.create('div', 'trajets-header', container);
-      header.innerHTML = 'Gestion des trajets';
-      
-      // Corps avec les contrôles
-      const body = L.DomUtil.create('div', 'trajets-body', container);
-      
-      if (Object.keys(trajetLines).length === 0) {
-        const emptyBody = L.DomUtil.create('div', 'empty-body', body);
-        emptyBody.innerHTML = " Aucun trajet disponible. ";
-      }
-      else {
-        // Conteneur des sous-trajets
-        const controlContainer = L.DomUtil.create('div', 'trajets-list', body);
-        controlContainer.id = 'trajet-controls-floating';
-        
-        // Générer les checkboxes pour chaque trajet
-        for(const key in trajetLines) {
-          const trajet = trajetLines[key];
-          const index = parseInt(key,10)+1
-          
-          const trajetItem = L.DomUtil.create('div', 'control-row trajet-item', controlContainer);
-          const label = L.DomUtil.create('label', '', trajetItem);
-          label.setAttribute('for', `trajet-${index}`);
-          
-          const checkbox = L.DomUtil.create('input', '', label);
-          checkbox.type = 'checkbox';
-          checkbox.id = `trajet-${index}`;
-          checkbox.checked = true;
-          checkbox.disabled = tTraj && !tTraj.checked;
-          
-          label.appendChild(document.createTextNode(` Trajet ${index}`));
-          
-          // Event listener pour afficher/masquer le trajet
-          checkbox.addEventListener('change', (e) => {
-            trajet.forEach((t) => {
-              if (e.target.checked) {
-                t.addTo(carte);
-              } else {
-                carte.removeLayer(t);
-              }
-            });
-          });
-        }
-      }
-      
-      
-      // Synchronisation dynamique du disabled sur le toggle principal
-      if (tTraj) {
-        tTraj.addEventListener('change', () => {
-          const condition = !tTraj.checked;
-          document.querySelectorAll('[id^="trajet-"]').forEach(input => {
-            input.disabled = condition;
-            if (condition && !input.checked) {
-              input.checked = true;
-            }
-          });
-        });
-      }
-      
-      // Empêcher la propagation des événements
-      L.DomEvent.disableClickPropagation(container);
-      L.DomEvent.disableScrollPropagation(container);
-      
-      return container;
-    },
-    
-    onRemove: function(map) {
-      // Nettoyage si nécessaire
-    }
-  });
-
-  // Créer la fonction d'initialisation
-  L.control.trajetsFlottant = function(opts) {
-    return new L.Control.TrajetsFlottant(opts);
-  };
-
-  // Ajouter le contrôle à la carte
-  L.control.trajetsFlottant({ position: 'topright' }).addTo(carte);
-
-  // FR: Bouton pour recentrer la vue (utilise donneesGlobales)
+  // Bouton pour recentrer la vue
   const btnReset = document.getElementById('btn-reset-view');
   if (btnReset) {
     btnReset.addEventListener('click', () => {
@@ -789,21 +712,63 @@ function configurerControlesVisibilite() {
     });
   }
 
-  // FR: Bouton bascule « tout afficher / tout cacher »
+  // Bouton bascule « tout afficher / tout cacher »
   const btnToggleAll = document.getElementById('btn-toggle-all');
   if (btnToggleAll) {
     btnToggleAll.addEventListener('click', () => {
       const all = ['entrepot','collecte','depot','noeuds','troncons','trajets'].every(k => visibilityState[k] === true);
       const newState = !all;
       Object.keys(visibilityState).forEach(k => visibilityState[k] = newState);
-      // FR: mettre à jour l'état visuel des checkboxes si elles existent
       ['entrepot','collecte','depot','noeuds','troncons','trajets'].forEach(k => {
         const el = document.getElementById(`toggle-${k}`);
         if (el) el.checked = visibilityState[k];
       });
       updateVisibility();
+      mettreAJourTrajetsFlottant();
     });
   }
+}
+
+// Fonction auxiliaire pour mettre à jour le panneau flottant des trajets
+function mettreAJourTrajetsFlottant() {
+  if (!trajetsFlottantControl) return;
+  const container = trajetsFlottantControl.getContainer();
+  if (!container) return;
+
+  let body = container.querySelector('.trajets-body');
+  if (!body) {
+    body = L.DomUtil.create('div', 'trajets-body', container);
+  }
+  body.innerHTML = '';
+
+  if (!trajetLines || Object.keys(trajetLines).length === 0) {
+    const empty = L.DomUtil.create('div', 'empty-body', body);
+    empty.innerHTML = ' Aucun trajet disponible. ';
+    return;
+  }
+
+  const controlContainer = L.DomUtil.create('div', 'trajets-list', body);
+  Object.keys(trajetLines).forEach((key, i) => {
+    const trajet = trajetLines[key];
+    const item = L.DomUtil.create('div', 'control-row trajet-item', controlContainer);
+    const label = L.DomUtil.create('label', '', item);
+    label.setAttribute('for', `trajet-${i}`);
+
+    const checkbox = L.DomUtil.create('input', '', label);
+    checkbox.type = 'checkbox';
+    checkbox.id = `trajet-${i}`;
+    checkbox.checked = true;
+    checkbox.disabled = !visibilityState.trajets;
+
+    label.appendChild(document.createTextNode(` Trajet ${parseInt(key,10)+1}`));
+
+    checkbox.addEventListener('change', e => {
+      trajet.forEach(t => {
+        if (e.target.checked) t.addTo(carte);
+        else carte.removeLayer(t);
+      });
+    });
+  });
 }
 
 /**
