@@ -10,7 +10,6 @@ public class Controller{
 	private State currentState;
 	private CarteController carteController;
 	
-	private int verifAssignation; //VerifAssignation : temp, juste pour pouvoir tester une fois (et une seule avant de devoir recompiler)
 
      // Instances associées avec chaque état possible du controlleur 
 	protected final InitialState initialState = new InitialState();
@@ -26,7 +25,6 @@ public class Controller{
 	public Controller() {
 		currentState = initialState;
 		carteController = new CarteController();
-		verifAssignation = 0; 
 	}
 
     /**
@@ -64,10 +62,7 @@ public class Controller{
 	 * VerifAssignation : temp, juste pour pouvoir tester une fois (et une seule avant de devoir recompiler)
 	 */
 	public void assignerLivreur(HashMap<String, List<String>> assignations){
-		if (verifAssignation == 0){
 			currentState.assignerLivreur(this, carteController, assignations);
-			verifAssignation ++;
-		} 
 	}
 
 	/**

@@ -44,15 +44,17 @@ function envoyerAssignations() {
 /**
  * Extrae livraisons de los sites y las agrupa
  */
-var CLICK = false; //Variable permettant de savoir si l'évènement click a déjà été défini
+var CLICK = 0; //Variable permettant de savoir si l'évènement click a déjà été défini
 function extraerYMostrarLivraisons(sites) {
   
-  if(!CLICK){
-    document.getElementById('envoyer-assignations').addEventListener('click', () => {
-    envoyerAssignations();
-    });
-    CLICK = true;
-  }
+ 
+  document.getElementById('envoyer-assignations').addEventListener('click', () => {
+    if(CLICK%3 === 0){
+      envoyerAssignations();
+      console.warn('click : ', CLICK);
+    }
+    ++CLICK;
+  });
 
   console.log('📦 Extrayendo livraisons de sites...', sites);
   
