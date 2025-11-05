@@ -220,7 +220,7 @@ public class ServeurHTTP {
     });
         
     /**
-     * ! Calculer une livraison
+     * ! Calculer une livraison (avec les livreurs assignés)
      */
            // Endpoint pour calculer la livraison (demande)
     serveur.createContext("/api/calcul", exchange -> {
@@ -234,7 +234,6 @@ public class ServeurHTTP {
                 
                 // Lancer le calcul de la livraison par le contrôleur
                 System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
-
                 controller.calculerLivraison();
 
                 System.out.println(">>> Demande chargée avec succès <<<");
@@ -280,7 +279,7 @@ public class ServeurHTTP {
                 System.out.println("Body reçu: " + body);
 
                 // Parse simple: { "1": ["L001","L003"], "2": ["L002"] }
-                Map<String, List<String>> assignations = new HashMap<>(); //LUCIE, tu travailles avec ca!
+               HashMap<String, List<String>> assignations = new HashMap<>(); 
 
                 body = body.trim();
                 if (body.startsWith("{") && body.endsWith("}")) {
@@ -306,6 +305,10 @@ public class ServeurHTTP {
 
                 // Por ahora solo log
                 System.out.println("Assignations reçues: " + assignations);
+
+                // Lancer l'assignation des livraisons par le contrôleur
+                System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
+                controller.assignerLivreur(assignations);
 
                 // Responder
                 String response = "{\"status\":\"ok\",\"message\":\"Assignations reçues\"}";

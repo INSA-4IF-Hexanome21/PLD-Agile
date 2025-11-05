@@ -1,5 +1,8 @@
 package controller.state;
 
+import java.util.HashMap;
+import java.util.List;
+
 import controller.CarteController;
 
 public class LivraisonCalculeState implements State {
@@ -40,13 +43,17 @@ public class LivraisonCalculeState implements State {
         }
     }
 
+     @Override
+    public void assignerLivreur(Controller c, CarteController carteC, HashMap<String, List<String>> assignations) {
+        carteC.effacerCalcul();
+        carteC.assignerLivreurs(assignations);
+        c.setCurrentState(c.livreurAssigneState);
+    }
+
 
     @Override
     public void calculerLivraison(Controller c, CarteController carteC) {
         System.out.println(">>> [LivraisonCalculeState] Recalcul de la livraison...");
-
-        //Assigne un livreur à une livraison
-        carteC.assignerLivreurs();
 
         //Calcul la tournée
         try {

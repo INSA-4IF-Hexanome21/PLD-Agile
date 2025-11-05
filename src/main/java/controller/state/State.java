@@ -1,5 +1,8 @@
 package controller.state;
 
+import java.util.HashMap;
+import java.util.List;
+
 import controller.CarteController;
 
 public interface State {
@@ -29,6 +32,12 @@ public interface State {
      */
     public default void calculerLivraison(Controller c, CarteController carteC) {}
     
+    /**
+     * Méthode appelée par le controlleur pour changer l'emplacement d'une livraison
+     * @param c le controlleur
+     */
+    public default void assignerLivreur(Controller c, CarteController carteC, HashMap<String, List<String>> assignations) {}
+
     /**
      * Méthode appelée par le controlleur pour changer l'emplacement d'une livraison
      * @param c le controlleur

@@ -44,11 +44,15 @@ function envoyerAssignations() {
 /**
  * Extrae livraisons de los sites y las agrupa
  */
+var CLICK = false; //Variable permettant de savoir si l'évènement click a déjà été défini
 function extraerYMostrarLivraisons(sites) {
   
-  document.getElementById('envoyer-assignations').addEventListener('click', () => {
-  envoyerAssignations();
-});
+  if(!CLICK){
+    document.getElementById('envoyer-assignations').addEventListener('click', () => {
+    envoyerAssignations();
+    });
+    CLICK = true;
+  }
 
   console.log('📦 Extrayendo livraisons de sites...', sites);
   
@@ -258,7 +262,7 @@ function crearZoneLivreur(numero) {
       mostrarLivraisonsDisponibles(livraisonsData);
       
       // Enviar al backend
-      assignerLivraisonAuLivreur(livraisonId, numero);
+      //assignerLivraisonAuLivreur(livraisonId, numero);
     }
   });
   
