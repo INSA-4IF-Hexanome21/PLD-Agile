@@ -291,8 +291,19 @@ if (donnees.noeuds && donnees.noeuds.length > 0) {
       if (site.lat != null && site.lng != null) {
         const marker = creerMarqueurSite(site, normalizedType, color, initialRadius);
         marker.options.numLivraison = site.numLivraison;
+        marker.on('click', function(e) {
+       L.DomEvent.stopPropagation(e);
+       L.DomEvent.preventDefault(e);
+       
+       if (typeof gererClicMarqueur === 'function' && modeAjoutActif) {
+         gererClicMarqueur(marker, 'site');
+       } else {
+         marker.openPopup();
+       }
+     });
         marker.addTo(carte);
         siteMarkers.push(marker);
+
       }
     });
 

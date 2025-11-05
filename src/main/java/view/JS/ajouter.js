@@ -277,18 +277,27 @@ function gererClicMarqueur(marker, type) {
     return;
   }
   
-  // Enregistrer la sélection
-  selectionData[etape.cible] = marker;
+  // Enregistrer la sélection avec toutes les infos nécessaires
+  const siteInfo = {
+    marker: marker,
+    siteId: marker.options.siteId,
+    lat: marker.getLatLng ? marker.getLatLng().lat : null,
+    lng: marker.getLatLng ? marker.getLatLng().lng : null,
+    type: marker.options.type || null,
+    numLivraison: marker.options.numLivraison || null
+  };
+  
+  selectionData[etape.cible] = siteInfo;
   
   // Feedback visuel intenso
-  marker.bindPopup(`<strong style="color:#16697A">${etape.icon} ${etape.texte}</strong><br><small>✅ Sélectionné !</small>`).openPopup();
+  marker.bindPopup(`<strong style="color:#16697A">${etape.icon} ${etape.texte}</strong><br><small>✅ Sélectionné: ${siteInfo.siteId}</small>`).openPopup();
   
   // Highlight temporaire
   if (type === 'site' && marker.setStyle) {
     marker.setStyle({ 
-      fillColor: '#FFA62B', 
+      fillColor: '#00FF00', 
       fillOpacity: 1,
-      weight: 4,
+      weight: 5,
       color: '#16697A'
     });
     setTimeout(() => {
@@ -299,7 +308,7 @@ function gererClicMarqueur(marker, type) {
         weight: 2,
         color: '#ffffff'
       });
-    }, 1000);
+    }, 1500);
   }
   
   // Passer à l'étape suivante
