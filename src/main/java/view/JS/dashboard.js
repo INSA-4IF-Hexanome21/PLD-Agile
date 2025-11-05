@@ -214,12 +214,12 @@ function afficherDonneesSurCarte(donnees) {
   }
 
   
-  // 2) Nœuds (medio)
+// 2) Nœuds (medio)
 if (donnees.noeuds && donnees.noeuds.length > 0) {
   console.log('Affichage de', donnees.noeuds.length, 'nœuds');
   donnees.noeuds.forEach(noeud => {
     const icone = L.divIcon({
-      className: 'marqueur-personnalise',
+      className: 'marqueur-personnalise marqueur-noeud-container',
       html: `<div class="marqueur-noeud" style="
         background:#16697A;
         width:16px;
@@ -228,15 +228,19 @@ if (donnees.noeuds && donnees.noeuds.length > 0) {
         border:2px solid white;
         cursor:pointer;
         box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        pointer-events:all;
+        position:relative;
+        z-index:1000;
       "></div>`,
       iconSize: [20, 20], 
-      iconAnchor: [10, 10]
+      iconAnchor: [8, 8]
     });
     const marker = L.marker([noeud.lat, noeud.lng], { 
       icon: icone, 
-      zIndexOffset: 5000,
+      zIndexOffset: 9000,
       interactive: true,
-      bubblingMouseEvents: false
+      bubblingMouseEvents: false,
+      keyboard: false
     }).addTo(carte);
     
     marker.bindPopup(`<strong>Nœud ${noeud.id}</strong><br>Lat: ${noeud.lat.toFixed(6)}<br>Lng: ${noeud.lng.toFixed(6)}`);
@@ -244,9 +248,9 @@ if (donnees.noeuds && donnees.noeuds.length > 0) {
     marker.options.siteId = noeud.id;
     marker.options.siteType = 'noeud';
     
-    // NO CLICKEAAAA aHH HPTTTA
     marker.on('click', function(e) {
       L.DomEvent.stopPropagation(e);
+      L.DomEvent.preventDefault(e);
       console.log('🔵 Click en nœud:', noeud.id);
       
       if (typeof gererClicMarqueur === 'function' && modeAjoutActif) {
@@ -254,6 +258,11 @@ if (donnees.noeuds && donnees.noeuds.length > 0) {
       } else {
         marker.openPopup();
       }
+    });
+    
+    marker.on('mousedown', function(e) {
+      L.DomEvent.stopPropagation(e);
+      L.DomEvent.preventDefault(e);
     });
     
     noeudMarkers.push(marker);

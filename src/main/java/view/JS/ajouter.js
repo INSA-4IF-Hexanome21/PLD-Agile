@@ -140,37 +140,48 @@ function highlightAvailableMarkers() {
   
   targetMarkers.forEach(marker => {
     if (etape.type === 'noeud') {
-
-      const icon = marker.getIcon();
-      if (icon && icon.options && icon.options.html) {
-        const newHtml = `<div class="marqueur-noeud marqueur-noeud-highlight" style="
-          background:#FFA62B;
-          width:16px;
-          height:16px;
-          border-radius:50%;
-          border:3px solid white;
-          box-shadow: 0 0 15px #FFA62B, 0 0 25px #FFA62B;
-          animation: pulse-highlight 1.5s infinite;
-          pointer-events:auto;
-          cursor:crosshair;
-          position:relative;
-          z-index:10000;
-        "></div>`;
-        
-        marker.setIcon(L.divIcon({
-          className: 'marqueur-personnalise marqueur-highlight',
-          html: newHtml,
-          iconSize: [16, 16],
-          iconAnchor: [8, 8]
-        }));
-        
-
-        marker.options.interactive = true;
-        
-
-        if (marker.setZIndexOffset) {
-          marker.setZIndexOffset(10000);
+      // NO cambiar el icono, solo modificar el estilo del elemento existente
+      try {
+        const iconElement = marker.getElement();
+        if (iconElement) {
+          const noeudDiv = iconElement.querySelector('.marqueur-noeud');
+          if (noeudDiv) {
+            // Guardar estilo original
+            marker._originalStyle = {
+              background: noeudDiv.style.background,
+              boxShadow: noeudDiv.style.boxShadow,
+              width: noeudDiv.style.width,
+              height: noeudDiv.style.height
+            };
+            
+            // Aplicar highlight sin cambiar tamaño
+            noeudDiv.style.background = '#FFA62B';
+            noeudDiv.style.boxShadow = '0 0 15px #FFA62B, 0 0 25px #FFA62B';
+            noeudDiv.classList.add('marqueur-noeud-highlight');
+            
+            // Asegurar que sea clickeable
+            marker.options.interactive = true;
+            marker.options.bubblingMouseEvents = false;
+            
+            // Reattach handlers
+            marker.off('click');
+            marker.off('mousedown');
+            marker.on('click', function(e) {
+              L.DomEvent.stopPropagation(e);
+              L.DomEvent.preventDefault(e);
+              console.log('🟡 Nœud HIGHLIGHT clicked:', marker.options.siteId);
+              if (modeAjoutActif) {
+                gererClicMarqueur(marker, 'noeud');
+              }
+            });
+            marker.on('mousedown', function(e) {
+              L.DomEvent.stopPropagation(e);
+              L.DomEvent.preventDefault(e);
+            });
+          }
         }
+      } catch (e) {
+        console.warn('Erreur highlight noeud:', e);
       }
     } else {
       // Highlight sites
@@ -194,7 +205,6 @@ function highlightAvailableMarkers() {
   
   console.log(`✅ ${highlightedMarkers.length} markers highlighted`);
 }
-
 /**
  * Limpia los highlights
  */
