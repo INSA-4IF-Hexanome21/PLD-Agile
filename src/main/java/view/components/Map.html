@@ -1,1 +1,27 @@
+<link rel="stylesheet" href="/css/livraison.css">
+
 <div id="map"></div>
+
+<div id="deliverer">
+  <h3 class="control-title">Assigner les livreurs</h3>
+  
+  <form id="form-livreurs">
+    <div class="form-group">
+      <label for="nbLivreur">Nombre de livreurs</label>
+      <input type="number" id="nbLivreur" name="nbLivreur" min="1" max="10" value="2" />
+    </div>
+    <button id="btn-generate-zones" type="submit">Générer les livreurs</button>
+    <button id="envoyer-assignations">Envoyer les assignations</button>
+  </form>
+
+  <div id="deliverer-content">
+    <div id="livraisons-pool" class="livraisons-container">
+      <h4>Livraisons à assigner</h4>
+      <div id="livraisons-list">
+      </div>
+    </div>
+
+    <div id="livreurs-zones" class="livreurs-container">
+    </div>
+  </div>
+</div>

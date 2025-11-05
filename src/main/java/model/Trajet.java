@@ -50,7 +50,7 @@ public class Trajet {
         this.dureeTrajet = null;
         this.heureDebut = LocalTime.of(8, 00); //On part toujours de l'entrpôt à 8h
         this.heureFin = null;
-        this.numTrajet = numTrajet++;
+        this.numTrajet = numTrajetTotal++;
     }
 
     // Getters et Setters

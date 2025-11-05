@@ -90,6 +90,16 @@ class ApplicationController {
         }
     }
 
+     /**
+     * Marque la carte comme à l'état initial
+     */
+    onInitial() {
+        this.carteChargee = false;
+        this.carteChargee = false;
+        this.livraisonChargee = false;
+        this.setState(AppState.INITIAL);
+    }
+
     /**
      * Marque la carte comme chargée
      */

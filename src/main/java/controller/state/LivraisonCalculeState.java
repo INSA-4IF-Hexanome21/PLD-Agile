@@ -1,5 +1,8 @@
 package controller.state;
 
+import java.util.HashMap;
+import java.util.List;
+
 import controller.CarteController;
 
 public class LivraisonCalculeState implements State {
@@ -40,10 +43,19 @@ public class LivraisonCalculeState implements State {
         }
     }
 
+     @Override
+    public void assignerLivreur(Controller c, CarteController carteC, HashMap<String, List<String>> assignations) {
+        carteC.effacerCalcul();
+        carteC.assignerLivreurs(assignations);
+        c.setCurrentState(c.livreurAssigneState);
+    }
+
 
     @Override
     public void calculerLivraison(Controller c, CarteController carteC) {
         System.out.println(">>> [LivraisonCalculeState] Recalcul de la livraison...");
+
+        //Calcul la tournée
         try {
             carteC.calculerTournee();
             c.setCurrentState(c.livraisonCalculeState);
@@ -51,6 +63,19 @@ public class LivraisonCalculeState implements State {
             System.err.println(">>> [LivraisonCalculeState] ERREUR pendant le calcul: " + ex.getMessage());
             c.setCurrentState(c.carteChargeState);
             throw new RuntimeException("Erreur lors du calcul de la tournée : " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public void genererFeuillesdeRoute(Controller c, CarteController carteC) {
+        System.out.println(">>> [LivraisonCalculeState] génération des feuilles de routes...");
+        try {
+            carteC.genererFeuillesdeRoute();
+            c.setCurrentState(c.livraisonCalculeState);
+        } catch (Exception ex) {
+            System.err.println(">>> [LivraisonCalculeState] ERREUR pendant la génération: " + ex.getMessage());
+            c.setCurrentState(c.carteChargeState);
+            throw new RuntimeException("Erreur lors de la génération des feuilles de routes : " + ex.getMessage(), ex);
         }
     }
 

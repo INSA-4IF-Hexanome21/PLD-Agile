@@ -169,7 +169,6 @@ public class GestionnaireXML {
         }
         return demandeLivraison;
     }
-
     // --- Méthode utilitaire ---
     private static Noeud trouverNoeud(String idStr, HashMap<Long, Noeud> mapNoeuds) {
         try {

@@ -4,7 +4,9 @@ import com.sun.net.httpserver.HttpServer;
 import controller.state.Controller;
 import utils.ZipUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.io.File;
 import java.io.IOException;
@@ -228,7 +230,7 @@ public class ServeurHTTP {
     });
         
     /**
-     * ! Calculer une livraison
+     * ! Calculer une livraison (avec les livreurs assignés)
      */
            // Endpoint pour calculer la livraison (demande)
     serveur.createContext("/api/calcul", exchange -> {
@@ -238,11 +240,10 @@ public class ServeurHTTP {
             try {
                 // Lecture du corps de la requête
                 byte[] bytes = exchange.getRequestBody().readAllBytes();
-                System.out.println("Bytes recibidos: " + bytes.length);
+                System.out.println("Octets reçus: " + bytes.length);
                 
                 // Lancer le calcul de la livraison par le contrôleur
                 System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
-
                 controller.calculerLivraison();
 
                 System.out.println(">>> Demande chargée avec succès <<<");
@@ -278,6 +279,73 @@ public class ServeurHTTP {
         }
     });
 
+    serveur.createContext("/api/assignations", exchange -> {
+        System.out.println(">>> Requête reçue sur /api/assignations <<<");
+
+        if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            try {
+                byte[] bytes = exchange.getRequestBody().readAllBytes();
+                String body = new String(bytes, "UTF-8");
+                System.out.println("Body reçu: " + body);
+
+                // Parse simple: { "1": ["L001","L003"], "2": ["L002"] }
+               HashMap<String, List<String>> assignations = new HashMap<>(); 
+
+                body = body.trim();
+                if (body.startsWith("{") && body.endsWith("}")) {
+                    body = body.substring(1, body.length() - 1); // SUPRRIMER {}
+                    String[] entries = body.split("(?<=\\]),"); // separer keywords
+
+                    for (String entry : entries) {
+                        String[] parts = entry.split(":", 2);
+                        if (parts.length == 2) {
+                            String livreurId = parts[0].trim().replaceAll("\"", "");
+                            String values = parts[1].trim();
+                            values = values.replaceAll("\\[|\\]|\"", ""); // suprimer [], "
+                            List<String> livraisonIds = new ArrayList<>();
+                            if (!values.isEmpty()) {
+                                for (String id : values.split(",")) {
+                                    livraisonIds.add(id.trim());
+                                }
+                            }
+                            assignations.put(livreurId, livraisonIds);
+                        }
+                    }
+                }
+
+                // Por ahora solo log
+                System.out.println("Assignations reçues: " + assignations);
+
+                // Lancer l'assignation des livraisons par le contrôleur
+                System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
+                controller.assignerLivreur(assignations);
+
+                // Responder
+                String response = "{\"status\":\"ok\",\"message\":\"Assignations reçues\"}";
+                byte[] responseBytes = response.getBytes("UTF-8");
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                exchange.sendResponseHeaders(200, responseBytes.length);
+                exchange.getResponseBody().write(responseBytes);
+                exchange.close();
+
+            } catch (Exception e) {
+                String errorResponse = "{\"status\":\"error\",\"message\":\"" 
+                                        + e.getMessage().replace("\"", "'") + "\"}";
+                byte[] errorBytes = errorResponse.getBytes("UTF-8");
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.sendResponseHeaders(500, errorBytes.length);
+                exchange.getResponseBody().write(errorBytes);
+                exchange.close();
+            }
+        } else {
+            exchange.sendResponseHeaders(405, -1);
+            exchange.close();
+        }
+    });
+
+
+
     serveur.createContext("/api/carte", exchange -> {
         System.out.println(">>> Requête reçue sur /api/carte <<<");
         
@@ -301,6 +369,7 @@ public class ServeurHTTP {
             String query = exchange.getRequestURI().getQuery();
             Map<String, String> params = parseQuery(query);
             System.out.println(params);
+            controller.genererFeuillesdeRoute();
 
             if ((params.get("files") != null)
             ) {
@@ -438,6 +507,48 @@ public class ServeurHTTP {
             exchange.sendResponseHeaders(200, octets.length);
             exchange.getResponseBody().write(octets);
             exchange.close();
+        });
+
+        serveur.createContext("/api/undoAction", exchange -> {
+            
+            System.out.println(">>> Requête reçue sur /api/undoAction <<<");
+        
+            String jsonResponse = controller.undoAction();
+            byte[] octets = jsonResponse.getBytes("UTF-8");
+            
+            exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            exchange.sendResponseHeaders(200, octets.length);
+            exchange.getResponseBody().write(octets);
+            exchange.close();
+            
+            System.out.println(">>> Réponse envoyée <<<");
+        });
+
+        serveur.createContext("/api/redoAction", exchange -> {
+            
+            System.out.println(">>> Requête reçue sur /api/redoAction <<<");
+        
+            String jsonResponse = controller.redoAction();
+            byte[] octets = jsonResponse.getBytes("UTF-8");
+            
+            exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            exchange.sendResponseHeaders(200, octets.length);
+            exchange.getResponseBody().write(octets);
+            exchange.close();
+            
+            System.out.println(">>> Réponse envoyée <<<");
+        });
+
+        serveur.createContext("/api/resetCarte", exchange -> {
+            
+            System.out.println(">>> Requête reçue sur /api/resetCarte <<<");
+        
+            controller.resetCarte();
+            exchange.sendResponseHeaders(200, -1);
+            exchange.close();
+            
         });
     }
     
