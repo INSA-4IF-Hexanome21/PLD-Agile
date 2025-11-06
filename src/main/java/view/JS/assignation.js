@@ -15,7 +15,12 @@ function assignationLivraison() {
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+<<<<<<< HEAD
     const nb = parseInt(document.getElementById('nbLivreur').value) || 1;
+=======
+    const nb = parseInt(document.getElementById('nbLivreur').value) || 1
+    resetAssignations();
+>>>>>>> dev
     genererZonesLivreurs(nb);
   });
 
@@ -32,23 +37,59 @@ function envoyerAssignations() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(assignationsState)
   })
+<<<<<<< HEAD
   .then(res => res.json())
   .then(data => {
     console.log('✅ Assignations envoyées:', data);
   })
   .catch(err => {
     console.error('❌ Erreur lors de l’envoi des assignations:', err);
+=======
+  .then(res => res.json().then(data => ({ ok: res.ok, data })))
+  .then(({ ok, data }) => {
+      if (!ok) {
+          console.error('❌ Erreur assignations:', data.message);
+          return;
+      }
+
+      console.log('✅ Assignations envoyées:', data);
+      document.getElementById('envoyer-assignations').style.display = 'none';
+  })
+  .catch(err => {
+      console.error('❌ Erreur lors de l’envoi des assignations:', err);
+>>>>>>> dev
   });
 }
 
 /**
  * Extrae livraisons de los sites y las agrupa
  */
+<<<<<<< HEAD
 function extraerYMostrarLivraisons(sites) {
   
   document.getElementById('envoyer-assignations').addEventListener('click', () => {
   envoyerAssignations();
 });
+=======
+// var NB_CLICK = 0; //Variable permettant de savoir si l'évènement click a déjà été défini
+var CLICK_DEF = false;
+function extraerYMostrarLivraisons(sites) {
+  if(!CLICK_DEF){
+    document.getElementById('btn-calcul-tournee').addEventListener('click', () => {
+      // if(NB_CLICK%3 === 0){
+      if(toutesLivraisonsAssignees()){
+        envoyerAssignations();
+        setTimeout(lancerCalculTimeout,1000);
+      }
+      
+        // console.warn('click : ', NB_CLICK);
+      // }
+      // ++NB_CLICK;
+    });
+    CLICK_DEF = true;
+  }
+  
+>>>>>>> dev
 
   console.log('📦 Extrayendo livraisons de sites...', sites);
   
@@ -78,6 +119,15 @@ function extraerYMostrarLivraisons(sites) {
   mostrarLivraisonsDisponibles(livraisonsData);
 }
 
+<<<<<<< HEAD
+=======
+function lancerCalculTimeout(){
+    lancerCalcul();
+    console.log("LANCERCALCULTIMEOUT");
+    chargerComposantPrincipal('/components/Map.html');
+}
+
+>>>>>>> dev
 /**
  * Muestra las livraisons disponibles en el pool
  */
@@ -165,7 +215,11 @@ function genererZonesLivreurs(nombre) {
     estadoActual[livreurId] = cards.map(c => parseInt(c.dataset.livraisonId));
   });
   
+<<<<<<< HEAD
   // Merge con el estado guardado
+=======
+  // Fusionner avec l’état enregistré
+>>>>>>> dev
   Object.keys(estadoActual).forEach(key => {
     if (!assignationsState[key]) assignationsState[key] = [];
     estadoActual[key].forEach(id => {
@@ -231,6 +285,10 @@ function crearZoneLivreur(numero) {
   });
   
   dropzone.addEventListener('drop', (e) => {
+<<<<<<< HEAD
+=======
+    console.log(e);
+>>>>>>> dev
     e.preventDefault();
     dropzone.classList.remove('dragover');
     
@@ -238,33 +296,70 @@ function crearZoneLivreur(numero) {
     const draggedEl = document.querySelector(`[data-livraison-id="${livraisonId}"]`);
     
     if (draggedEl) {
+<<<<<<< HEAD
+=======
+      console.log(draggedEl);
+>>>>>>> dev
       // Quitar empty state si existe
       const emptyState = dropzone.querySelector('.empty-state');
       if (emptyState) emptyState.remove();
       
       // Mover el elemento
       dropzone.appendChild(draggedEl);
+<<<<<<< HEAD
+=======
+
+      //On supprime l'assignation faîtes éventuellement à d'autres livreurs
+      Object.keys(assignationsState).forEach(function(key) {
+        if(assignationsState[key].includes(livraisonId)){
+          const index = assignationsState[key].indexOf(livraisonId);
+          assignationsState[key].splice(index,1);
+        }
+      });
+>>>>>>> dev
       
       // Actualizar estado
       if (!assignationsState[numero]) assignationsState[numero] = [];
       if (!assignationsState[numero].includes(livraisonId)) {
         assignationsState[numero].push(livraisonId);
       }
+<<<<<<< HEAD
       
       // Actualizar contador
       actualizarContadorLivreur(numero);
+=======
+
+      
+      
+      // Actualizar contador
+      // actualizarContadorLivreur(numero);
+      actualiserAllConteneurs()
+>>>>>>> dev
       
       // Actualizar pool
       mostrarLivraisonsDisponibles(livraisonsData);
       
       // Enviar al backend
+<<<<<<< HEAD
       assignerLivraisonAuLivreur(livraisonId, numero);
+=======
+      //assignerLivraisonAuLivreur(livraisonId, numero);
+>>>>>>> dev
     }
   });
   
   return div;
 }
 
+<<<<<<< HEAD
+=======
+function actualiserAllConteneurs(){
+  var zones = document.querySelectorAll(`.livreur-zone`);
+  zones.forEach(function(zone){
+    actualizarContadorLivreur(zone.attributes[1].value)
+  });
+}
+>>>>>>> dev
 /**
  * Actualiza el contador de livraisons de un livreur
  */
@@ -311,4 +406,57 @@ function devolverAlPool(livraisonId) {
   }
   
   mostrarLivraisonsDisponibles(livraisonsData);
+<<<<<<< HEAD
+=======
+}
+
+/**
+ * Vérifie si toutes les livraisons sont déjà assignées...
+ */
+function toutesLivraisonsAssignees() {
+  if (!livraisonsData || livraisonsData.length === 0) return false;
+
+  // Construire set de livraisons assignees
+  const assignedIds = new Set();
+  Object.values(assignationsState).forEach(arr => arr.forEach(id => assignedIds.add(id))); 
+  const allAssigned = livraisonsData.every(liv => assignedIds.has(liv.id)); // Verifier sils sont tous dans le set
+
+  console.log('🔎 Toutes les livraisons assignées ?', allAssigned);
+  return allAssigned;
+}
+
+/**
+ * Réinitialise complètement le système d’assignation
+ */
+function resetAssignations(nouvellesDonneesSites = null) {
+  CLICK_DEF = false;
+  console.log('🔄 Réinitialisation des assignations...');
+
+  // Reset des variables globales
+  livraisonsData = [];
+  assignationsState = {};
+  CLICK = 0;
+
+  // Vider les conteneurs
+  const poolContainer = document.getElementById('livraisons-list');
+  const livreursContainer = document.getElementById('livreurs-zones');
+  if (poolContainer) poolContainer.innerHTML = '';
+  if (livreursContainer) livreursContainer.innerHTML = '';
+
+  // Supprimer anciens écouteurs éventuels sur le bouton
+  const envoyerBtn = document.getElementById('btn-calcul-tournee');
+  if (envoyerBtn) {
+    const newBtn = envoyerBtn.cloneNode(true);
+    envoyerBtn.parentNode.replaceChild(newBtn, envoyerBtn);
+  }
+
+  // Si il y'a nouevaus données → reconstruire l'interface
+  const sites = nouvellesDonneesSites || (donneesGlobales && donneesGlobales.sites);
+  if (sites) {
+    console.log('🆕 Chargement de nouvelles livraisons...');
+    extraerYMostrarLivraisons(sites);
+  } else {
+    console.warn('Aucune donnée de sites disponible pour le reset.');
+  }
+>>>>>>> dev
 }

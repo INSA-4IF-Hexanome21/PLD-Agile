@@ -4,7 +4,11 @@
   width: 100%;
   height: auto !important;
   overflow: visible !important;
+<<<<<<< HEAD
   display: block !important;
+=======
+  /* display: block !important; */
+>>>>>>> dev
   background: white;
   padding: 1.5rem;
   border-radius: 8px;
@@ -70,7 +74,11 @@
 }
 
 
+<<<<<<< HEAD
 #envoyer-assignations {
+=======
+#btn-calcul-tournee {
+>>>>>>> dev
   background: var(--spie-dark-teal);
   color: white;
   border: none;
@@ -81,7 +89,11 @@
   transition: all 0.2s;
 }
 
+<<<<<<< HEAD
 #envoyer-assignations:hover {
+=======
+#btn-calcul-tournee:hover {
+>>>>>>> dev
   background: var(--spie-medium-teal);
 }
 

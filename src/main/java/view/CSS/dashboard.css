@@ -12,7 +12,7 @@
   --light-gray: #ECF0F1;
 }
 
-/* //! --- CONTROLES DEL SIDEBAR --- */
+/* //! --- CONTROLES DE LA SIDEBAR --- */
 #sidebar {
   width: 280px;
   padding: 16px;
@@ -46,7 +46,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 10px 0;
   padding: 8px;
   border-radius: 6px;
   transition: background 0.2s ease;
@@ -71,7 +70,7 @@
   align-items: center;
   gap: 6px; /* Espacement réduit */
   flex: 1;
-  font-size: 0.85rem; /* Texte plus petit */
+  font-size: 0.65rem; 
   color: #333;
   user-select: none;
   white-space: nowrap; /* Évite le retour à la ligne */
@@ -94,7 +93,8 @@
 }
 
 /* Conteneur principal de la fenêtre flottante */
-.control-trajets {
+.control-trajets,
+.control-sites-impactes {
   background: rgba(255, 255, 255, 0.95); 
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -106,19 +106,21 @@
 }
 
 /* En-tête */
-.trajets-header {
+.trajets-header,
+.sites-impactes-header {
   background: rgba(72, 159, 181, 0.9);
   color: white;
   padding: 8px 12px; 
   border-radius: 8px 8px 0 0;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
 /* Corps */
-.trajets-body {
+.trajets-body,
+.sites-impactes-body {
   padding: 8px; /* Réduit l'espacement */
-  max-height: 300px; /* Hauteur max réduite */
+  max-height: 100px; /* Hauteur max réduite */
   overflow-y: auto;
   overflow-x: hidden; /* Évite le débordement horizontal */
 }
@@ -145,7 +147,8 @@
 }
 
 /* Liste des trajets */
-.trajets-list {
+.trajets-list,
+.sites-impactes-list {
   display: flex;
   flex-direction: column;
   gap: 4px; /* Espacement réduit */
@@ -167,7 +170,7 @@
   pointer-events: none;
 }
 
-/* //! Indicadores de color para tipos de sites */
+/* //! Indicateur de couleur pour chaque type de sites */
 .site-indicator {
   display: inline-block;
   width: 7px;
@@ -460,7 +463,8 @@ display: flex;
 }
 
 /* //! Styles pour les contrôles de Leaflet */
-.leaflet-control-zoom a {
+.leaflet-control-zoom a,
+.leaflet-control-undoRedo a {
   background: var(--spie-dark-teal) !important;
   color: var(--white) !important;
   border: none !important;
@@ -468,9 +472,43 @@ display: flex;
   transition: all 0.3s ease !important;
 }
 
-.leaflet-control-zoom a:hover {
+.leaflet-control-zoom a:hover,
+.leaflet-control-undoRedo a:hover {
   background: var(--spie-medium-teal) !important;
   transform: scale(1.05);
+}
+
+/* Container du zoom */
+.leaflet-bar {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 4px; 
+}
+
+/* Boutons zoom */
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.undo-btn, 
+.redo-btn {
+  width: 32px;  
+  height: 32px;
+  line-height: 32px;
+  text-align: center;
+}
+
+.undo-btn, 
+.redo-btn {
+  display: flex;             
+  justify-content: center;   
+  align-items: center;       
+  width: 32px;  
+  height: 32px;
+}
+
+
+.leaflet-top.leaflet-left {
+  display: flex;       
+  gap: 5px;            
 }
 
 /* //! Personnalisation des popups Leaflet */
@@ -492,6 +530,32 @@ display: flex;
 
 .leaflet-popup-pane {
   z-index: 10000 !important;
+}
+
+.delete-control {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.delete-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.delete-control img {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
 }
 
 /* //! Marqueurs personnalisés */
@@ -699,7 +763,7 @@ a:focus {
   outline-offset: 2px;
 }
 
-/* //! Indicadores de color en el sidebar */
+/* //! Indicateurs de couleur dans la sidebar */
 .site-indicator {
   display:inline-block;
   width: 12px;
@@ -713,13 +777,13 @@ a:focus {
 .site-indicator.livraison { background: #e53e3e; }
 .site-indicator.noeuds { background: #16697A; }
 
-/* //! Map dim class */
+/* //! Carte dim classe */
 .leaflet-container.map-dim {
   filter: grayscale(0.6) brightness(0.6);
   transition: filter 180ms ease;
 }
 
-/* //! small visual for sidebar buttons (ajusta según tu tema) */
+/* //! Petit visual pour la sidebar */
 .sidebar-nav { display:block; width:100%; padding:8px 10px; text-align:left; border:none; background:transparent; cursor:pointer; margin-bottom:6px; border-radius:6px; }
 .sidebar-nav.active { background: rgba(102,126,234,0.12); color:#2a2a2a; }
 .control-btn { padding:8px 10px; border-radius:6px; border:none; cursor:pointer; background:#667eea; color:#fff; margin:6px 4px; }

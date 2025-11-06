@@ -3,6 +3,7 @@ package model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 //Classe permettant de stocker une demande de livraison
 public class DemandeLivraison {
@@ -35,7 +36,7 @@ public class DemandeLivraison {
 
     //Fonction permettant d'assigner un livreur à une livraison
     //Elle renvoie le nombre de livraisons qu'il reste à assigner
-    public Integer assignerLivreur(Livreur livreur, Integer idLivraison, Carte carte ){
+    public void assignerLivreur(Livreur livreur, Integer idLivraison, Carte carte ){
         
         List<Long> idsSiteslivraison = livraisons.get(idLivraison);
         //On vérifie si la livraison a déjà été assignée si ce n'est pas le cas on la défini comme assignée
@@ -60,7 +61,7 @@ public class DemandeLivraison {
         for(Long id : idsSiteslivraison){
             trajet.addSite(sites.get(id));
         }
-        return this.nbLivraisonsNonAssignees;
+        //return this.nbLivraisonsNonAssignees;
     }
 
     //Permet d'ajouter un site
@@ -92,4 +93,10 @@ public class DemandeLivraison {
         }
         sites.put(idSite,site);
     }    
+
+    public Long getSiteAssocie(Integer numLivraison, Long idSite) {
+        List<Long> sitesAssocies = livraisons.get(numLivraison);
+        if (Objects.equals( idSite, sitesAssocies.get(0)) ) return sitesAssocies.get(1);
+        else return sitesAssocies.get(0);
+    }
 }

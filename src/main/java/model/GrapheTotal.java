@@ -31,6 +31,7 @@ public class GrapheTotal implements Graphe {
 		this.indexToId = new HashMap<>();
 		this.mapAllSommets = new HashMap<>();
 		this.tronconHashMap = new HashMap<>();
+		this.cheminsMin = new HashMap<>(); 
 		this.noeudsHashMap = noeuds;
 		Integer compteur = 1;
 
@@ -70,7 +71,7 @@ public class GrapheTotal implements Graphe {
 			//Ajout des tronçon dans la table de conversion
 			tronconHashMap.put(new SimpleEntry<>(idNoeud1, idNoeud2), troncon);
 		}
-		// System.out.println(tronconHashMap.size());
+		System.out.println(tronconHashMap.size());
 	}
 
 	@Override
@@ -156,7 +157,7 @@ public class GrapheTotal implements Graphe {
 	}
 
 	public void RechercheDijkstra(List<Site> sites) {
-		this.cheminsMin = new HashMap<>(); 
+		// this.cheminsMin = new HashMap<>(); 
 		this.mapDistances = new HashMap<>();  
 
 		// Créer un Set des indices correspondant aux sites
@@ -273,11 +274,14 @@ public class GrapheTotal implements Graphe {
 		return cheminCompletConverti;
 	}
 
-	public Troncon NoeudstoTroncon(long idNoeud1,long idNoeud2){
-		Troncon troncon = tronconHashMap.get(new SimpleEntry<>(idNoeud1, idNoeud2));
+	public Troncon NoeudstoTroncon(Long idNoeud1,Long idNoeud2){
+		var key = new SimpleEntry<>(Long.valueOf(idNoeud1), Long.valueOf(idNoeud2));
+		Troncon troncon = tronconHashMap.get(key);
 		if(troncon == null){
-			Troncon tronconInverse =  tronconHashMap.get(new SimpleEntry<>(idNoeud2, idNoeud1));
-			troncon = new Troncon(tronconInverse.getNomRue(), tronconInverse.getLongueur(), tronconInverse.getDestination(), tronconInverse.getOrigine());
+			key = new SimpleEntry<>(Long.valueOf(idNoeud2), Long.valueOf(idNoeud1));
+			Troncon tronconInverse =  tronconHashMap.get(key);
+			if(tronconInverse != null) troncon = new Troncon(tronconInverse.getNomRue(), tronconInverse.getLongueur(), tronconInverse.getDestination(), tronconInverse.getOrigine());
+			else System.err.println("ERREUR : Tronçon introuvable pour les nœuds " + idNoeud1 + " <-> " + idNoeud2);
 		}
 		return troncon;
 	}

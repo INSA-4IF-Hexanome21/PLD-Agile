@@ -1,10 +1,13 @@
 let carte = null;
+let trajetsFlottantControl;
+let sitesFlottantImpactesControl;
 let marqueurs = [];
 let lignes = [];
 let siteMarkers = [];
 let noeudMarkers = [];
 let tronconLines = [];
 let trajetLines = {};
+let sitesImpactes = [];
 let donneesGlobales = null;
 let sitesParTrajet = {}; 
 
@@ -78,34 +81,37 @@ function chargerComposantPrincipal(url) {
     console.error('Element #main-content introuvable');
     return;
   }
-  main.innerHTML = '<p>Chargement en cours...</p>';
-
+  //main.innerHTML = '<p>Chargement en cours...</p>';
+  showMainLoader('Chargement en cours...');
   fetch(url)
     .then(res => {
       if (!res.ok) throw new Error('Erreur de chargement: ' + url + ' (' + res.status + ')');
       return res.text();
     })
     .then(html => {
+      hideMainLoader();
       main.innerHTML = html;
       if (url.includes('Map.html')) {
         requestAnimationFrame(() => {
           // Si le map est présent initialiser direcetmenet
           if (document.getElementById('map')) {
+            console.log("L 53 DASH.JS");
             initialiserCarte();
-            assignationLivraison();
+            // assignationLivraison();
             return;
           }
           // fallback après un court délai
           console.warn('#map introuvable au premier passage, tentative de secours...');
-          setTimeout(() => {
-            if (document.getElementById('map')) {
-              initialiserCarte();
-              assignationLivraison();
-            } else {
-              console.error('Élément #map introuvable après fallback — vérifie ton Map.html (doit contenir <div id="map">) et l\'insertion du composant.');
-              main.innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable. Vérifiez Map.html.</p>';
-            }
-          }, 250); 
+          // setTimeout(() => {
+          //   if (document.getElementById('map')) {
+          //     initialiserCarte();
+          //     assignationLivraison();
+          //   } else {
+          //     // DEBUG
+          //     console.error('Élément #map introuvable après fallback — vérifie ton Map.html (doit contenir <div id="map">) et l\'insertion du composant.');
+          //     main.innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable. Vérifiez Map.html.</p>';
+          //   }
+          // }, 250); 
         });
       }
     })
@@ -113,6 +119,75 @@ function chargerComposantPrincipal(url) {
       console.error("Erreur lors du chargement du composant:", err);
       main.innerHTML = '<p style="color: #e74c3c;">Erreur lors du chargement du composant</p>';
     });
+}
+
+function showMainLoader(message = 'Chargement en cours...') {
+  const main = document.getElementById('main-content');
+  if (!main) return;
+
+  let loader = document.getElementById('main-loader');
+  if (!loader) {
+    loader = document.createElement('div');
+    loader.id = 'main-loader';
+    loader.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      backdrop-filter: blur(2px);
+    `;
+    loader.innerHTML = `
+      <div style="
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #489FB5;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+      "></div>
+      <p id="main-loader-message" style="
+        margin-top: 20px; 
+        font-size: 1.3rem; 
+        color: #489FB5;
+        font-weight: 600;
+      "></p>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    `;
+    
+    // S'assurer que main a une position relative
+    if (getComputedStyle(main).position === 'static') {
+      main.style.position = 'relative';
+    }
+    
+    main.appendChild(loader);
+  } else {
+    loader.style.display = 'flex';
+  }
+  
+  const messageElement = document.getElementById('main-loader-message');
+  if (messageElement) {
+    messageElement.textContent = message;
+  }
+}
+
+// Fonction pour masquer le loader
+function hideMainLoader() {
+  const loader = document.getElementById('main-loader');
+  if (loader) {
+    loader.style.display = 'none';
+  }
 }
 
 function computeSiteRadius(map) {
@@ -148,7 +223,99 @@ function initialiserCarte() {
     maxZoom: 19
   }).addTo(carte);
 
-  return fetch("/api/carte")
+  // --- Contrôle Undo/Redo ---
+  const UndoRedoControl = L.Control.extend({
+    options: {
+      position: 'topleft' 
+    },
+
+    onAdd: function () {
+      const container = L.DomUtil.create('div', 'leaflet-control-undoRedo leaflet-bar leaflet-control');
+
+      const undoBtn = L.DomUtil.create('a', 'undo-btn', container);
+      undoBtn.href = '#';
+      undoBtn.title = 'Annuler';
+      undoBtn.innerHTML = `<img src="/images/undo.svg" style="width:18px;height:18px;margin:6px;" />`
+
+      const redoBtn = L.DomUtil.create('a', 'redo-btn', container);
+      redoBtn.href = '#';
+      redoBtn.title = 'Rétablir';
+      redoBtn.innerHTML = '<img src="/images/redo.svg" style="width:18px;height:18px;margin:6px;" />';
+
+      // Empêche la propagation des clics pour ne pas déclencher le zoom/pan de Leaflet
+      L.DomEvent.disableClickPropagation(container);
+
+      // Ajouter les événements
+      L.DomEvent.on(undoBtn, 'click', L.DomEvent.stop)
+                .on(undoBtn, 'click', () => undoAction());
+
+      L.DomEvent.on(redoBtn, 'click', L.DomEvent.stop)
+                .on(redoBtn, 'click', () => redoAction());
+
+      return container;
+    }
+  });
+  new UndoRedoControl().addTo(carte);
+
+  // --- Créer le panneau flottant des trajets (unique) ---
+  L.Control.TrajetsFlottant = L.Control.extend({
+    onAdd: function(map) {
+      const container = L.DomUtil.create('div', 'control-trajets');
+
+      // En-tête
+      const header = L.DomUtil.create('div', 'trajets-header', container);
+      header.innerHTML = 'Gestion des trajets';
+
+      // Corps
+      const body = L.DomUtil.create('div', 'trajets-body', container);
+      container._body = body;
+
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+
+      return container;
+    },
+    onRemove: function(map) {}
+  });
+
+  L.control.trajetsFlottant = function(opts) {
+    return new L.Control.TrajetsFlottant(opts);
+  };
+
+  trajetsFlottantControl = L.control.trajetsFlottant({ position: 'topright' });
+  trajetsFlottantControl.addTo(carte);
+  
+  // --- Créer le panneau flottant pour les sites impactes (unique) ---
+  L.Control.SitesImpactesFlottant = L.Control.extend({
+    onAdd: function(map) {
+      const container = L.DomUtil.create('div', 'control-sites-impactes');
+
+      // En-tête
+      const header = L.DomUtil.create('div', 'sites-impactes-header', container);
+      header.innerHTML = 'Sites impactes';
+
+      // Corps
+      const body = L.DomUtil.create('div', 'sites-impactes-body', container);
+      container._body = body;
+
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+
+      return container;
+    },
+    onRemove: function(map) {}
+  });
+
+  L.control.sitesImpactesFlottant = function(opts) {
+    return new L.Control.SitesImpactesFlottant(opts);
+  };
+
+  sitesImpactesFlottantControl = L.control.sitesImpactesFlottant({ position: 'topright' });
+  sitesImpactesFlottantControl.addTo(carte);
+  
+
+  // --- Charger les données ---
+  fetch("/api/carte")
     .then(res => {
       if (!res.ok) throw new Error('Erreur API: ' + res.status);
       return res.json();
@@ -158,18 +325,11 @@ function initialiserCarte() {
       donneesGlobales = donnees;
       afficherDonneesSurCarte(donnees);
       configurerControlesVisibilite();
-
-      console.log('✅ Carte initialisée:', {
-        sites: siteMarkers.length,
-        noeuds: noeudMarkers.length,
-        troncons: tronconLines.length
-      });
-
-      if (document.getElementById('form-livreurs')) {
+      mettreAJourTrajetsFlottant();
+      mettreAJourSitesImpactesFlottant();
+       if (document.getElementById('form-livreurs')) {
         assignationLivraison();
       }
-      
-      return true; 
     })
     .catch(err => {
       console.error('Erreur lors du chargement des données de la carte:', err);
@@ -308,9 +468,22 @@ if (donnees.noeuds && donnees.noeuds.length > 0) {
       }
     });
 
+    // 5.sites impactes 
+    console.log('Sites impactés:', donnees.sitesImpactes);
+    if (donnees.sitesImpactes) {
+      donnees.sitesImpactes.forEach( s => {
+      sitesImpactes.push(s);
+      });
+      mettreAJourSitesImpactesFlottant();
+    }
+
     // 4.trajets (si hay)
     console.log('Trajets reçus:', donnees.trajets);
     if (donnees.trajets) {
+      //desactiver noeuds et troncons affichage
+      visibilityState.troncons = false;
+      visibilityState.noeuds = false;
+      configurerControlesVisibilite();
       for (const key in donnees.trajets) {
         const color = getRandomHexColor();
         trajetLines[key] = [];
@@ -523,18 +696,55 @@ function creerMarqueurSite(site, type, color, radius) {
     white-space:nowrap;
   ">${site.numPassage??''}</div>`;
 
+  // label fijo debajo del círculo mostrando el "num livraison"
+  const labelHtmlNum = `<div style="
+    display:inline-block;
+    background:rgba(255,255,255,0.92);
+    padding:2px 6px;
+    border-radius:4px;
+    border:1px solid rgba(0,0,0,0.08);
+    font-size:12px;
+    color:#222;
+    box-shadow:0 1px 2px rgba(0,0,0,0.06);
+    white-space:nowrap;
+  ">${site.numLivraison??''}</div>`;
+
+  // label fijo debajo del círculo mostrando el "num livraison"
+  const labelHtmlNum = `<div style="
+    display:inline-block;
+    background:rgba(255,255,255,0.92);
+    padding:2px 6px;
+    border-radius:4px;
+    border:1px solid rgba(0,0,0,0.08);
+    font-size:12px;
+    color:#222;
+    box-shadow:0 1px 2px rgba(0,0,0,0.06);
+    white-space:nowrap;
+  ">${site.numLivraison??''}</div>`;
+
 
   const hasArrival = !(site.arrivee == null || site.arrivee === '');
   let labelIcon;
 
   if (!hasArrival) {
-    labelIcon = L.divIcon({
-      className: 'site-order-label-hidden',
-      html: '',
-      iconSize: [0, 0],
-      iconAnchor: [0, 0]
-    });
-  } else {
+    const _siteTypeLower = (site.type || '').toString().toLowerCase();
+    if (_siteTypeLower !== 'entrepot') {
+      labelIcon = L.divIcon({
+        className: 'site-order-label',
+        html: labelHtmlNum,
+        iconSize: null,
+        iconAnchor: [0, -radius - 8]
+      });
+    } else {
+      labelIcon = L.divIcon({
+        className: 'site-order-label-hidden',
+        html: '',
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+      });
+    } 
+  }
+  else {
     const _siteTypeLower = (site.type || '').toString().toLowerCase();
     if (_siteTypeLower !== 'entrepot') {
       labelIcon = L.divIcon({
@@ -607,6 +817,11 @@ function creerMarqueurSite(site, type, color, radius) {
     marker.bindPopup(`<strong style="color:${color}">${type} ${site.id}</strong>
       <br>Heure d'arrivée: ${site.arrivee}
       <br>Heure de départ: ${site.depart} 
+      <div class="delete-control">
+        <button id="delete-btn" onclick="deleteSite(${site.id}, '${type}', ${site.numLivraison})" title="Supprimer">
+          <img src="/images/delete.svg" style="color:#e74c3c;width:18px;height:18px;"></img>
+        </button>
+      </div>
       `);
   }
   
@@ -711,134 +926,26 @@ function updateVisibility() {
 }
 
 function configurerControlesVisibilite() {
-  // FR: On attend des checkboxes avec ids toggle-entrepot, toggle-collecte, toggle-depot
-  ['entrepot', 'collecte', 'depot'].forEach(type => {
+  // Synchroniser les checkboxes principales
+  ['entrepot','collecte','depot','noeuds','troncons','trajets'].forEach(type => {
     const cb = document.getElementById(`toggle-${type}`);
     if (cb) {
       cb.checked = visibilityState[type];
-      cb.addEventListener('change', (e) => {
+      cb.addEventListener('change', e => {
         visibilityState[type] = e.target.checked;
         updateVisibility();
+        // Si c'est le toggle trajets, mettre à jour le panneau flottant
+        if (type === 'trajets') {
+          mettreAJourTrajetsFlottant();
+        }
       });
     }
   });
 
-  // FR: Toggle pour les nœuds
-  const tNoeuds = document.getElementById('toggle-noeuds');
-  if (tNoeuds) {
-    tNoeuds.checked = visibilityState.noeuds;
-    tNoeuds.addEventListener('change', (e) => {
-      visibilityState.noeuds = e.target.checked;
-      updateVisibility();
-    });
-  }
+  // Mettre à jour le contenu du panneau flottant
+  mettreAJourTrajetsFlottant();
 
-  // FR: Toggle pour les tronçons
-  const tTron = document.getElementById('toggle-troncons');
-  if (tTron) {
-    tTron.checked = visibilityState.troncons;
-    tTron.addEventListener('change', (e) => {
-      visibilityState.troncons = e.target.checked;
-      updateVisibility();
-    });
-  }
-
-  // FR: Toggle pour les trajets
-  const tTraj = document.getElementById('toggle-trajets');
-  if (tTraj) {
-    tTraj.checked = visibilityState.trajets;
-    tTraj.addEventListener('change', (e) => {
-      visibilityState.trajets = e.target.checked;
-      updateVisibility();
-    });
-  }
-
-  // FR: Créer un contrôle Leaflet flottant pour les trajets
-  L.Control.TrajetsFlottant = L.Control.extend({
-    onAdd: function(map) {
-      const container = L.DomUtil.create('div', 'control-trajets');
-      
-      // En-tête
-      const header = L.DomUtil.create('div', 'trajets-header', container);
-      header.innerHTML = '<strong>Gestion des trajets</strong>';
-      
-      // Corps avec les contrôles
-      const body = L.DomUtil.create('div', 'trajets-body', container);
-      
-      if (Object.keys(trajetLines).length === 0) {
-        const emptyBody = L.DomUtil.create('div', 'empty-body', body);
-        emptyBody.innerHTML = " Aucun trajet disponible. ";
-      }
-      else {
-        // Conteneur des sous-trajets
-        const controlContainer = L.DomUtil.create('div', 'trajets-list', body);
-        controlContainer.id = 'trajet-controls-floating';
-        
-        // Générer les checkboxes pour chaque trajet
-        for(const key in trajetLines) {
-          const trajet = trajetLines[key];
-          const index = parseInt(key,10)+1
-          
-          const trajetItem = L.DomUtil.create('div', 'control-row trajet-item', controlContainer);
-          const label = L.DomUtil.create('label', '', trajetItem);
-          label.setAttribute('for', `trajet-${index}`);
-          
-          const checkbox = L.DomUtil.create('input', '', label);
-          checkbox.type = 'checkbox';
-          checkbox.id = `trajet-${index}`;
-          checkbox.checked = true;
-          checkbox.disabled = tTraj && !tTraj.checked;
-          
-          label.appendChild(document.createTextNode(` Trajet ${index}`));
-          
-          // Event listener pour afficher/masquer le trajet
-          checkbox.addEventListener('change', (e) => {
-            trajet.forEach((t) => {
-              if (e.target.checked) {
-                t.addTo(carte);
-              } else {
-                carte.removeLayer(t);
-              }
-            });
-          });
-        }
-      }
-      
-      
-      // Synchronisation dynamique du disabled sur le toggle principal
-      if (tTraj) {
-        tTraj.addEventListener('change', () => {
-          const condition = !tTraj.checked;
-          document.querySelectorAll('[id^="trajet-"]').forEach(input => {
-            input.disabled = condition;
-            if (condition && !input.checked) {
-              input.checked = true;
-            }
-          });
-        });
-      }
-      
-      // Empêcher la propagation des événements
-      L.DomEvent.disableClickPropagation(container);
-      L.DomEvent.disableScrollPropagation(container);
-      
-      return container;
-    },
-    
-    onRemove: function(map) {
-      // Nettoyage si nécessaire
-    }
-  });
-
-  // Créer la fonction d'initialisation
-  L.control.trajetsFlottant = function(opts) {
-    return new L.Control.TrajetsFlottant(opts);
-  };
-
-  // Ajouter le contrôle à la carte
-  L.control.trajetsFlottant({ position: 'topright' }).addTo(carte);
-
-  // FR: Bouton pour recentrer la vue (utilise donneesGlobales)
+  // Bouton pour recentrer la vue
   const btnReset = document.getElementById('btn-reset-view');
   if (btnReset) {
     btnReset.addEventListener('click', () => {
@@ -853,21 +960,94 @@ function configurerControlesVisibilite() {
     });
   }
 
-  // FR: Bouton bascule « tout afficher / tout cacher »
+  // Bouton bascule « tout afficher / tout cacher »
   const btnToggleAll = document.getElementById('btn-toggle-all');
   if (btnToggleAll) {
     btnToggleAll.addEventListener('click', () => {
       const all = ['entrepot','collecte','depot','noeuds','troncons','trajets'].every(k => visibilityState[k] === true);
       const newState = !all;
       Object.keys(visibilityState).forEach(k => visibilityState[k] = newState);
-      // FR: mettre à jour l'état visuel des checkboxes si elles existent
       ['entrepot','collecte','depot','noeuds','troncons','trajets'].forEach(k => {
         const el = document.getElementById(`toggle-${k}`);
         if (el) el.checked = visibilityState[k];
       });
       updateVisibility();
+      mettreAJourTrajetsFlottant();
     });
   }
+}
+
+// Fonction auxiliaire pour mettre à jour le panneau flottant des trajets
+function mettreAJourSitesImpactesFlottant() {
+  if (!sitesImpactesFlottantControl) return;
+  const container = sitesImpactesFlottantControl.getContainer();
+  if (!container) return;
+
+  let body = container.querySelector('.sites-impactes-body');
+  if (!body) {
+    body = L.DomUtil.create('div', 'sites-impactes-body', container);
+  }
+  body.innerHTML = '';
+
+  if (!sitesImpactes || Object.keys(sitesImpactes).length === 0) {
+    const empty = L.DomUtil.create('div', 'empty-body', body);
+    empty.innerHTML = ' Aucun sites impactes. ';
+    return;
+  }
+
+  const oldList = container.querySelector('.sites-impactes-list');  
+  if (oldList) oldList.remove();
+
+  const listContainer = L.DomUtil.create('ul', 'sites-impactes-list', body);
+  Object.keys(sitesImpactes).forEach( (id) => {
+    const s = sitesImpactes[id];
+    const sign = s.delay > 0 ? '+' : '';
+    const item = L.DomUtil.create('li', '', listContainer);
+    item.innerHTML = `Site n°${s.id} : ${sign}${s.delay} min`;
+  });
+
+}
+
+// Fonction auxiliaire pour mettre à jour le panneau flottant des trajets
+function mettreAJourTrajetsFlottant() {
+  if (!trajetsFlottantControl) return;
+  const container = trajetsFlottantControl.getContainer();
+  if (!container) return;
+
+  let body = container.querySelector('.trajets-body');
+  if (!body) {
+    body = L.DomUtil.create('div', 'trajets-body', container);
+  }
+  body.innerHTML = '';
+
+  if (!trajetLines || Object.keys(trajetLines).length === 0) {
+    const empty = L.DomUtil.create('div', 'empty-body', body);
+    empty.innerHTML = ' Aucun trajet disponible. ';
+    return;
+  }
+
+  const controlContainer = L.DomUtil.create('div', 'trajets-list', body);
+  Object.keys(trajetLines).forEach((key, i) => {
+    const trajet = trajetLines[key];
+    const item = L.DomUtil.create('div', 'control-row trajet-item', controlContainer);
+    const label = L.DomUtil.create('label', '', item);
+    label.setAttribute('for', `trajet-${i}`);
+
+    const checkbox = L.DomUtil.create('input', '', label);
+    checkbox.type = 'checkbox';
+    checkbox.id = `trajet-${i}`;
+    checkbox.checked = true;
+    checkbox.disabled = !visibilityState.trajets;
+
+    label.appendChild(document.createTextNode(` Trajet ${parseInt(key,10)+1}`));
+
+    checkbox.addEventListener('change', e => {
+      trajet.forEach(t => {
+        if (e.target.checked) t.addTo(carte);
+        else carte.removeLayer(t);
+      });
+    });
+  });
 }
 
 /**
@@ -906,18 +1086,19 @@ function lancerCalcul() {
             console.log('✅ Calcul effectué', data);
             
             $(statusId).removeClass('loading error').addClass('success')
-                .text('✅ ' + file.name + ' chargé avec succès!');
+                .text('✅ Tournée chargée avec succès!');
             
             // Notifier le contrôleur du succès
             if (window.appController) {
                 try {
                       window.appController.onLivraisonCalculated();
                       // Afficher message et proposer d'aller à la carte
-                      setTimeout(() => {
-                          if (confirm('✅ Livraison Calculé! Voulez-vous voir la carte?')) {
-                              $('#btn-mapa').trigger('click');
-                          }
-                      }, 500);
+                      // setTimeout(() => {
+                      //     if (confirm('✅ Livraison Calculé! Voulez-vous voir la carte?')) {
+                      //         $('#btn-map').trigger('click');
+                      //     }
+                      // }, 500);
+                      $('#btn-map').trigger('click');
                 } catch (err) {
                     console.error('❌ Erreur contrôleur:', err);
                     alert('⚠️ ' + err.message);
@@ -1002,6 +1183,67 @@ function getTrajetAffiches() {
   return lTrajAff ;
 }
 
+function deleteSite(idSite, typeSite, numLivraison) {
+  fetch('api/deleteSite', {
+    method: 'POST' ,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify( {"idSite":idSite, "typeSite": typeSite, "numLivraison": numLivraison} )
+  })
+    .then(res => res.json())
+    .then(initialiserCarte())
+    .catch(err => console.error(err));
+}
+
+function undoAction() {
+  fetch('/api/undoAction', { 
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => {
+          throw new Error(err.error || 'Erreur serveur');
+        });
+      }
+      return response.json();
+    })
+    .then(() => {
+      console.log('Undo réussi');
+      initialiserCarte();
+    })
+    .catch(err => {
+      console.error('Erreur lors du undo:', err);
+      alert('Impossible d\'annuler l\'action : ' + err.message);
+    });
+}
+
+function redoAction() {
+  fetch('/api/redoAction', { 
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => {
+          throw new Error(err.error || 'Erreur serveur');
+        });
+      }
+      return response.json();
+    })
+    .then(() => {
+      console.log('Redo réussi');
+      initialiserCarte();
+    })
+    .catch(err => {
+      console.error('Erreur lors du redo:', err);
+      alert('Impossible d\'annuler l\'action : ' + err.message);
+    });
+}
+
 function nettoyerCarte() {
   if (carte !== null) {
     try { carte.off(); carte.remove(); } catch (e) { console.warn('Erreur nettoyage carte:', e); }
@@ -1012,6 +1254,7 @@ function nettoyerCarte() {
   noeudMarkers = [];
   tronconLines = [];
   trajetLines = {};
+  sitesImpactes = [];
   donneesGlobales = null;
 }
 
@@ -1137,20 +1380,22 @@ fetch('/components/Sidebar.html')
     if (sidebar) sidebar.innerHTML = html;
         
     if (typeof updateUIBasedOnState === 'function') {
+      console.log("APPEL DANS LE TYPEOF")
       setTimeout(updateUIBasedOnState, 50);
     }
 
-    document.getElementById('btn-mapa')?.addEventListener('click', () => {
+    document.getElementById('btn-map')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
-      document.getElementById('btn-mapa')?.classList.add('active');
-      document.getElementById('btn-calcul')?.classList.add('active');
-      chargerComposantPrincipal('/components/Map.html');
+      document.getElementById('btn-map')?.classList.add('active');
+      // document.getElementById('btn-calcul')?.classList.add('active');
+      // chargerComposantPrincipal('/components/Map.html');
     });
     
     document.getElementById('btn-filtros')?.addEventListener('click', () => {
+      
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-filtros')?.classList.add('active');
-      document.getElementById('btn-calcul')?.classList.add('active');
+      // document.getElementById('btn-calcul')?.classList.add('active');
       chargerComposantPrincipal('/components/Import.html');
     });
 
@@ -1224,19 +1469,18 @@ fetch('/components/Sidebar.html')
     document.getElementById('btn-estadisticas')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-estadisticas')?.classList.add('active');
-      document.getElementById('btn-calcul')?.classList.add('active');
+      // document.getElementById('btn-calcul')?.classList.add('active');
       document.getElementById('main-content').innerHTML = `<div style="padding:2rem;"><h2>Statistiques</h2><p>Fonctionnalité en construction…</p></div>`;
     });
 
-    document.getElementById('btn-calcul')?.addEventListener('click', () => {
-      lancerCalcul();
-      chargerComposantPrincipal('/components/Map.html');
-    });
+    // document.getElementById('btn-calcul')?.addEventListener('click', () => {
+    //   lancerCalcul();
+    //   chargerComposantPrincipal('/components/Map.html');
+    // });
 
     document.getElementById('btn-roadmap')?.addEventListener('click', () => {
       lancerTelechargement();
     });
-
     chargerComposantPrincipal('/components/Map.html');
     attachDropHandlers();
 
@@ -1247,3 +1491,8 @@ fetch('/components/Sidebar.html')
     if (sidebar) sidebar.innerHTML = '<p style="color:#e74c3c;">Erreur de chargement</p>';
     chargerComposantPrincipal('/components/Map.html');
   });
+
+  window.addEventListener("load", () => {
+    fetch("/api/resetCarte", { method: "POST" })
+      .then(() => initialiserCarte());
+});

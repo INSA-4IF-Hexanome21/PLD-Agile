@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.time.LocalTime;
 
 import tsp.*;
@@ -17,10 +19,12 @@ public class CarteController {
     private DemandeLivraison demandeLivraison;
     private GrapheTotal gt;
     private final ListOfCommands history;
+    private Configuration config;
 
     public CarteController() {
         this.carte = new Carte();
         this.history = new ListOfCommands();
+        this.config = new Configuration();
         this.gt = null;
     }
 
@@ -103,23 +107,33 @@ public class CarteController {
 
   //Assigner les livreurs
 
-    public void assignerLivreurs() {
-        //Assignation des livreurs aléatoire A FAIRE DISPARAITRE
-       
-        Livreur livreur1 = new Livreur(1, "Bobard", "Bobert");
-        Livreur livreur2 = new Livreur(2, "Bobert", "Bobard");
-        Integer nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1, 1, carte);
-        Integer i = 1;
-        while(nbLivraisonsNonAssignees > 0){
-            if(i%2 == 0){
-                nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur1,++i, carte);
-            }
-            else{
-                nbLivraisonsNonAssignees = demandeLivraison.assignerLivreur(livreur2,++i, carte);
-            }
-            
-            
+    public void assignerLivreurs(HashMap<String, List<String>> assignation) {
+        // Avant d'ajouter la nouvelle demande, supprimer l'ancienne pour éviter accumulation
+        System.out.println(">>> CarteController: début du chargement de l'assignation des livraisons");
+
+        if(assignation == null){
+            throw new NullPointerException("Il n'y a pas de données de livreurs");
         }
+
+        config.setNbLivreurs(assignation.size());
+
+        for(Map.Entry<String, List<String>> e : assignation.entrySet()){
+
+            int idLivreur = Integer.parseInt(e.getKey());
+            System.out.println(">>> CarteController: Livreur" + config.getNomPrenom(idLivreur));
+
+            for(int i=0; i<e.getValue().size(); ++i){
+                System.out.println(e.getValue() + " TTT " + i);
+
+                Integer idLivraison = Integer.parseInt(e.getValue().get(i));
+                System.out.println("Id : " + idLivraison);
+                demandeLivraison.assignerLivreur(config.getLivreurbyId(idLivreur), idLivraison, carte);
+
+                // System.out.println(">>> CarteController: Trajets" + this.getCarte().getTrajets().getLast().getLivreur().getNom());
+                // System.out.println(">>> CarteController: Sites" + this.getCarte().getTrajets().getLast().getSites());
+            }
+        }
+        System.out.println(">>> CarteController: Livreur" + config.getNbLivreur());
     }
 
   // --- modifications dans controller/CarteController.java ---
@@ -132,7 +146,9 @@ public class CarteController {
         if (carte.getSites() == null || carte.getSites().isEmpty()) {
             throw new IllegalStateException("Aucune demande / sites non chargés dans la carte");
         }
-
+        if(config.getNbLivreur() == 0){
+            throw new IllegalStateException("Aucun livreur assigné");
+        }
         // Effacer les calculs précédents pour éviter d'utiliser des structures obsolètes
         this.effacerCalcul();
 
@@ -150,14 +166,14 @@ public class CarteController {
 
         // creer graphe total et calculer chemins minimaux
         // System.out.println("Création graphe total");
-        creerGrapheTotal(carte, e.getId());
+       creerGrapheTotal(carte, e.getId());
         if (gt == null ) {
             throw new IllegalStateException("La création du graphe a échoué");
         }
 
         for(Trajet trajet: this.getCarte().getTrajets()){
-            // System.out.println("Trajet : "+ trajet);
-            // System.out.println("Sites : "+ trajet.getSites());
+            //System.out.println("Trajet : "+ trajet);
+            //System.out.println("Sites : "+ trajet.getSites());
             this.chercherCheminsMin(trajet.getSites(), trajet);
             //trajet.genererFeuilleDeRoute();
         }
@@ -167,7 +183,7 @@ public class CarteController {
         //this.supprimerLivraison(gt, Long.valueOf(55444018), Long.valueOf(26470086), this.getCarte().getTrajets().get(0));
         //this.supprimerLivraison(gt, Long.valueOf(27362899), Long.valueOf(505061101), this.getCarte().getTrajets().get(0));
         //TEST
-        //ajouterLivraison();
+        //ajouterLivraison( Long.valueOf(1679901320), Long.valueOf(342873658), Long.valueOf(26086123), Long.valueOf(208769039),carte.getTrajets().get(0));
         // supprimerLivraison();
         // undo();
         // redo();
@@ -255,8 +271,8 @@ public class CarteController {
         }
 
         System.out.println(">>> CarteController: livraisons précédentes effacées.");
+        // System.out.println(getCarteJSON());
     }
-
     /**
      * Génère le JSON complet de la carte avec noeuds, troncons et sites
      */
@@ -434,23 +450,22 @@ public class CarteController {
         return gt;
     }
 
-    public void chercherCheminsMin(List<Site> sites, Trajet trajet){;
+    public void chercherCheminsMin(List<Site> sites, Trajet trajet){
         // System.out.println("ChercherCheminMin (Controller)");
         gt.RechercheDijkstra(sites);
         // System.out.println("Fin recherche dijkstra");
         GrapheLivraison gl = new GrapheLivraison(sites.size(), gt.getMapDistances());
         gl.setContrainteHashMap(gt.getContrainteHashMap());
-        // System.out.println("Nb Sommet : " + gl.getNbSommets());
+
         TSP tsp = new TSP2();
         tsp.chercheSolution(60000, gl);
-        // System.out.println("Fin cherche solution");
 
         List<Integer> solution = new ArrayList<Integer>();
         for (int i=0; i<gl.getNbSommets(); i++) {
             solution.add(gl.getIdFromIndex(tsp.getSolution(i)));
         }
         solution.add(solution.get(0));
-        // System.out.println("Fin creation solution : " + solution);
+        //System.out.println("Fin creation solution : " + solution);
 
         // Reconstruction du chemin complet : vérifier que getCheminComplet ne renvoie pas null
         List<Integer> cheminComplet = gt.getCheminComplet(solution);
@@ -476,7 +491,24 @@ public class CarteController {
     }
 
     // Exécution d'une commande de suppression
-    public void supprimerLivraison(Collecte collecte, Depot depot, Trajet trajet) {
+    public void supprimerLivraison(Long idSite, String typeSite, Integer numLivraison) {
+        Trajet trajet = null;
+        for (var t : carte.getTrajets()) {
+            if (t.getSite(idSite) != null) {trajet = t; break;}
+        }
+        Collecte collecte;
+        Depot depot;
+        Long idSiteAssocie = carte.getSiteAssocie(numLivraison, idSite);
+        
+        if (Objects.equals(typeSite,"collecte")) {
+            collecte = (Collecte) carte.getSiteById(idSite) ;
+            depot = (Depot) carte.getSiteById(idSiteAssocie); 
+        }
+        else {
+            depot = (Depot) carte.getSiteById(idSite);
+            collecte = (Collecte) carte.getSiteById(idSiteAssocie);
+        }
+        
         Command slc = new SupprimerLivraisonCommand(gt, collecte, depot, trajet, carte);
         history.add(slc);   
     }
@@ -485,4 +517,20 @@ public class CarteController {
     public void undo() { history.undo(); }
 
     public void redo() { history.redo(); }
+
+    public void genererFeuillesdeRoute(){
+        for(Trajet trajet: this.getCarte().getTrajets()){
+            trajet.genererFeuilleDeRoute();
+        }
+    }
+
+    public void resetCarte() {
+        this.carte = new Carte();      // New empty map
+        this.history.clear(); // Reset undo/redo
+        this.config = new Configuration();   // Reset config if needed
+        this.gt = null; // reset graphe ou calcul si existait
+
+        System.out.println(">>> Carte réinitialisée.");
+    }
 }
+

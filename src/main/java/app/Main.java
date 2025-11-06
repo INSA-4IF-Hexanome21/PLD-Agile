@@ -17,24 +17,7 @@ public class Main {
         Controller controller = new Controller();
 
         ServeurHTTP serveur = new ServeurHTTP(PORT_SERVEUR, CHEMIN_BASE_VIEW, CHEMIN_BASE_RESSOURCES, controller);
-            
-        // 2. demandes 
-        // Carte carte = carteController.getCarte();
-
-            // Afficher les informations de la carte chargée
-        // System.out.println("Carte chargée avec succès:");
-        // System.out.println("  - Noeuds: " + carte.getNoeuds().size());
-        // System.out.println("  - Tronçons: " + carte.getTroncons().size());
-        // System.out.println();
-
-        // Entrepot e = null;
-        // for (Site site : carte.getSites()) {
-        //     if (site instanceof Entrepot) {
-        //         e = (Entrepot) site;
-        //     }
-        // }
-        // GrapheTotal gt = carteController.creerGrapheTotal(carte, e.getId());
-        // carteController.chercherCheminsMin(gt, carte.getSites());
+        
         serveur.demarrer();
 
 
