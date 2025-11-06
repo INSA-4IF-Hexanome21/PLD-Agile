@@ -59,6 +59,7 @@ function creerInstructionOverlay() {
   
   instructionOverlay = L.control({ position: 'topleft' });
   
+  griserTousLesElementsCliquables();
   instructionOverlay.onAdd = function() {
     const div = L.DomUtil.create('div', 'instruction-overlay');
 
@@ -741,6 +742,8 @@ function desactiverEcouteursMarqueurs() {
       if (marker._normalClickHandler) {
         marker.on('click', marker._normalClickHandler);
       }
+
+      marker._ajoutHandlerAttached = false;
     });
   }
   
@@ -750,6 +753,8 @@ function desactiverEcouteursMarqueurs() {
       if (marker._normalClickHandler) {
         marker.on('click', marker._normalClickHandler);
       }
+
+      marker._ajoutHandlerAttached = false;
     });
   }
   
@@ -775,9 +780,10 @@ function terminerAjout() {
     container.classList.remove('mode-ajout-actif');
   }
   
-
-  desactiverEcouteursMarqueurs();
   
+  desactiverEcouteursMarqueurs();
+  restaurerElementsCliquables();
+
   // Déterminer le trajet à partir du site précédent de la collecte (j'ai laisse ca pour l'avoir quand on fixe les autres bugs)
   let numeroTrajet = null;
   if (selectionData.collecteSitePrecedent) {
@@ -833,6 +839,7 @@ Voulez-vous enregistrer ces modifications ?
 function annulerAjout() {
   if (!confirm("❌ Voulez-vous vraiment annuler l'ajout de livraison ?")) return;
   
+  restaurerElementsCliquables();
   modeAjoutActif = false;
   etapeAjout = 0;
   
@@ -905,4 +912,53 @@ ${JSON.stringify(payload, null, 2)}
     alert('❌ Erreur : ' + err.message);
   });
 
+}
+
+
+// --- Sauvegarde de l'état original des éléments ---
+function griserTousLesElementsCliquables() {
+    const cliquables = document.querySelectorAll(
+        'button, a, input, select, textarea, [role="button"], .cliquable'
+    );
+
+    cliquables.forEach(el => {
+        // Sauvegarder les propriétés d'origine (si pas déjà fait)
+        if (!el.dataset.originalState) {
+            el.dataset.originalState = JSON.stringify({
+                pointerEvents: el.style.pointerEvents,
+                opacity: el.style.opacity,
+                disabled: el.disabled || false
+            });
+        }
+
+        // Appliquer l'état grisé et désactivé
+        el.style.pointerEvents = 'none';
+        el.style.opacity = '0.5';
+        el.disabled = true;
+    });
+
+    console.log('🩶 Tous les éléments cliquables ont été désactivés et grisées.');
+}
+
+// --- Restauration de l'état original ---
+function restaurerElementsCliquables() {
+    const cliquables = document.querySelectorAll(
+        'button, a, input, select, textarea, [role="button"], .cliquable'
+    );
+
+    cliquables.forEach(el => {
+        if (el.dataset.originalState) {
+            const state = JSON.parse(el.dataset.originalState);
+
+            // Restauration des valeurs d'origine
+            el.style.pointerEvents = state.pointerEvents;
+            el.style.opacity = state.opacity;
+            el.disabled = state.disabled;
+
+            // Nettoyage du dataset
+            delete el.dataset.originalState;
+        }
+    });
+
+    console.log('🎨 Tous les éléments ont retrouvé leur état d’origine.');
 }
