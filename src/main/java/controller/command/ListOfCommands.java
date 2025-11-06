@@ -22,7 +22,7 @@ public class ListOfCommands {
         c.doCommand();
     }
 
-    public void undo() {
+    synchronized public void undo() {
         if (i >= 0) {
             l.get(i).undoCommand();
             i--;
@@ -31,7 +31,7 @@ public class ListOfCommands {
         }
     }
 
-    public void redo() {
+    synchronized public void redo() {
         if (i + 1 < l.size()) {  // Vérifier qu'il y a un élément à refaire
             i++;
             l.get(i).doCommand();
