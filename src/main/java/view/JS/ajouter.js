@@ -8,7 +8,9 @@ let selectionData = {
 };
 let trajetChoisi = {};
 let instructionOverlay = null;
-let highlightedMarkers = []; 
+let highlightedMarkers = [];
+
+
 
 const ETAPES = [
   
@@ -115,9 +117,10 @@ function creerInstructionOverlay() {
         // Click: sélection du trajet
         btn.addEventListener('click', () => {
           // Remplir trajetChoisi avec toutes les infos du trajet
-          trajetChoisi = {
+           trajetChoisi = {
             key: trajetKey,
-            sites: sitesParTrajet[trajetKey]?.sites || [],
+            parcours: sitesParTrajet[trajetKey]?.parcours || [],
+            entrepot: sitesParTrajet[trajetKey]?.entrepot || null,
             lignes: sitesParTrajet[trajetKey]?.lignes || [],
             couleur: sitesParTrajet[trajetKey]?.couleur || '#FFA62B'
           };
@@ -165,11 +168,19 @@ function surlignerTrajet(trajetKey) {
   const lignes = sitesParTrajet[trajetKey].lignes || [];
   
   lignes.forEach(ligne => {
+    // stocker l’original si ce n’est pas déjà fait
+    if (!ligne.options.originalColor) {
+      ligne.options.originalColor = ligne.options.color;
+      ligne.options.originalWeight = ligne.options.weight;
+      ligne.options.originalOpacity = ligne.options.opacity;
+    }
+
     if (ligne.setStyle) {
       ligne.setStyle({ color: '#FFA62B', weight: 5, opacity: 1 });
     }
   });
 }
+
 
 /**
  * Enlève le surlignage d'un trajet
@@ -180,11 +191,15 @@ function enleverSurlignageTrajet(trajetKey) {
   
   lignes.forEach(ligne => {
     if (ligne.setStyle) {
-      // Restaurer la couleur originale (tu peux stocker la couleur si tu veux)
-      ligne.setStyle({ color: ligne.options?.originalColor || '#3388ff', weight: 3, opacity: 0.8 });
+      ligne.setStyle({ 
+        color: ligne.options.originalColor || '#3388ff', 
+        weight: ligne.options.originalWeight || 3, 
+        opacity: ligne.options.originalOpacity || 0.8 
+      });
     }
   });
 }
+
 
 
 /**
@@ -226,27 +241,120 @@ function highlightAvailableMarkers() {
   clearHighlights();
   
   const etape = ETAPES[etapeAjout];
-  const targetMarkers = etape.type === 'noeud' ? noeudMarkers : siteMarkers;
+  const sitesConcernes = [];
+
+ sitesConcernes.length = 0; // Vide la liste avant de la remplir
+
+siteMarkers.forEach(marker => {
+  const siteId = String(marker.options.siteId || marker.options.id || marker.siteId || marker.id);
+
+  
+  const faitPartieTrajet =
+    (trajetChoisi.parcours && trajetChoisi.parcours.some(site => String(site.id) === siteId)) ||
+    (trajetChoisi.entrepot && String(trajetChoisi.entrepot.id) === siteId);
+
+  if (faitPartieTrajet) {
+    sitesConcernes.push(marker);
+  }
+});
+
+
+  
+  const targetMarkers = etape.type === 'noeud' ? noeudMarkers : sitesConcernes;
   
   if (!Array.isArray(targetMarkers)) return;
   
   console.log(`🎨 Highlighting ${targetMarkers.length} ${etape.type}s pour l'étape ${etape.numero}`);
   
+
+  Object.keys(visibilityState).forEach(k => visibilityState[k] = false);
+
+
+
+
+
+  if (etape.type === 'noeud') {
+    visibilityState['noeuds'] = true;
+  }
+  else if(etape.type == 'trajet') {
+    visibilityState['trajets'] = true;
+    visibilityState['depot'] = true;
+    visibilityState['collecte'] = true;
+    visibilityState['entrepot'] = true;
+  }else if (etape.type === 'site') {
+    visibilityState['entrepot'] = true;
+    visibilityState['depot'] = true;
+    visibilityState['collecte'] = true;
+  }
+
+  updateVisibility();
+ 
+  if (etape.type === 'site') {
+    siteMarkers.forEach(site => {
+      try {
+        const siteId = site.options?.siteId;
+        const estConcerne = sitesConcernes.some(s => s.options?.siteId === siteId);
+
+        // Cacher les sites qui ne sont pas dans le trajet
+        if (!estConcerne && carte.hasLayer(site)) {
+          carte.removeLayer(site);
+        }
+
+        
+        if (selectionData.collecteSitePrecedent && trajetChoisi.parcours) {
+          const precedentId = String(selectionData.collecteSitePrecedent.siteId);
+          const indexPrecedent = trajetChoisi.parcours.findIndex(s => String(s.id) === precedentId);
+
+          if (indexPrecedent === -1) return; // Sécurité
+
+          const sitesApres = trajetChoisi.parcours.slice(indexPrecedent + 1);
+
+          if (sitesApres.length === 0) {
+              selectionData.depotSitePrecedent = selectionData.collecteNoeud;
+              terminerAjout();
+              return; // Stopper le reste
+          }
+
+          // Filtrer les sites pour ne garder que ceux après le site précédent
+          siteMarkers.forEach(marker => {
+              const markerId = String(marker.options.siteId);
+              const estApres = sitesApres.some(s => String(s.id) === markerId);
+
+              if (!estApres) {
+                  if (carte.hasLayer(marker)) {
+                      carte.removeLayer(marker);
+                  }
+              }
+          });
+      }
+
+      } catch (e) {
+        console.warn('Erreur traitement site:', e);
+      }
+    });
+  }
+
+
+
+    
+
   targetMarkers.forEach(marker => {
     if (etape.type === 'noeud') {
       // Highlight des nœuds
       try {
         const iconElement = marker.getElement();
         if (iconElement) {
-          const noeudDiv = iconElement.querySelector('.marqueur-noeud');
-          if (noeudDiv) {
-            // Guardar estilo original
-            marker._originalStyle = {
-              background: noeudDiv.style.background,
-              boxShadow: noeudDiv.style.boxShadow,
-              width: noeudDiv.style.width,
-              height: noeudDiv.style.height
-            };
+          const noeudDiv = iconElement.querySelector('.marqueur-noeud'); 
+          const isSelected = selectionData.collecteNoeud && (String(marker.options.siteId || marker.options.id) === String(selectionData.collecteNoeud.siteId || selectionData.collecteNoeud.id));
+
+          marker._originalStyle = {
+            background: noeudDiv.style.background,
+            boxShadow: noeudDiv.style.boxShadow,
+            width: noeudDiv.style.width,
+            height: noeudDiv.style.height
+          };
+          if (noeudDiv && !isSelected) {
+
             
             // Aplicar highlight
             noeudDiv.style.background = '#FFA62B';
@@ -271,13 +379,33 @@ function highlightAvailableMarkers() {
               L.DomEvent.preventDefault(e);
             });
           }
+          if (noeudDiv && isSelected) {
+
+            if (marker._blinkInterval) clearInterval(marker._blinkInterval);
+
+            let isRed = false;
+            marker._blinkInterval = setInterval(() => {
+              isRed = !isRed;
+              noeudDiv.style.background = isRed ? '#ff0000' : '#ffffff';
+              noeudDiv.style.boxShadow = isRed
+                ? '0 0 10px #ff0000, 0 0 20px #ff0000'
+                : '0 0 10px #ffffff, 0 0 20px #ffffff';
+            }, 500);
+
+            marker.off('click');
+          }
         }
       } catch (e) {
         console.warn('Erreur highlight noeud:', e);
       }
-    } else {
+    } else if(etape.type === 'site'){
       // Highlight sites
       try {
+        noeudMarkers.forEach(noeud => {
+          if (carte.hasLayer(noeud)) {
+            carte.removeLayer(noeud);
+          }
+        });
         if (marker.setStyle && marker.setRadius) {
           const originalColor = marker.options.fillColor;
           const originalRadius = marker.options.radius;
@@ -322,12 +450,11 @@ Restaure les styles originaux des marqueurs mis en évidence
 function clearHighlights() {
   highlightedMarkers.forEach(marker => {
     try {
+      // --- Pour les sites (Leaflet circleMarker) ---
       if (marker.setStyle && marker._originalFillColor) {
-        const originalRadius = marker._originalRadius || computeSiteRadius(carte);
-        if (marker.setRadius) {
-          marker.setRadius(originalRadius);
+        if (marker.setRadius && marker._originalRadius) {
+          marker.setRadius(marker._originalRadius);
         }
-        
         marker.setStyle({
           weight: 2,
           color: '#ffffff',
@@ -335,35 +462,52 @@ function clearHighlights() {
           fillOpacity: 1
         });
         marker.setZIndexOffset(0);
-        
 
+        // Restaurer le tooltip si nécessaire
         const tip = marker.getTooltip && marker.getTooltip();
         if (tip) {
-          const content = tip.getContent ? tip.getContent() : (marker.options && marker.options.siteId ? marker.options.siteId : '');
+          const content = tip.getContent ? tip.getContent() : (marker.options.siteId || '');
           marker.unbindTooltip();
           marker.bindTooltip(content, { 
             permanent: false, 
             direction: 'top', 
-            offset: [0, -originalRadius - 6] 
+            offset: [0, - (marker._originalRadius || 8) - 6] 
           });
         }
-      } else if (marker._originalStyle) {
+      } 
+      // --- Pour les nœuds HTML ---
+      else if (marker._originalStyle) {
         const iconElement = marker.getElement();
         if (iconElement) {
           const noeudDiv = iconElement.querySelector('.marqueur-noeud');
           if (noeudDiv) {
             noeudDiv.style.background = marker._originalStyle.background || '#16697A';
             noeudDiv.style.boxShadow = marker._originalStyle.boxShadow || '0 2px 4px rgba(0,0,0,0.3)';
+            noeudDiv.style.width = marker._originalStyle.width || '24px';
+            noeudDiv.style.height = marker._originalStyle.height || '24px';
             noeudDiv.classList.remove('marqueur-noeud-highlight');
+
+            // Restaurer l'interactivité
+            marker.options.interactive = true;
+            marker.options.bubblingMouseEvents = true;
+
+            // Stop blink si actif
+            if (marker._blinkInterval) {
+              clearInterval(marker._blinkInterval);
+              marker._blinkInterval = null;
+            }
           }
         }
       }
     } catch (e) {
-      console.warn('Error clearing highlight:', e);
+      console.warn('Erreur clearHighlights pour marker:', marker, e);
     }
   });
+
+  // Vide le tableau
   highlightedMarkers = [];
 }
+
 
 /**
  * Gère le clic sur un marqueur pendant le mode ajout
