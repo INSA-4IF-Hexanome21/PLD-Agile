@@ -290,7 +290,7 @@ siteMarkers.forEach(marker => {
   updateVisibility();
  
   if (etape.type === 'site') {
-    siteMarkers.forEach(site => {
+    for (const site of siteMarkers) {
       try {
         const siteId = site.options?.siteId;
         const estConcerne = sitesConcernes.some(s => s.options?.siteId === siteId);
@@ -300,39 +300,38 @@ siteMarkers.forEach(marker => {
           carte.removeLayer(site);
         }
 
-        
         if (selectionData.collecteSitePrecedent && trajetChoisi.parcours) {
           const precedentId = String(selectionData.collecteSitePrecedent.siteId);
           const indexPrecedent = trajetChoisi.parcours.findIndex(s => String(s.id) === precedentId);
 
-          if (indexPrecedent === -1) return; // Sécurité
+          if (indexPrecedent === -1) return; // quitte la fonction si problème
 
           const sitesApres = trajetChoisi.parcours.slice(indexPrecedent + 1);
 
           if (sitesApres.length === 0) {
-              selectionData.depotSitePrecedent = selectionData.collecteNoeud;
-              terminerAjout();
-              return; // Stopper le reste
+            selectionData.depotSitePrecedent = selectionData.collecteNoeud;
+            etapeAjout++;
+            terminerAjout();
+            return; // quitte complètement highlightAvailableMarkers()
           }
 
-          // Filtrer les sites pour ne garder que ceux après le site précédent
-          siteMarkers.forEach(marker => {
-              const markerId = String(marker.options.siteId);
-              const estApres = sitesApres.some(s => String(s.id) === markerId);
+          // Supprimer les sites qui ne sont pas après le site précédent
+          for (const marker of siteMarkers) {
+            const markerId = String(marker.options.siteId);
+            const estApres = sitesApres.some(s => String(s.id) === markerId);
 
-              if (!estApres) {
-                  if (carte.hasLayer(marker)) {
-                      carte.removeLayer(marker);
-                  }
-              }
-          });
-      }
+            if (!estApres && carte.hasLayer(marker)) {
+              carte.removeLayer(marker);
+            }
+          }
+        }
 
       } catch (e) {
         console.warn('Erreur traitement site:', e);
       }
-    });
+    }
   }
+
 
 
 
