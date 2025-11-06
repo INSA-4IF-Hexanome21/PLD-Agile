@@ -6,34 +6,42 @@ let selectionData = {
   depotNoeud: null,
   depotSitePrecedent: null
 };
-
+let trajetChoisi = {};
 let instructionOverlay = null;
 let highlightedMarkers = []; 
 
 const ETAPES = [
+  
   { 
     numero: 1, 
+    texte: "Sélectionnez un trajet", 
+    type: 'trajet',
+    cible: 'trajetChoisi',
+    icon: '🛣️'
+  },
+  { 
+    numero: 2, 
     texte: "Sélectionnez un nœud pour ajouter une collecte", 
     type: 'noeud',
     cible: 'collecteNoeud',
     icon: '📍'
   },
   { 
-    numero: 2, 
+    numero: 3, 
     texte: "Sélectionnez le site qui précède la nouvelle collecte", 
     type: 'site',
     cible: 'collecteSitePrecedent',
     icon: '🟢'
   },
   { 
-    numero: 3, 
+    numero: 4, 
     texte: "Sélectionnez un nœud pour ajouter un dépôt", 
     type: 'noeud',
     cible: 'depotNoeud',
     icon: '📍'
   },
   { 
-    numero: 4, 
+    numero: 5, 
     texte: "Sélectionnez le site qui précède le nouveau dépôt", 
     type: 'site',
     cible: 'depotSitePrecedent',
@@ -51,6 +59,15 @@ function creerInstructionOverlay() {
   
   instructionOverlay.onAdd = function() {
     const div = L.DomUtil.create('div', 'instruction-overlay');
+
+    // Construction HTML avec boutons pour chaque trajet
+    let boutonsTrajets = '';
+    if (Object.keys(sitesParTrajet).length > 0) {
+      for (const key in sitesParTrajet) {
+        boutonsTrajets += `<button class="btn-trajet" data-trajet="${key}">Trajet ${key}</button> `;
+      }
+    }
+
     div.innerHTML = `
       <div class="instruction-header">
         <strong>✍🏻 Mode Ajout Livraison</strong>
@@ -59,11 +76,14 @@ function creerInstructionOverlay() {
       <div class="instruction-body">
         <div class="etape-numero">
           <span id="etape-icon">📍</span>
-          Étape <span id="etape-num">1</span>/4
+          Étape <span id="etape-num">1</span>/5
         </div>
         <p id="instruction-texte">Sélectionnez un nœud pour ajouter une collecte</p>
         <div class="progress-bar">
           <div id="progress-fill" class="progress-fill" style="width: 25%"></div>
+        </div>
+        <div class="trajet-buttons-container">
+          ${boutonsTrajets}
         </div>
       </div>
       <div class="selections-recap">
@@ -74,6 +94,53 @@ function creerInstructionOverlay() {
     L.DomEvent.disableClickPropagation(div);
     L.DomEvent.disableScrollPropagation(div);
     
+    setTimeout(() => {
+      const btnCancel = document.getElementById('annuler-ajout');
+      if (btnCancel) {
+        btnCancel.addEventListener('click', annulerAjout);
+      }
+
+      const btnTrajets = div.querySelectorAll('.btn-trajet');
+      btnTrajets.forEach(btn => {
+        const trajetKey = btn.getAttribute('data-trajet');
+
+        // Hover pour surligner le trajet sur la carte
+        btn.addEventListener('mouseenter', () => {
+          surlignerTrajet(trajetKey);
+        });
+        btn.addEventListener('mouseleave', () => {
+          enleverSurlignageTrajet(trajetKey);
+        });
+
+        // Click: sélection du trajet
+        btn.addEventListener('click', () => {
+          // Remplir trajetChoisi avec toutes les infos du trajet
+          trajetChoisi = {
+            key: trajetKey,
+            sites: sitesParTrajet[trajetKey]?.sites || [],
+            lignes: sitesParTrajet[trajetKey]?.lignes || [],
+            couleur: sitesParTrajet[trajetKey]?.couleur || '#FFA62B'
+          };
+          console.log('🚚 Trajet choisi:', trajetChoisi);
+
+          // Supprimer la div contenant les boutons
+          const container = div.querySelector('.trajet-buttons-container');
+          if (container) container.remove();
+
+          // Passer à l'étape suivante
+          etapeAjout++;
+          mettreAJourInstructions();
+
+          
+          setTimeout(() => {
+            highlightAvailableMarkers();
+          }, 100);
+        });
+      });
+
+    }, 100);
+
+
     return div;
   };
   
@@ -88,6 +155,37 @@ function creerInstructionOverlay() {
     }
   }, 100);
 }
+
+
+/**
+ * Fonction pour surligner un trajet et ses lignes
+ */
+function surlignerTrajet(trajetKey) {
+  if (!sitesParTrajet[trajetKey]) return;
+  const lignes = sitesParTrajet[trajetKey].lignes || [];
+  
+  lignes.forEach(ligne => {
+    if (ligne.setStyle) {
+      ligne.setStyle({ color: '#FFA62B', weight: 5, opacity: 1 });
+    }
+  });
+}
+
+/**
+ * Enlève le surlignage d'un trajet
+ */
+function enleverSurlignageTrajet(trajetKey) {
+  if (!sitesParTrajet[trajetKey]) return;
+  const lignes = sitesParTrajet[trajetKey].lignes || [];
+  
+  lignes.forEach(ligne => {
+    if (ligne.setStyle) {
+      // Restaurer la couleur originale (tu peux stocker la couleur si tu veux)
+      ligne.setStyle({ color: ligne.options?.originalColor || '#3388ff', weight: 3, opacity: 0.8 });
+    }
+  });
+}
+
 
 /**
  * Met à jour l'overlay avec l'étape actuelle
@@ -105,7 +203,7 @@ function mettreAJourInstructions() {
   if (numEl) numEl.textContent = etape.numero;
   if (texteEl) texteEl.textContent = etape.texte;
   if (iconEl) iconEl.textContent = etape.icon;
-  if (progressEl) progressEl.style.width = (((etapeAjout + 1) / 4) * 100) + '%';
+  if (progressEl) progressEl.style.width = (((etapeAjout + 1) / 5) * 100) + '%';
   
   // Mise à jour du récapitulatif
   if (recapEl) {
@@ -355,6 +453,11 @@ function demarrerAjoutLivraison() {
   
   if (modeAjoutActif) {
     alert("⚠️ Le mode ajout est déjà actif !");
+    return;
+  }
+
+  if (Object.keys(sitesParTrajet).length === 0) {
+    alert("⚠️ Aucun trajet disponible !");
     return;
   }
   

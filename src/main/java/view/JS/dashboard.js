@@ -6,6 +6,7 @@ let noeudMarkers = [];
 let tronconLines = [];
 let trajetLines = {};
 let donneesGlobales = null;
+let sitesParTrajet = {}; 
 
 const COULEURS_SITES = {
   'depot': '#e53e3e',
@@ -310,9 +311,13 @@ if (donnees.noeuds && donnees.noeuds.length > 0) {
     // 4.trajets (si hay)
     console.log('Trajets reçus:', donnees.trajets);
     if (donnees.trajets) {
+      sitesParTrajet = {};
+
       for (const key in donnees.trajets) {
         const color = getRandomHexColor();
         trajetLines[key] = [];
+        sitesParTrajet[key] = {entrepot: null, parcours: [], lignes: [] }; 
+
         donnees.trajets[key].forEach((trajet) => {
 
           const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.from);
@@ -345,6 +350,26 @@ if (donnees.noeuds && donnees.noeuds.length > 0) {
             ligne.bindPopup(`<strong>Trajet</strong><br>De: ${trajet.from}<br>À: ${trajet.to}`);
             trajetLines[key].push(ligne);
             trajetLines[key].push(decorator); 
+
+            sitesParTrajet[key].lignes.push(ligne);
+            
+            const sitesSurTroncon = donnees.sites.filter(site => 
+              site.lat != null && site.lng != null &&
+              ((site.lat === depart.lat && site.lng === depart.lng) ||
+              (site.lat === arrivee.lat && site.lng === arrivee.lng))
+            );
+
+            sitesSurTroncon.forEach(site => {
+              const type = normaliserTypeSite(site.type);
+              if (type === 'entrepot') {
+                sitesParTrajet[key].entrepot = site; // un seul entrepôt
+              } else if (type === 'depot' || type === 'collecte') {
+                // conserver l’ordre de passage en pushant
+                if (!sitesParTrajet[key].parcours.some(s => s.id === site.id)) {
+                  sitesParTrajet[key].parcours.push({ ...site, type });
+                }
+              }
+            });
           }
         })
       }

@@ -299,3 +299,50 @@
     box-shadow: 0 0 20px #FFA62B, 0 0 30px #FFA62B;
   }
 }
+
+/* Conteneur des boutons de trajets en ligne */
+.trajets-buttons-container {
+  display: flex;
+  flex-wrap: wrap;       /* Permet de passer à la ligne si trop de boutons */
+  gap: 6px;              /* Espacement horizontal et vertical entre boutons */
+  max-width: 100%;       /* Limite la largeur totale */
+  padding: 4px;
+  overflow-x: auto;      /* Scroll horizontal si trop de boutons */
+}
+
+/* Boutons/cases blanches compactes */
+.btn-trajet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;       /* Largeur minimale */
+  height: 28px;          /* Hauteur fixe */
+  padding: 0 8px;        /* Petit padding horizontal */
+  background: #ffffff;   /* Fond blanc */
+  color: var(--spie-dark-teal);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(0,0,0,0.1);  /* Bord fin */
+  border-radius: 6px;    /* Bords arrondis */
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Hover */
+.btn-trajet:hover {
+  background: var(--spie-light-teal);
+  color: var(--spie-dark-teal);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(72,159,181,0.3);
+}
+
+/* Active / sélectionné */
+.btn-trajet.active {
+  background: var(--spie-medium-teal);
+  color: #fff;
+  border-color: var(--spie-medium-teal);
+  box-shadow: 0 2px 6px rgba(72,159,181,0.4);
+}
