@@ -15,7 +15,8 @@ function assignationLivraison() {
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const nb = parseInt(document.getElementById('nbLivreur').value) || 1;
+    const nb = parseInt(document.getElementById('nbLivreur').value) || 1
+    resetAssignations();
     genererZonesLivreurs(nb);
   });
 
