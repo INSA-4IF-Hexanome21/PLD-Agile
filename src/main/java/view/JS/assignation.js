@@ -51,9 +51,12 @@ function extraerYMostrarLivraisons(sites) {
   if(!CLICK_DEF){
     document.getElementById('btn-calcul-tournee').addEventListener('click', () => {
       // if(NB_CLICK%3 === 0){
-      envoyerAssignations();
-      lancerCalcul();
-      chargerComposantPrincipal('/components/Map.html');
+      if(toutesLivraisonsAssignees()){
+        envoyerAssignations();
+        lancerCalcul();
+        chargerComposantPrincipal('/components/Map.html');
+      }
+      
         // console.warn('click : ', NB_CLICK);
       // }
       // ++NB_CLICK;
