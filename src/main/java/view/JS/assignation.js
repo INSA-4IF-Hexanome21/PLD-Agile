@@ -47,9 +47,9 @@ function envoyerAssignations() {
 // var NB_CLICK = 0; //Variable permettant de savoir si l'évènement click a déjà été défini
 var CLICK_DEF = false;
 function extraerYMostrarLivraisons(sites) {
-  
+  console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
   if(!CLICK_DEF){
-    document.getElementById('envoyer-assignations').addEventListener('click', () => {
+    document.getElementById('btn-calcul-tournee').addEventListener('click', () => {
       // if(NB_CLICK%3 === 0){
       envoyerAssignations();
       lancerCalcul();
@@ -348,6 +348,7 @@ function devolverAlPool(livraisonId) {
  * Réinitialise complètement le système d’assignation
  */
 function resetAssignations(nouvellesDonneesSites = null) {
+  CLICK_DEF = false;
   console.log('🔄 Réinitialisation des assignations...');
 
   // Reset des variables globales
@@ -362,7 +363,7 @@ function resetAssignations(nouvellesDonneesSites = null) {
   if (livreursContainer) livreursContainer.innerHTML = '';
 
   // Supprimer anciens écouteurs éventuels sur le bouton
-  const envoyerBtn = document.getElementById('envoyer-assignations');
+  const envoyerBtn = document.getElementById('btn-calcul-tournee');
   if (envoyerBtn) {
     const newBtn = envoyerBtn.cloneNode(true);
     envoyerBtn.parentNode.replaceChild(newBtn, envoyerBtn);

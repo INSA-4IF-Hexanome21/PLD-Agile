@@ -70,7 +70,7 @@
 }
 
 
-#envoyer-assignations {
+#btn-calcul-tournee {
   background: var(--spie-dark-teal);
   color: white;
   border: none;
@@ -81,7 +81,7 @@
   transition: all 0.2s;
 }
 
-#envoyer-assignations:hover {
+#btn-calcul-tournee:hover {
   background: var(--spie-medium-teal);
 }
 
