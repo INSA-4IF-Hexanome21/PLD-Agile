@@ -79,18 +79,20 @@ public class Controller{
         currentState.changerLivraison(this);
     }
 
+	public void supprimerLivraison(Long idSite, String typeSite, Integer numLivraison) {
+		carteController.supprimerLivraison(idSite, typeSite, numLivraison);
+	}
+
 	public String getCarteJSON() {
 		return carteController.getCarteJSON();
 	}
 
-	public String undoAction() {
+	public void undoAction() {
 		carteController.undo();
-		return getCarteJSON();
 	}
 
-	public String redoAction() {
+	public void redoAction() {
 		carteController.redo();
-		return getCarteJSON();
 	}
 
 	public void resetCarte() {
