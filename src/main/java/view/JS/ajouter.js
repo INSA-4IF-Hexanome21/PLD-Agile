@@ -306,7 +306,7 @@ siteMarkers.forEach(marker => {
 
           if (indexPrecedent === -1) return; // quitte la fonction si problème
 
-          const sitesApres = trajetChoisi.parcours.slice(indexPrecedent + 1);
+          const sitesApres = trajetChoisi.parcours.slice(indexPrecedent);
 
           if (sitesApres.length === 0) {
             selectionData.depotSitePrecedent = selectionData.collecteNoeud;

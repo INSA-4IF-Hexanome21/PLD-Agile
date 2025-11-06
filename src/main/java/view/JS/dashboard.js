@@ -311,14 +311,14 @@ if (donnees.noeuds && donnees.noeuds.length > 0) {
     // 4.trajets (si hay)
     console.log('Trajets reçus:', donnees.trajets);
     if (donnees.trajets) {
-      sitesParTrajet = {};
-
       for (const key in donnees.trajets) {
         const color = getRandomHexColor();
         trajetLines[key] = [];
-        sitesParTrajet[key] = {entrepot: null, parcours: [], lignes: [] }; 
 
         donnees.trajets[key].forEach((trajet) => {
+            if (!sitesParTrajet[key]) { 
+             sitesParTrajet[key] = { entrepot: null, parcours: [], lignes: [] }; 
+            }
 
           const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.from);
           const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === trajet.to);
@@ -349,31 +349,35 @@ if (donnees.noeuds && donnees.noeuds.length > 0) {
 
             ligne.bindPopup(`<strong>Trajet</strong><br>De: ${trajet.from}<br>À: ${trajet.to}`);
             trajetLines[key].push(ligne);
-            trajetLines[key].push(decorator); 
+            trajetLines[key].push(decorator);
 
             sitesParTrajet[key].lignes.push(ligne);
-            
-            const sitesSurTroncon = donnees.sites.filter(site => 
-              site.lat != null && site.lng != null &&
-              ((site.lat === depart.lat && site.lng === depart.lng) ||
-              (site.lat === arrivee.lat && site.lng === arrivee.lng))
-            );
-
-            sitesSurTroncon.forEach(site => {
-              const type = normaliserTypeSite(site.type);
-              if (type === 'entrepot') {
-                sitesParTrajet[key].entrepot = site; // un seul entrepôt
-              } else if (type === 'depot' || type === 'collecte') {
-                // conserver l’ordre de passage en pushant
-                if (!sitesParTrajet[key].parcours.some(s => s.id === site.id)) {
-                  sitesParTrajet[key].parcours.push({ ...site, type });
-                }
-              }
-            });
           }
         })
       }
     }
+
+    if (donnees.SiteParTrajet) {
+      for (const key in donnees.SiteParTrajet) {
+        const trajetData = donnees.SiteParTrajet[key];
+
+        const existingLignes = sitesParTrajet[key]?.lignes || []; 
+
+        sitesParTrajet[key] = {
+          entrepot: null,
+          parcours: [],
+          lignes: existingLignes // conserver les lignes existantes
+        };
+
+        if (Array.isArray(trajetData.sites) && trajetData.sites.length > 0) {
+          sitesParTrajet[key].parcours = trajetData.sites.map(s => ({ id: s.Id }));
+          sitesParTrajet[key].entrepot = trajetData.sites[0]; // Premier site comme entrepôt
+        }
+      }
+    }
+
+
+
 
     if (!carte._siteZoomHandlerAdded) {
       configurerZoomSites();
