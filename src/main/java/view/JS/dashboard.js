@@ -1,12 +1,14 @@
 // Variables globales
 let carte = null;
 let trajetsFlottantControl;
+let sitesFlottantImpactesControl;
 let marqueurs = [];
 let lignes = [];
 let siteMarkers = [];
 let noeudMarkers = [];
 let tronconLines = [];
 let trajetLines = {};
+let sitesImpactes = [];
 let donneesGlobales = null;
 
 const COULEURS_SITES = {
@@ -168,6 +170,34 @@ function initialiserCarte() {
   trajetsFlottantControl = L.control.trajetsFlottant({ position: 'topright' });
   trajetsFlottantControl.addTo(carte);
   
+  // --- Créer le panneau flottant pour les sites impactes (unique) ---
+  L.Control.SitesImpactesFlottant = L.Control.extend({
+    onAdd: function(map) {
+      const container = L.DomUtil.create('div', 'control-sites-impactes');
+
+      // En-tête
+      const header = L.DomUtil.create('div', 'sites-impactes-header', container);
+      header.innerHTML = 'Sites impactes';
+
+      // Corps
+      const body = L.DomUtil.create('div', 'sites-impactes-body', container);
+      container._body = body;
+
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+
+      return container;
+    },
+    onRemove: function(map) {}
+  });
+
+  L.control.sitesImpactesFlottant = function(opts) {
+    return new L.Control.SitesImpactesFlottant(opts);
+  };
+
+  sitesImpactesFlottantControl = L.control.sitesImpactesFlottant({ position: 'topright' });
+  sitesImpactesFlottantControl.addTo(carte);
+  
 
   // --- Charger les données ---
   fetch("/api/carte")
@@ -181,6 +211,7 @@ function initialiserCarte() {
       afficherDonneesSurCarte(donnees);
       configurerControlesVisibilite();
       mettreAJourTrajetsFlottant();
+      mettreAJourSitesImpactesFlottant();
        if (document.getElementById('form-livreurs')) {
         assignationLivraison();
       }
@@ -266,6 +297,15 @@ function afficherDonneesSurCarte(donnees) {
         siteMarkers.push(marker);
       }
     });
+
+    // 5.sites impactes 
+    console.log('Sites impactés:', donnees.sitesImpactes);
+    if (donnees.sitesImpactes) {
+      donnees.sitesImpactes.forEach( s => {
+      sitesImpactes.push(s);
+      });
+      mettreAJourSitesImpactesFlottant();
+    }
 
     // 4.trajets (si hay)
     console.log('Trajets reçus:', donnees.trajets);
@@ -735,6 +775,37 @@ function configurerControlesVisibilite() {
 }
 
 // Fonction auxiliaire pour mettre à jour le panneau flottant des trajets
+function mettreAJourSitesImpactesFlottant() {
+  if (!sitesImpactesFlottantControl) return;
+  const container = sitesImpactesFlottantControl.getContainer();
+  if (!container) return;
+
+  let body = container.querySelector('.sites-impactes-body');
+  if (!body) {
+    body = L.DomUtil.create('div', 'sites-impactes-body', container);
+  }
+  body.innerHTML = '';
+
+  if (!sitesImpactes || Object.keys(sitesImpactes).length === 0) {
+    const empty = L.DomUtil.create('div', 'empty-body', body);
+    empty.innerHTML = ' Aucun sites impactes. ';
+    return;
+  }
+
+  const oldList = container.querySelector('.sites-impactes-list');  
+  if (oldList) oldList.remove();
+
+  const listContainer = L.DomUtil.create('ul', 'sites-impactes-list', body);
+  Object.keys(sitesImpactes).forEach( (id) => {
+    const s = sitesImpactes[id];
+    const sign = s.delay > 0 ? '+' : '';
+    const item = L.DomUtil.create('li', '', listContainer);
+    item.innerHTML = `Site n°${s.id} : ${sign}${s.delay} min`;
+  });
+
+}
+
+// Fonction auxiliaire pour mettre à jour le panneau flottant des trajets
 function mettreAJourTrajetsFlottant() {
   if (!trajetsFlottantControl) return;
   const container = trajetsFlottantControl.getContainer();
@@ -812,7 +883,7 @@ function lancerCalcul() {
             console.log('✅ Calcul effectué', data);
             
             $(statusId).removeClass('loading error').addClass('success')
-                .text('✅ ' + file.name + ' chargé avec succès!');
+                .text('✅ Tournée chargée avec succès!');
             
             // Notifier le contrôleur du succès
             if (window.appController) {
@@ -941,6 +1012,7 @@ function nettoyerCarte() {
   noeudMarkers = [];
   tronconLines = [];
   trajetLines = {};
+  sitesImpactes = [];
   donneesGlobales = null;
 }
 

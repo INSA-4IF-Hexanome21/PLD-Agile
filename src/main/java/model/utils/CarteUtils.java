@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import model.Carte;
 import model.Collecte;
@@ -24,7 +25,7 @@ public final class CarteUtils {
     //plage horaire de tolérance lors d'un changement en minute
     //Si heure initial = 9h50 alors changement acceptable si nouvelle heure
     //9h45<nouvelle_heure<9h55
-    static Float PLAGEHORAIRE = 17f; 
+    static Float PLAGEHORAIRE = 0f; 
 
     private CarteUtils() {}
     
@@ -81,9 +82,9 @@ public final class CarteUtils {
             
             Site siteTrouve = null;
             for(Site site: trajet.getSites()){
-                if(site.getId() == idNoeud2){
+                if(Objects.equals(site.getId(), idNoeud2)){
                     siteTrouve = site;
-                    if(site.getId() != idSiteAttendu){
+                    if(!Objects.equals(site.getId(), idSiteAttendu)){
                         siteTrouve = null;
                     }
                     else{
@@ -104,7 +105,8 @@ public final class CarteUtils {
                 LocalTime nouvelleHeureArrivee = LocalTime.of((int)heure_arrivee,(int)((heure_arrivee%1)*60));
                 if(ancienneHeureArrivee != null){
                     long difference = ChronoUnit.MINUTES.between(ancienneHeureArrivee,nouvelleHeureArrivee);
-                    if(difference > PLAGEHORAIRE/2f){
+                    System.out.println("difference: "+difference+"PLAGEHORAIRE/2f: "+PLAGEHORAIRE/2f);
+                    if(Math.abs(difference) > PLAGEHORAIRE/2f){
                         sitesImpactes.put(siteTrouve,difference);
                     }
                 }
@@ -133,7 +135,8 @@ public final class CarteUtils {
                 // System.out.println("Départ du site: " +siteTrouve.getDepartHeure());
             }
         }
-        
+
+        System.out.println("SitesImpactes :" + sitesImpactes);
 
         trajet.setTroncons(troncons);
         trajet.setdureeTrajet(dureeTrajet);
