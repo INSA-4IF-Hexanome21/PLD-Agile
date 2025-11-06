@@ -135,15 +135,12 @@ public class Carte {
             List<Long> chemin = CarteUtils.getChemin(gt, nouvSolutionLong.get(i), nouvSolutionLong.get(i+1));
             CarteUtils.ajoutSansDuplication(nouvCheminComplet,chemin);
         }
-
         // conversion de la solution pour passage a majTrajet
         List<Integer> solution = new ArrayList<>();
         for (var id : nouvSolutionLong) {
             solution.add(gt.getIndexFromId(id));
         }
-        // System.out.println("Nouvelle solution : " + solution);
         CarteUtils.majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
-        // System.out.println(trajet.sitesImpactes);
 
     }
 

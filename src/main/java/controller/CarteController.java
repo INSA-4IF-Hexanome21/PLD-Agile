@@ -129,8 +129,8 @@ public class CarteController {
                 System.out.println("Id : " + idLivraison);
                 demandeLivraison.assignerLivreur(config.getLivreurbyId(idLivreur), idLivraison, carte);
 
-                System.out.println(">>> CarteController: Trajets" + this.getCarte().getTrajets().getLast().getLivreur().getNom());
-                System.out.println(">>> CarteController: Sites" + this.getCarte().getTrajets().getLast().getSites());
+                // System.out.println(">>> CarteController: Trajets" + this.getCarte().getTrajets().getLast().getLivreur().getNom());
+                // System.out.println(">>> CarteController: Sites" + this.getCarte().getTrajets().getLast().getSites());
             }
         }
         System.out.println(">>> CarteController: Livreur" + config.getNbLivreur());

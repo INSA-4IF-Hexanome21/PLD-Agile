@@ -31,6 +31,7 @@ public class GrapheTotal implements Graphe {
 		this.indexToId = new HashMap<>();
 		this.mapAllSommets = new HashMap<>();
 		this.tronconHashMap = new HashMap<>();
+		this.cheminsMin = new HashMap<>(); 
 		this.noeudsHashMap = noeuds;
 		Integer compteur = 1;
 
@@ -156,7 +157,7 @@ public class GrapheTotal implements Graphe {
 	}
 
 	public void RechercheDijkstra(List<Site> sites) {
-		this.cheminsMin = new HashMap<>(); 
+		// this.cheminsMin = new HashMap<>(); 
 		this.mapDistances = new HashMap<>();  
 
 		// Créer un Set des indices correspondant aux sites
