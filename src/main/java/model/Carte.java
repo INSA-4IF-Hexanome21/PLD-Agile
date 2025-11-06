@@ -198,4 +198,24 @@ public class Carte {
         this.sites.clear();
         System.out.println("Carte reset");
     }
+
+    public Long getSiteAssocie(Integer numLivraison,Long idSite){
+        Site siteInit = getSiteById(idSite);
+        String typeRecherche = "";
+        if(siteInit instanceof Collecte){
+            typeRecherche = "depot";
+        }
+        else if(siteInit instanceof Depot){
+            typeRecherche = "collecte";
+        }
+        for(Site site : this.sites){
+            if(typeRecherche == "depot" && site instanceof Depot && site.getId() != idSite && ((Depot)site).getNumLivraison() == numLivraison){
+                return site.getId();
+            }
+            else if(typeRecherche == "collecte" && site instanceof Collecte && site.getId() != idSite && ((Collecte)site).getNumLivraison() == numLivraison){
+                return site.getId();
+            }
+        }
+        return null;
+    }
 }

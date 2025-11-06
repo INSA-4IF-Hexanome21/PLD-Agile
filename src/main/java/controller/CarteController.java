@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.time.LocalTime;
 
 import tsp.*;
@@ -470,9 +471,9 @@ public class CarteController {
         }
         Collecte collecte;
         Depot depot;
-        Long idSiteAssocie = demandeLivraison.getSiteAssocie(numLivraison, idSite);
+        Long idSiteAssocie = carte.getSiteAssocie(numLivraison, idSite);
         
-        if (typeSite == "collecte") {
+        if (Objects.equals(typeSite,"collecte")) {
             collecte = (Collecte) carte.getSiteById(idSite) ;
             depot = (Depot) carte.getSiteById(idSiteAssocie); 
         }
