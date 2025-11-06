@@ -67,7 +67,7 @@ function creerInstructionOverlay() {
     let boutonsTrajets = '';
     if (Object.keys(sitesParTrajet).length > 0) {
       for (const key in sitesParTrajet) {
-        boutonsTrajets += `<button class="btn-trajet" data-trajet="${key}">Trajet ${key}</button> `;
+        boutonsTrajets += `<button class="btn-trajet" data-trajet="${key}">Trajet ${parseInt(key) + 1}</button> `;
       }
     }
 
