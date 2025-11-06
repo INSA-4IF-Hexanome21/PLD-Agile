@@ -44,17 +44,23 @@ function envoyerAssignations() {
 /**
  * Extrae livraisons de los sites y las agrupa
  */
-var CLICK = 0; //Variable permettant de savoir si l'évènement click a déjà été défini
+// var NB_CLICK = 0; //Variable permettant de savoir si l'évènement click a déjà été défini
+var CLICK_DEF = false;
 function extraerYMostrarLivraisons(sites) {
   
- 
-  document.getElementById('envoyer-assignations').addEventListener('click', () => {
-    if(CLICK%3 === 0){
+  if(!CLICK_DEF){
+    document.getElementById('envoyer-assignations').addEventListener('click', () => {
+      // if(NB_CLICK%3 === 0){
       envoyerAssignations();
-      console.warn('click : ', CLICK);
-    }
-    ++CLICK;
-  });
+      lancerCalcul();
+      chargerComposantPrincipal('/components/Map.html');
+        // console.warn('click : ', NB_CLICK);
+      // }
+      // ++NB_CLICK;
+    });
+    CLICK_DEF = true;
+  }
+  
 
   console.log('📦 Extrayendo livraisons de sites...', sites);
   
