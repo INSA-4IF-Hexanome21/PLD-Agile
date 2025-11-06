@@ -709,19 +709,6 @@ function creerMarqueurSite(site, type, color, radius) {
     white-space:nowrap;
   ">${site.numLivraison??''}</div>`;
 
-  // label fijo debajo del círculo mostrando el "num livraison"
-  const labelHtmlNum = `<div style="
-    display:inline-block;
-    background:rgba(255,255,255,0.92);
-    padding:2px 6px;
-    border-radius:4px;
-    border:1px solid rgba(0,0,0,0.08);
-    font-size:12px;
-    color:#222;
-    box-shadow:0 1px 2px rgba(0,0,0,0.06);
-    white-space:nowrap;
-  ">${site.numLivraison??''}</div>`;
-
 
   const hasArrival = !(site.arrivee == null || site.arrivee === '');
   let labelIcon;

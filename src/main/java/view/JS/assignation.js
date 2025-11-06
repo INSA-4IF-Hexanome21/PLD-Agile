@@ -15,12 +15,8 @@ function assignationLivraison() {
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-<<<<<<< HEAD
-    const nb = parseInt(document.getElementById('nbLivreur').value) || 1;
-=======
     const nb = parseInt(document.getElementById('nbLivreur').value) || 1
     resetAssignations();
->>>>>>> dev
     genererZonesLivreurs(nb);
   });
 
@@ -37,14 +33,6 @@ function envoyerAssignations() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(assignationsState)
   })
-<<<<<<< HEAD
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ Assignations envoyées:', data);
-  })
-  .catch(err => {
-    console.error('❌ Erreur lors de l’envoi des assignations:', err);
-=======
   .then(res => res.json().then(data => ({ ok: res.ok, data })))
   .then(({ ok, data }) => {
       if (!ok) {
@@ -57,20 +45,12 @@ function envoyerAssignations() {
   })
   .catch(err => {
       console.error('❌ Erreur lors de l’envoi des assignations:', err);
->>>>>>> dev
   });
 }
 
 /**
  * Extrae livraisons de los sites y las agrupa
  */
-<<<<<<< HEAD
-function extraerYMostrarLivraisons(sites) {
-  
-  document.getElementById('envoyer-assignations').addEventListener('click', () => {
-  envoyerAssignations();
-});
-=======
 // var NB_CLICK = 0; //Variable permettant de savoir si l'évènement click a déjà été défini
 var CLICK_DEF = false;
 function extraerYMostrarLivraisons(sites) {
@@ -89,7 +69,6 @@ function extraerYMostrarLivraisons(sites) {
     CLICK_DEF = true;
   }
   
->>>>>>> dev
 
   console.log('📦 Extrayendo livraisons de sites...', sites);
   
@@ -119,15 +98,12 @@ function extraerYMostrarLivraisons(sites) {
   mostrarLivraisonsDisponibles(livraisonsData);
 }
 
-<<<<<<< HEAD
-=======
 function lancerCalculTimeout(){
     lancerCalcul();
     console.log("LANCERCALCULTIMEOUT");
     chargerComposantPrincipal('/components/Map.html');
 }
 
->>>>>>> dev
 /**
  * Muestra las livraisons disponibles en el pool
  */
@@ -215,11 +191,7 @@ function genererZonesLivreurs(nombre) {
     estadoActual[livreurId] = cards.map(c => parseInt(c.dataset.livraisonId));
   });
   
-<<<<<<< HEAD
-  // Merge con el estado guardado
-=======
   // Fusionner avec l’état enregistré
->>>>>>> dev
   Object.keys(estadoActual).forEach(key => {
     if (!assignationsState[key]) assignationsState[key] = [];
     estadoActual[key].forEach(id => {
@@ -285,10 +257,7 @@ function crearZoneLivreur(numero) {
   });
   
   dropzone.addEventListener('drop', (e) => {
-<<<<<<< HEAD
-=======
     console.log(e);
->>>>>>> dev
     e.preventDefault();
     dropzone.classList.remove('dragover');
     
@@ -296,18 +265,13 @@ function crearZoneLivreur(numero) {
     const draggedEl = document.querySelector(`[data-livraison-id="${livraisonId}"]`);
     
     if (draggedEl) {
-<<<<<<< HEAD
-=======
       console.log(draggedEl);
->>>>>>> dev
       // Quitar empty state si existe
       const emptyState = dropzone.querySelector('.empty-state');
       if (emptyState) emptyState.remove();
       
       // Mover el elemento
       dropzone.appendChild(draggedEl);
-<<<<<<< HEAD
-=======
 
       //On supprime l'assignation faîtes éventuellement à d'autres livreurs
       Object.keys(assignationsState).forEach(function(key) {
@@ -316,50 +280,36 @@ function crearZoneLivreur(numero) {
           assignationsState[key].splice(index,1);
         }
       });
->>>>>>> dev
       
       // Actualizar estado
       if (!assignationsState[numero]) assignationsState[numero] = [];
       if (!assignationsState[numero].includes(livraisonId)) {
         assignationsState[numero].push(livraisonId);
       }
-<<<<<<< HEAD
-      
-      // Actualizar contador
-      actualizarContadorLivreur(numero);
-=======
 
       
       
       // Actualizar contador
       // actualizarContadorLivreur(numero);
       actualiserAllConteneurs()
->>>>>>> dev
       
       // Actualizar pool
       mostrarLivraisonsDisponibles(livraisonsData);
       
       // Enviar al backend
-<<<<<<< HEAD
-      assignerLivraisonAuLivreur(livraisonId, numero);
-=======
       //assignerLivraisonAuLivreur(livraisonId, numero);
->>>>>>> dev
     }
   });
   
   return div;
 }
 
-<<<<<<< HEAD
-=======
 function actualiserAllConteneurs(){
   var zones = document.querySelectorAll(`.livreur-zone`);
   zones.forEach(function(zone){
     actualizarContadorLivreur(zone.attributes[1].value)
   });
 }
->>>>>>> dev
 /**
  * Actualiza el contador de livraisons de un livreur
  */
@@ -406,8 +356,6 @@ function devolverAlPool(livraisonId) {
   }
   
   mostrarLivraisonsDisponibles(livraisonsData);
-<<<<<<< HEAD
-=======
 }
 
 /**
@@ -458,5 +406,4 @@ function resetAssignations(nouvellesDonneesSites = null) {
   } else {
     console.warn('Aucune donnée de sites disponible pour le reset.');
   }
->>>>>>> dev
 }
