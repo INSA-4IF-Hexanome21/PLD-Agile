@@ -117,6 +117,7 @@ function creerInstructionOverlay() {
 
         // Click: sélection du trajet
         btn.addEventListener('click', () => {
+            enleverSurlignageTrajet(trajetKey);
           // Remplir trajetChoisi avec toutes les infos du trajet
            trajetChoisi = {
             key: trajetKey,
@@ -144,7 +145,26 @@ function creerInstructionOverlay() {
 
     }, 100);
 
+        const zoomLinks = document.querySelectorAll('.leaflet-control-zoom a');
+    zoomLinks.forEach(el => {
+        el.style.display = '';
+        el.style.background = 'var(--spie-dark-teal)';
+        el.style.color = 'var(--white)';
+        el.style.border = 'none';
+        el.style.borderRadius = '4px';
+        el.style.transition = 'all 0.3s ease';
+        el.style.width = '';
+        el.style.height = '';
+        el.style.padding = '0'
+    });
 
+    // Undo/Redo : complètement caché
+    const undoRedo = document.querySelectorAll('.leaflet-control-undoRedo');
+    undoRedo.forEach(el => {
+        el.style.display = 'none';
+        el.style.width = '0';
+        el.style.height = '0';
+    });
     return div;
   };
   
@@ -246,18 +266,18 @@ function highlightAvailableMarkers() {
 
  sitesConcernes.length = 0; // Vide la liste avant de la remplir
 
-siteMarkers.forEach(marker => {
-  const siteId = String(marker.options.siteId || marker.options.id || marker.siteId || marker.id);
+  siteMarkers.forEach(marker => {
+    const siteId = String(marker.options.siteId || marker.options.id || marker.siteId || marker.id);
 
-  
-  const faitPartieTrajet =
-    (trajetChoisi.parcours && trajetChoisi.parcours.some(site => String(site.id) === siteId)) ||
-    (trajetChoisi.entrepot && String(trajetChoisi.entrepot.id) === siteId);
+    
+    const faitPartieTrajet =
+      (trajetChoisi.parcours && trajetChoisi.parcours.some(site => String(site.id) === siteId)) ||
+      (trajetChoisi.entrepot && String(trajetChoisi.entrepot.id) === siteId);
 
-  if (faitPartieTrajet) {
-    sitesConcernes.push(marker);
-  }
-});
+    if (faitPartieTrajet) {
+      sitesConcernes.push(marker);
+    }
+  });
 
 
   
@@ -307,7 +327,7 @@ siteMarkers.forEach(marker => {
 
           if (indexPrecedent === -1) return; // quitte la fonction si problème
 
-          const sitesApres = trajetChoisi.parcours.slice(indexPrecedent);
+          const sitesApres = trajetChoisi.parcours.slice(indexPrecedent + 1);
 
           if (sitesApres.length === 0) {
             selectionData.depotSitePrecedent = selectionData.collecteNoeud;
@@ -854,6 +874,13 @@ function annulerAjout() {
   }
   
   desactiverEcouteursMarqueurs();
+  visibilityState['trajets'] = true;
+  visibilityState['depot'] = true;
+  visibilityState['collecte'] = true;
+  visibilityState['entrepot'] = true;
+   visibilityState['noeuds'] = false;
+  updateVisibility();
+  mettreAJourTrajetsFlottant();
   
   console.log('Mode ajout annulé');
 }
@@ -923,28 +950,46 @@ function envoyerNouvellesLivraisons(numeroTrajet) {
 
 // --- Sauvegarde de l'état original des éléments ---
 function griserTousLesElementsCliquables() {
-    const cliquables = document.querySelectorAll(
-        'button, a, input, select, textarea, [role="button"], .cliquable'
-    );
+  const cliquables = document.querySelectorAll(
+      'button, a, input, select, textarea, [role="button"], .cliquable'
+  );
 
-    cliquables.forEach(el => {
-        // Sauvegarder les propriétés d'origine (si pas déjà fait)
-        if (!el.dataset.originalState) {
-            el.dataset.originalState = JSON.stringify({
-                pointerEvents: el.style.pointerEvents,
-                opacity: el.style.opacity,
-                disabled: el.disabled || false
-            });
-        }
+  cliquables.forEach(el => {
+      // Exclure overlay
+      if (el.closest('.instruction-overlay')) return;
 
-        // Appliquer l'état grisé et désactivé
-        el.style.pointerEvents = 'none';
-        el.style.opacity = '0.5';
-        el.disabled = true;
-    });
+      // Garder le zoom visible et fonctionnel
+      if (el.closest('.leaflet-control-zoom')) return;
 
-    console.log('🩶 Tous les éléments cliquables ont été désactivés et grisées.');
+      // Cacher complètement le undo/redo
+      if (el.closest('.leaflet-control-undoRedo')) {
+          el.style.display = 'none';
+          el.style.height = 0;
+          el.style.width = 0;
+          return;
+      }
+
+      // Sauvegarder l'état original
+      if (!el.dataset.originalState) {
+          el.dataset.originalState = JSON.stringify({
+              pointerEvents: el.style.pointerEvents || '',
+              opacity: el.style.opacity || '',
+              disabled: el.disabled || false
+          });
+      }
+
+      // Griser et désactiver
+      el.style.pointerEvents = 'none';
+      el.style.opacity = '0.5';
+      if ('disabled' in el) el.disabled = true;
+  });
+
+  console.log('🩶 Tous les éléments cliquables ont été désactivés sauf overlay et zoom. Undo/Redo est caché.');
 }
+
+
+
+
 
 // --- Restauration de l'état original ---
 function restaurerElementsCliquables() {
@@ -966,5 +1011,49 @@ function restaurerElementsCliquables() {
         }
     });
 
-    console.log('🎨 Tous les éléments ont retrouvé leur état d’origine.');
+    // Zoom : restaurer le style
+    const zoomLinks = document.querySelectorAll('.leaflet-control-zoom a');
+    zoomLinks.forEach(el => {
+        el.style.display = '';
+        el.style.background = 'var(--spie-dark-teal)';
+        el.style.color = 'var(--white)';
+        el.style.border = 'none';
+        el.style.borderRadius = '4px';
+        el.style.transition = 'all 0.3s ease';
+        el.style.width = '';
+        el.style.height = '';
+        el.style.padding = '';
+        el.style.lineHeight = '';
+        el.style.justifyContent = '';
+        el.style.alignItems = '';
+    });
+
+    // Undo/Redo : restaurer conteneur ET boutons internes
+    const undoRedoContainers = document.querySelectorAll('.leaflet-control-undoRedo');
+    undoRedoContainers.forEach(container => {
+        container.style.display = '';
+        container.style.width = '';
+        container.style.height = '';
+        container.style.padding = '';
+
+        // Restaurer boutons internes
+        const buttons = container.querySelectorAll('a');
+        buttons.forEach(btn => {
+            btn.style.display = '';
+            btn.style.width = '';
+            btn.style.height = '';
+            btn.style.background = 'var(--spie-dark-teal)';
+            btn.style.color = 'var(--white)';
+            btn.style.border = 'none';
+            btn.style.borderRadius = '4px';
+            btn.style.transition = 'all 0.3s ease';
+            btn.style.lineHeight = '';
+            btn.style.padding = '';
+            btn.style.justifyContent = '';
+            btn.style.alignItems = '';
+        });
+    });
+
+    console.log('🎨 Tous les éléments ont retrouvé leur état d’origine, y compris Undo/Redo.');
 }
+
