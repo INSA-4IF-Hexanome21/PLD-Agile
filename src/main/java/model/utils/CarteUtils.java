@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import model.Carte;
 import model.Collecte;
@@ -67,23 +68,26 @@ public final class CarteUtils {
             solutionLongs.add(gt.getIdFromIndex(solution.get(i)));
         }
         trajet.setSolution(solutionLongs);
-
+        System.out.println(solutionLongs);
         Integer indexSolution = 1;
         Long idSiteAttendu = gt.getIdFromIndex(solution.get(indexSolution));
         for (int i= 0; i<cheminComplet.size()-1; ++i){
-            long idNoeud1 = cheminComplet.get(i);
-            long idNoeud2 = cheminComplet.get(i+1);
+            Long idNoeud1 = cheminComplet.get(i);
+            Long idNoeud2 = cheminComplet.get(i+1);
             if (idNoeud1 != idNoeud2) {
                 Troncon troncon = gt.NoeudstoTroncon(idNoeud1, idNoeud2);
-                dureeTrajet += (troncon.getLongueur()/1000)/15;
-                troncons.add(troncon);
+                if (troncon != null) {
+                    dureeTrajet += (troncon.getLongueur()/1000)/15;
+                    troncons.add(troncon);
+                }
+                
             }
             
             Site siteTrouve = null;
             for(Site site: trajet.getSites()){
-                if(site.getId() == idNoeud2){
+                if(Objects.equals(site.getId(), idNoeud2)){
                     siteTrouve = site;
-                    if(site.getId() != idSiteAttendu){
+                    if(!Objects.equals(site.getId(), idSiteAttendu)){
                         siteTrouve = null;
                     }
                     else{
@@ -104,7 +108,8 @@ public final class CarteUtils {
                 LocalTime nouvelleHeureArrivee = LocalTime.of((int)heure_arrivee,(int)((heure_arrivee%1)*60));
                 if(ancienneHeureArrivee != null){
                     long difference = ChronoUnit.MINUTES.between(ancienneHeureArrivee,nouvelleHeureArrivee);
-                    if(difference > PLAGEHORAIRE/2f){
+                    //System.out.println("difference: "+difference+"PLAGEHORAIRE/2f: "+PLAGEHORAIRE/2f);
+                    if(Math.abs(difference) > PLAGEHORAIRE/2f){
                         sitesImpactes.put(siteTrouve,difference);
                     }
                 }
@@ -133,7 +138,8 @@ public final class CarteUtils {
                 // System.out.println("Départ du site: " +siteTrouve.getDepartHeure());
             }
         }
-        
+
+        //System.out.println("SitesImpactes :" + sitesImpactes);
 
         trajet.setTroncons(troncons);
         trajet.setdureeTrajet(dureeTrajet);

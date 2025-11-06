@@ -3,6 +3,7 @@ package model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 //Classe permettant de stocker une demande de livraison
 public class DemandeLivraison {
@@ -92,4 +93,10 @@ public class DemandeLivraison {
         }
         sites.put(idSite,site);
     }    
+
+    public Long getSiteAssocie(Integer numLivraison, Long idSite) {
+        List<Long> sitesAssocies = livraisons.get(numLivraison);
+        if (Objects.equals( idSite, sitesAssocies.get(0)) ) return sitesAssocies.get(1);
+        else return sitesAssocies.get(0);
+    }
 }

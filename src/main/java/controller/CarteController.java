@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.time.LocalTime;
 
 import tsp.*;
@@ -128,8 +129,8 @@ public class CarteController {
                 System.out.println("Id : " + idLivraison);
                 demandeLivraison.assignerLivreur(config.getLivreurbyId(idLivreur), idLivraison, carte);
 
-                System.out.println(">>> CarteController: Trajets" + this.getCarte().getTrajets().getLast().getLivreur().getNom());
-                System.out.println(">>> CarteController: Sites" + this.getCarte().getTrajets().getLast().getSites());
+                // System.out.println(">>> CarteController: Trajets" + this.getCarte().getTrajets().getLast().getLivreur().getNom());
+                // System.out.println(">>> CarteController: Sites" + this.getCarte().getTrajets().getLast().getSites());
             }
         }
         System.out.println(">>> CarteController: Livreur" + config.getNbLivreur());
@@ -270,7 +271,7 @@ public class CarteController {
         }
 
         System.out.println(">>> CarteController: livraisons précédentes effacées.");
-        System.out.println(getCarteJSON());
+        // System.out.println(getCarteJSON());
     }
     /**
      * Génère le JSON complet de la carte avec noeuds, troncons et sites
@@ -463,7 +464,24 @@ public class CarteController {
     }
 
     // Exécution d'une commande de suppression
-    public void supprimerLivraison(Collecte collecte, Depot depot, Trajet trajet) {
+    public void supprimerLivraison(Long idSite, String typeSite, Integer numLivraison) {
+        Trajet trajet = null;
+        for (var t : carte.getTrajets()) {
+            if (t.getSite(idSite) != null) {trajet = t; break;}
+        }
+        Collecte collecte;
+        Depot depot;
+        Long idSiteAssocie = carte.getSiteAssocie(numLivraison, idSite);
+        
+        if (Objects.equals(typeSite,"collecte")) {
+            collecte = (Collecte) carte.getSiteById(idSite) ;
+            depot = (Depot) carte.getSiteById(idSiteAssocie); 
+        }
+        else {
+            depot = (Depot) carte.getSiteById(idSite);
+            collecte = (Collecte) carte.getSiteById(idSiteAssocie);
+        }
+        
         Command slc = new SupprimerLivraisonCommand(gt, collecte, depot, trajet, carte);
         history.add(slc);   
     }

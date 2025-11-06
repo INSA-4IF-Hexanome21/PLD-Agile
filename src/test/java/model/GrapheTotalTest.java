@@ -44,7 +44,7 @@ public class GrapheTotalTest {
 
 		System.out.println("Troncon entre n1 et n2");
 		System.out.println("Attendu => nom rue : test, longeur => 45");
-		Troncon t3 = gt.NoeudstoTroncon(5678,1234 );
+		Troncon t3 = gt.NoeudstoTroncon(5678L,1234L );
 		System.out.println("nom rue : " + t3.getNomRue() + ", longuer : "+ t3.getLongueur());
 
 		List<Site> sites = new ArrayList<Site>();

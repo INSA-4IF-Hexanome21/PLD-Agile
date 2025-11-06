@@ -98,19 +98,25 @@ public class Carte {
         Integer indexCollecteSol = 0;
         Integer indexDepotSol = 0;
 
+        //Insertion de la collecte dans la solution
         for (int i = 0; i<solutionLong.size();++i){
             Long idSite = solutionLong.get(i);
             nouvSolutionLong.add(idSite);
             if(i<solutionLong.size() - 1 && Objects.equals(idSite, idPrecCollecte)){
                 nouvSolutionLong.add(idCollecte);
                 indexCollecteSol = i+1;
+                if(Objects.equals(idPrecDepot, idCollecte)){
+                    nouvSolutionLong.add(idDepot);
+                    indexDepotSol = i+2;
+                }
             }
+
             else if(i<solutionLong.size() - 1 && Objects.equals(idSite, idPrecDepot)){
                 nouvSolutionLong.add(idDepot);
                 indexDepotSol = i+2;
             }
-        }
 
+        }
 
         //Recherche Dijkstra Collecte
         List<Site> siteARechercher = new ArrayList<Site>();
@@ -129,15 +135,12 @@ public class Carte {
             List<Long> chemin = CarteUtils.getChemin(gt, nouvSolutionLong.get(i), nouvSolutionLong.get(i+1));
             CarteUtils.ajoutSansDuplication(nouvCheminComplet,chemin);
         }
-
         // conversion de la solution pour passage a majTrajet
         List<Integer> solution = new ArrayList<>();
         for (var id : nouvSolutionLong) {
             solution.add(gt.getIndexFromId(id));
         }
-        // System.out.println("Nouvelle solution : " + solution);
         CarteUtils.majTrajet(carte, gt, nouvCheminComplet, solution, trajet);
-        // System.out.println(trajet.sitesImpactes);
 
     }
 
@@ -197,5 +200,25 @@ public class Carte {
         this.trajets.clear();
         this.sites.clear();
         System.out.println("Carte reset");
+    }
+
+    public Long getSiteAssocie(Integer numLivraison,Long idSite){
+        Site siteInit = getSiteById(idSite);
+        String typeRecherche = "";
+        if(siteInit instanceof Collecte){
+            typeRecherche = "depot";
+        }
+        else if(siteInit instanceof Depot){
+            typeRecherche = "collecte";
+        }
+        for(Site site : this.sites){
+            if(typeRecherche == "depot" && site instanceof Depot && site.getId() != idSite && ((Depot)site).getNumLivraison() == numLivraison){
+                return site.getId();
+            }
+            else if(typeRecherche == "collecte" && site instanceof Collecte && site.getId() != idSite && ((Collecte)site).getNumLivraison() == numLivraison){
+                return site.getId();
+            }
+        }
+        return null;
     }
 }
