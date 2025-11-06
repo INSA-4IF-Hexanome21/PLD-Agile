@@ -53,8 +53,7 @@ function extraerYMostrarLivraisons(sites) {
       // if(NB_CLICK%3 === 0){
       if(toutesLivraisonsAssignees()){
         envoyerAssignations();
-        lancerCalcul();
-        chargerComposantPrincipal('/components/Map.html');
+        setTimeout(lancerCalculTimeout,1000);
       }
       
         // console.warn('click : ', NB_CLICK);
@@ -91,6 +90,11 @@ function extraerYMostrarLivraisons(sites) {
   
   console.log('✅ Livraisons encontradas:', livraisonsData);
   mostrarLivraisonsDisponibles(livraisonsData);
+}
+
+function lancerCalculTimeout(){
+    lancerCalcul();
+    chargerComposantPrincipal('/components/Map.html');
 }
 
 /**
