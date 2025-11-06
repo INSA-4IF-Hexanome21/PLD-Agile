@@ -25,7 +25,7 @@ public final class CarteUtils {
     //plage horaire de tolérance lors d'un changement en minute
     //Si heure initial = 9h50 alors changement acceptable si nouvelle heure
     //9h45<nouvelle_heure<9h55
-    static Float PLAGEHORAIRE = 0f; 
+    static Float PLAGEHORAIRE = 17f; 
 
     private CarteUtils() {}
     
@@ -105,7 +105,7 @@ public final class CarteUtils {
                 LocalTime nouvelleHeureArrivee = LocalTime.of((int)heure_arrivee,(int)((heure_arrivee%1)*60));
                 if(ancienneHeureArrivee != null){
                     long difference = ChronoUnit.MINUTES.between(ancienneHeureArrivee,nouvelleHeureArrivee);
-                    System.out.println("difference: "+difference+"PLAGEHORAIRE/2f: "+PLAGEHORAIRE/2f);
+                    //System.out.println("difference: "+difference+"PLAGEHORAIRE/2f: "+PLAGEHORAIRE/2f);
                     if(Math.abs(difference) > PLAGEHORAIRE/2f){
                         sitesImpactes.put(siteTrouve,difference);
                     }
@@ -136,7 +136,7 @@ public final class CarteUtils {
             }
         }
 
-        System.out.println("SitesImpactes :" + sitesImpactes);
+        //System.out.println("SitesImpactes :" + sitesImpactes);
 
         trajet.setTroncons(troncons);
         trajet.setdureeTrajet(dureeTrajet);
