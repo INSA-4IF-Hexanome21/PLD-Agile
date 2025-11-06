@@ -117,12 +117,12 @@ function initialiserCarte() {
 
       const undoBtn = L.DomUtil.create('a', 'undo-btn', container);
       undoBtn.href = '#';
-      undoBtn.title = 'Annuler (Ctrl+Z)';
+      undoBtn.title = 'Annuler';
       undoBtn.innerHTML = `<img src="/images/undo.svg" style="width:18px;height:18px;margin:6px;" />`
 
       const redoBtn = L.DomUtil.create('a', 'redo-btn', container);
       redoBtn.href = '#';
-      redoBtn.title = 'Rétablir (Ctrl+Y)';
+      redoBtn.title = 'Rétablir';
       redoBtn.innerHTML = '<img src="/images/redo.svg" style="width:18px;height:18px;margin:6px;" />';
 
       // Empêche la propagation des clics pour ne pas déclencher le zoom/pan de Leaflet
