@@ -1212,10 +1212,6 @@ fetch('/components/Sidebar.html')
     document.getElementById('btn-roadmap')?.addEventListener('click', () => {
       lancerTelechargement();
     });
-
-    document.getElementById('btn-roadmap')?.addEventListener('click', () => {
-      lancerTelechargement();
-    });
     chargerComposantPrincipal('/components/Map.html');
     attachDropHandlers();
 
