@@ -15,7 +15,8 @@ function assignationLivraison() {
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const nb = parseInt(document.getElementById('nbLivreur').value) || 1;
+    const nb = parseInt(document.getElementById('nbLivreur').value) || 1
+    resetAssignations();
     genererZonesLivreurs(nb);
   });
 
@@ -53,7 +54,6 @@ function envoyerAssignations() {
 // var NB_CLICK = 0; //Variable permettant de savoir si l'évènement click a déjà été défini
 var CLICK_DEF = false;
 function extraerYMostrarLivraisons(sites) {
-  console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
   if(!CLICK_DEF){
     document.getElementById('btn-calcul-tournee').addEventListener('click', () => {
       // if(NB_CLICK%3 === 0){

@@ -1209,6 +1209,9 @@ fetch('/components/Sidebar.html')
       lancerTelechargement();
     });
 
+    document.getElementById('btn-roadmap')?.addEventListener('click', () => {
+      lancerTelechargement();
+    });
     chargerComposantPrincipal('/components/Map.html');
     attachDropHandlers();
 
