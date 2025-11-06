@@ -37,7 +37,7 @@ function chargerComposantPrincipal(url) {
     console.error('Element #main-content introuvable');
     return;
   }
-  main.innerHTML = '<p>Chargement en cours...</p>';
+  // main.innerHTML = '<p>Chargement en cours...</p>';
 
   fetch(url)
     .then(res => {
@@ -50,22 +50,23 @@ function chargerComposantPrincipal(url) {
         requestAnimationFrame(() => {
           // Si le map est présent initialiser direcetmenet
           if (document.getElementById('map')) {
+            console.log("L 53 DASH.JS");
             initialiserCarte();
-            assignationLivraison();
+            // assignationLivraison();
             return;
           }
           // fallback après un court délai
           console.warn('#map introuvable au premier passage, tentative de secours...');
-          setTimeout(() => {
-            if (document.getElementById('map')) {
-              initialiserCarte();
-              assignationLivraison();
-            } else {
-              // DEBUG
-              console.error('Élément #map introuvable après fallback — vérifie ton Map.html (doit contenir <div id="map">) et l\'insertion du composant.');
-              main.innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable. Vérifiez Map.html.</p>';
-            }
-          }, 250); 
+          // setTimeout(() => {
+          //   if (document.getElementById('map')) {
+          //     initialiserCarte();
+          //     assignationLivraison();
+          //   } else {
+          //     // DEBUG
+          //     console.error('Élément #map introuvable après fallback — vérifie ton Map.html (doit contenir <div id="map">) et l\'insertion du composant.');
+          //     main.innerHTML = '<p style="color: #e74c3c;">Élément #map introuvable. Vérifiez Map.html.</p>';
+          //   }
+          // }, 250); 
         });
       }
     })
@@ -890,11 +891,12 @@ function lancerCalcul() {
                 try {
                       window.appController.onLivraisonCalculated();
                       // Afficher message et proposer d'aller à la carte
-                      setTimeout(() => {
-                          if (confirm('✅ Livraison Calculé! Voulez-vous voir la carte?')) {
-                              $('#btn-map').trigger('click');
-                          }
-                      }, 500);
+                      // setTimeout(() => {
+                      //     if (confirm('✅ Livraison Calculé! Voulez-vous voir la carte?')) {
+                      //         $('#btn-map').trigger('click');
+                      //     }
+                      // }, 500);
+                      $('#btn-map').trigger('click');
                 } catch (err) {
                     console.error('❌ Erreur contrôleur:', err);
                     alert('⚠️ ' + err.message);
@@ -1175,18 +1177,20 @@ fetch('/components/Sidebar.html')
     const sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.innerHTML = html;
         
-    if (typeof updateUIBasedOnState === 'function') {
-      setTimeout(updateUIBasedOnState, 50);
-    }
+    // if (typeof updateUIBasedOnState === 'function') {
+    //   console.log("APPEL DANS LE TYPEOF")
+    //   setTimeout(updateUIBasedOnState, 50);
+    // }
 
     document.getElementById('btn-map')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-map')?.classList.add('active');
       // document.getElementById('btn-calcul')?.classList.add('active');
-      chargerComposantPrincipal('/components/Map.html');
+      // chargerComposantPrincipal('/components/Map.html');
     });
     
     document.getElementById('btn-filtros')?.addEventListener('click', () => {
+      
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-filtros')?.classList.add('active');
       // document.getElementById('btn-calcul')?.classList.add('active');

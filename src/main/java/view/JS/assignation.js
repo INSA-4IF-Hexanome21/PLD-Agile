@@ -100,6 +100,7 @@ function extraerYMostrarLivraisons(sites) {
 
 function lancerCalculTimeout(){
     lancerCalcul();
+    console.log("LANCERCALCULTIMEOUT");
     chargerComposantPrincipal('/components/Map.html');
 }
 
