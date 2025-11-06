@@ -43,4 +43,8 @@ public class ListOfCommands {
     public void clear() {
         l.clear();
     }
+
+    public void clear() {
+        l.clear();
+    }
 }
