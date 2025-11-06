@@ -45,4 +45,10 @@ public class InitialState implements State {
         throw new IllegalStateException("Veuillez d'abord charger une carte et une livraison");
     }
 
+    @Override
+    public void genererFeuillesdeRoute(Controller c, CarteController carteC) {
+        System.err.println(">>> [InitialState] ERREUR: Impossible de générer des feuilles de route sans calcul!");
+        throw new IllegalStateException("Veuillez d'abord calculer une livraison");
+    }
+
 }

@@ -25,8 +25,6 @@ public class LivraisonCalculeState implements State {
         }
     }
 
-    
-
     @Override
     public boolean chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
         System.out.println(">>> [LivraisonCalculeState] Rechargement de la livraison (effacement calcul)...");
@@ -43,13 +41,12 @@ public class LivraisonCalculeState implements State {
         }
     }
 
-     @Override
+    @Override
     public void assignerLivreur(Controller c, CarteController carteC, HashMap<String, List<String>> assignations) {
         carteC.effacerCalcul();
         carteC.assignerLivreurs(assignations);
         c.setCurrentState(c.livreurAssigneState);
     }
-
 
     @Override
     public void calculerLivraison(Controller c, CarteController carteC) {
@@ -69,14 +66,8 @@ public class LivraisonCalculeState implements State {
     @Override
     public void genererFeuillesdeRoute(Controller c, CarteController carteC) {
         System.out.println(">>> [LivraisonCalculeState] génération des feuilles de routes...");
-        try {
-            carteC.genererFeuillesdeRoute();
-            c.setCurrentState(c.livraisonCalculeState);
-        } catch (Exception ex) {
-            System.err.println(">>> [LivraisonCalculeState] ERREUR pendant la génération: " + ex.getMessage());
-            c.setCurrentState(c.carteChargeState);
-            throw new RuntimeException("Erreur lors de la génération des feuilles de routes : " + ex.getMessage(), ex);
-        }
+        carteC.genererFeuillesdeRoute();
+        c.setCurrentState(c.livraisonCalculeState);
     }
 
     @Override

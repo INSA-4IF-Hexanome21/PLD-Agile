@@ -41,5 +41,21 @@ public class InitialStateTest {
         Controller controller = new Controller();
         state.changerLivraison(controller);
     }
-    
+
+    @Test(expected = IllegalStateException.class)
+    public void testAssignerLivreur() {
+        InitialState state = new InitialState();
+        Controller controller = new Controller();
+        CarteController carteController = new CarteController();
+        state.assignerLivreur(controller, carteController, null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testGenererFeuillesdeRoute() {
+        InitialState state = new InitialState();
+        Controller controller = new Controller();
+        CarteController carteController = new CarteController();
+        state.genererFeuillesdeRoute(controller, carteController);
+    }
+
 }

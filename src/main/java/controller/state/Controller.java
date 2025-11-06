@@ -28,6 +28,13 @@ public class Controller{
 		carteController = new CarteController();
 	}
 
+	/**
+	 * Getter pour l'état courant
+	 */
+	public State getCurrentState() {
+		return currentState;
+	}
+
     /**
 	 * Change l'état courant du controlleur
 	 * @param state le nouvel état

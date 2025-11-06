@@ -45,5 +45,21 @@ public class CarteChargeStateTest {
         Controller controller = new Controller();
         state.changerLivraison(controller);
     }
+
+    @Test(expected = IllegalStateException.class)
+    public void testAssignerLivreur() {
+        CarteChargeState state = new CarteChargeState();
+        Controller controller = new Controller();
+        CarteController carteController = new CarteController();
+        state.assignerLivreur(controller, carteController, null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testGenererFeuillesdeRoute() {
+        CarteChargeState state = new CarteChargeState();
+        Controller controller = new Controller();
+        CarteController carteController = new CarteController();
+        state.genererFeuillesdeRoute(controller, carteController);
+    }
     
 }

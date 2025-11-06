@@ -4,11 +4,6 @@
 
 ## Utilisation
 
-Installer les dépendances Maven :
-```bash
-mvn install
-```
-
 Compiler le code principal :
 ```bash
 javac -d target/classes $(find src/main/java -name '*.java')
