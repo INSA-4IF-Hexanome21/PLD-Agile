@@ -120,7 +120,7 @@
 .trajets-body,
 .sites-impactes-body {
   padding: 8px; /* Réduit l'espacement */
-  max-height: 300px; /* Hauteur max réduite */
+  max-height: 100px; /* Hauteur max réduite */
   overflow-y: auto;
   overflow-x: hidden; /* Évite le débordement horizontal */
 }

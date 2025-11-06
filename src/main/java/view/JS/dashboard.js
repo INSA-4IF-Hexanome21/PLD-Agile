@@ -991,15 +991,53 @@ function deleteSite(idSite, typeSite, numLivraison) {
 }
 
 function undoAction() {
-  fetch('/api/undoAction', { method: 'POST' })
-    .then(() => initialiserCarte())
-    .catch(err => console.error(err));
+  fetch('/api/undoAction', { 
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => {
+          throw new Error(err.error || 'Erreur serveur');
+        });
+      }
+      return response.json();
+    })
+    .then(() => {
+      console.log('Undo réussi');
+      initialiserCarte();
+    })
+    .catch(err => {
+      console.error('Erreur lors du undo:', err);
+      alert('Impossible d\'annuler l\'action : ' + err.message);
+    });
 }
 
 function redoAction() {
-  fetch('/api/redoAction', { method: 'POST' })
-    .then(() => initialiserCarte())
-    .catch(err => console.error(err));
+  fetch('/api/redoAction', { 
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => {
+          throw new Error(err.error || 'Erreur serveur');
+        });
+      }
+      return response.json();
+    })
+    .then(() => {
+      console.log('Redo réussi');
+      initialiserCarte();
+    })
+    .catch(err => {
+      console.error('Erreur lors du redo:', err);
+      alert('Impossible d\'annuler l\'action : ' + err.message);
+    });
 }
 
 function nettoyerCarte() {

@@ -68,16 +68,19 @@ public final class CarteUtils {
             solutionLongs.add(gt.getIdFromIndex(solution.get(i)));
         }
         trajet.setSolution(solutionLongs);
-
+        System.out.println(solutionLongs);
         Integer indexSolution = 1;
         Long idSiteAttendu = gt.getIdFromIndex(solution.get(indexSolution));
         for (int i= 0; i<cheminComplet.size()-1; ++i){
-            long idNoeud1 = cheminComplet.get(i);
-            long idNoeud2 = cheminComplet.get(i+1);
+            Long idNoeud1 = cheminComplet.get(i);
+            Long idNoeud2 = cheminComplet.get(i+1);
             if (idNoeud1 != idNoeud2) {
                 Troncon troncon = gt.NoeudstoTroncon(idNoeud1, idNoeud2);
-                dureeTrajet += (troncon.getLongueur()/1000)/15;
-                troncons.add(troncon);
+                if (troncon != null) {
+                    dureeTrajet += (troncon.getLongueur()/1000)/15;
+                    troncons.add(troncon);
+                }
+                
             }
             
             Site siteTrouve = null;

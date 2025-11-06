@@ -23,11 +23,19 @@ public class ListOfCommands {
     }
 
     synchronized public void undo() {
-        if (i >= 0) {
-            l.get(i).undoCommand();
-            i--;
-        } else {
-            System.out.println("Rien à annuler !");
+        try {
+            if (i >= 0) {
+                System.out.println("Annulation de la commande à l'index " + i);
+                l.get(i).undoCommand();
+                i--;
+                System.out.println("Undo réussi, nouvel index : " + i);
+            } else {
+                System.out.println("Rien à annuler ! (i=" + i + ", size=" + l.size() + ")");
+            }
+        } catch (Exception e) {
+            System.err.println("!!! ERREUR dans undo() !!!");
+            e.printStackTrace();
+            // Ne pas laisser l'exception remonter
         }
     }
 

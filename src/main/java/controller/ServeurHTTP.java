@@ -514,37 +514,76 @@ public class ServeurHTTP {
 
         serveur.createContext("/api/undoAction", exchange -> {
             
-            System.out.println(">>> Requête reçue sur /api/undoAction <<<");
-        
-            exchange.getRequestBody().readAllBytes();
+            try {
+                System.out.println(">>> Requête reçue sur /api/undoAction <<<");
+                
+                exchange.getRequestBody().readAllBytes();
 
-            controller.undoAction();
+                controller.undoAction();
 
-            byte[] response = "{}".getBytes(StandardCharsets.UTF_8);
-            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            exchange.sendResponseHeaders(200, response.length);
-            exchange.getResponseBody().write(response);
-            exchange.getResponseBody().close();  
-            exchange.close();
-            System.out.println(">>> Réponse envoyée <<<");
+                byte[] response = "{}".getBytes(StandardCharsets.UTF_8);
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                exchange.getResponseHeaders().add("Content-Type", "application/json");
+                exchange.sendResponseHeaders(200, response.length);
+                exchange.getResponseBody().write(response);
+                exchange.getResponseBody().close();
+                
+                System.out.println(">>> Réponse envoyée <<<");
+                
+            } catch (Exception e) {
+                System.err.println("!!! ERREUR dans /api/undoAction !!!");
+                e.printStackTrace();
+                
+                try {
+                    String errorMsg = "{\"error\": \"" + e.getMessage() + "\"}";
+                    byte[] errorResponse = errorMsg.getBytes(StandardCharsets.UTF_8);
+                    exchange.getResponseHeaders().add("Content-Type", "application/json");
+                    exchange.sendResponseHeaders(500, errorResponse.length);
+                    exchange.getResponseBody().write(errorResponse);
+                    exchange.getResponseBody().close();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            } finally {
+                exchange.close();
+            }
         });
 
         serveur.createContext("/api/redoAction", exchange -> {
             
-            System.out.println(">>> Requête reçue sur /api/redoAction <<<");
+            try {
+                System.out.println(">>> Requête reçue sur /api/redoAction <<<");
+                
+                exchange.getRequestBody().readAllBytes();
 
-            exchange.getRequestBody().readAllBytes();
+                controller.redoAction();
 
-            controller.redoAction();
-
-            byte[] response = "{}".getBytes(StandardCharsets.UTF_8);
-            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            exchange.sendResponseHeaders(200, response.length);
-            exchange.getResponseBody().write(response);
-            exchange.getResponseBody().close();  
-            exchange.close();
-
-            System.out.println(">>> Réponse envoyée <<<");
+                byte[] response = "{}".getBytes(StandardCharsets.UTF_8);
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                exchange.getResponseHeaders().add("Content-Type", "application/json");
+                exchange.sendResponseHeaders(200, response.length);
+                exchange.getResponseBody().write(response);
+                exchange.getResponseBody().close();
+                
+                System.out.println(">>> Réponse envoyée <<<");
+                
+            } catch (Exception e) {
+                System.err.println("!!! ERREUR dans /api/redoAction !!!");
+                e.printStackTrace();
+                
+                try {
+                    String errorMsg = "{\"error\": \"" + e.getMessage() + "\"}";
+                    byte[] errorResponse = errorMsg.getBytes(StandardCharsets.UTF_8);
+                    exchange.getResponseHeaders().add("Content-Type", "application/json");
+                    exchange.sendResponseHeaders(500, errorResponse.length);
+                    exchange.getResponseBody().write(errorResponse);
+                    exchange.getResponseBody().close();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            } finally {
+                exchange.close();
+            }
         });
 
         serveur.createContext("/api/resetCarte", exchange -> {

@@ -271,7 +271,7 @@ public class CarteController {
         }
 
         System.out.println(">>> CarteController: livraisons précédentes effacées.");
-        System.out.println(getCarteJSON());
+        // System.out.println(getCarteJSON());
     }
     /**
      * Génère le JSON complet de la carte avec noeuds, troncons et sites
