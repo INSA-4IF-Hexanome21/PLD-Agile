@@ -49,7 +49,7 @@ public class GestionnaireXMLTest {
         assertNotNull(demande1.getSites());
 
         //Cas 2: format heure H:m
-        String cheminLivraison2 = "ressources/fichiersXMLCollecteDepot/demandePetit1Test.xml";
+        String cheminLivraison2 = "src/test/resources/uploads/plans/demandePetit1Test.xml";
         DemandeLivraison demande2 = GestionnaireXML.chargerDemandeLivraisons(cheminLivraison2, mapNoeuds);
         assertNotNull(demande2);
         assertNotNull(demande2.getSites());
@@ -60,7 +60,7 @@ public class GestionnaireXMLTest {
         assertNull(demande3);
 
         //Cas 4: heure invalide
-        String cheminLivraison4 = "ressources/fichiersXMLCollecteDepot/demandePetitTestErr.xml";
+        String cheminLivraison4 = "src/test/resources/uploads/plans/demandePetitTestErr.xml";
         DemandeLivraison demande4 = GestionnaireXML.chargerDemandeLivraisons(cheminLivraison4, mapNoeuds);
         Site e = null;
         for (Site site : demande4.getSites()) {
@@ -73,12 +73,12 @@ public class GestionnaireXMLTest {
         assertEquals("L'heure de départ est correctement mise à jour", LocalTime.of(8, 0), e.getDepartHeure());
 
         //Cas 5: Collecte Inexistant
-        String cheminLivraison5 = "ressources/fichiersXMLCollecteDepot/demandeCollecteInexistantTest.xml";
+        String cheminLivraison5 = "src/test/resources/uploads/plans/demandeCollecteInexistantTest.xml";
         DemandeLivraison demande5 = GestionnaireXML.chargerDemandeLivraisons(cheminLivraison5, mapNoeuds);
         assertNull(demande5);
 
-        //Cas 5: Depot Inexistant
-        String cheminLivraison6 = "ressources/fichiersXMLCollecteDepot/demandeDepotInexistantTest.xml";
+        //Cas 6: Depot Inexistant
+        String cheminLivraison6 = "src/test/resources/uploads/plans/demandeDepotInexistantTest.xml";
         DemandeLivraison demande6 = GestionnaireXML.chargerDemandeLivraisons(cheminLivraison6, mapNoeuds);
         assertNull(demande6);
     }
