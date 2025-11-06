@@ -1069,34 +1069,37 @@ fetch('/components/Sidebar.html')
 
     document.getElementById('btn-map')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
-      document.getElementById('btn-map')?.classList.add('active');
-      document.getElementById('btn-calcul')?.classList.add('active');
+      document.getElementById('btn-mapa')?.classList.add('active');
+      // document.getElementById('btn-calcul')?.classList.add('active');
       chargerComposantPrincipal('/components/Map.html');
     });
     
     document.getElementById('btn-filtros')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-filtros')?.classList.add('active');
-      document.getElementById('btn-calcul')?.classList.add('active');
+      // document.getElementById('btn-calcul')?.classList.add('active');
       chargerComposantPrincipal('/components/Import.html');
     });
     
     document.getElementById('btn-estadisticas')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
       document.getElementById('btn-estadisticas')?.classList.add('active');
-      document.getElementById('btn-calcul')?.classList.add('active');
+      // document.getElementById('btn-calcul')?.classList.add('active');
       document.getElementById('main-content').innerHTML = `<div style="padding:2rem;"><h2>Statistiques</h2><p>Fonctionnalité en construction…</p></div>`;
     });
 
-    document.getElementById('btn-calcul')?.addEventListener('click', () => {
-      lancerCalcul();
-      chargerComposantPrincipal('/components/Map.html');
-    });
+    // document.getElementById('btn-calcul')?.addEventListener('click', () => {
+    //   lancerCalcul();
+    //   chargerComposantPrincipal('/components/Map.html');
+    // });
 
     document.getElementById('btn-roadmap')?.addEventListener('click', () => {
       lancerTelechargement();
     });
 
+    document.getElementById('btn-roadmap')?.addEventListener('click', () => {
+      lancerTelechargement();
+    });
     chargerComposantPrincipal('/components/Map.html');
     attachDropHandlers();
 
