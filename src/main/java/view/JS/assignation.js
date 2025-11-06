@@ -343,3 +343,37 @@ function devolverAlPool(livraisonId) {
   
   mostrarLivraisonsDisponibles(livraisonsData);
 }
+
+/**
+ * Réinitialise complètement le système d’assignation
+ */
+function resetAssignations(nouvellesDonneesSites = null) {
+  console.log('🔄 Réinitialisation des assignations...');
+
+  // Reset des variables globales
+  livraisonsData = [];
+  assignationsState = {};
+  CLICK = 0;
+
+  // Vider les conteneurs
+  const poolContainer = document.getElementById('livraisons-list');
+  const livreursContainer = document.getElementById('livreurs-zones');
+  if (poolContainer) poolContainer.innerHTML = '';
+  if (livreursContainer) livreursContainer.innerHTML = '';
+
+  // Supprimer anciens écouteurs éventuels sur le bouton
+  const envoyerBtn = document.getElementById('envoyer-assignations');
+  if (envoyerBtn) {
+    const newBtn = envoyerBtn.cloneNode(true);
+    envoyerBtn.parentNode.replaceChild(newBtn, envoyerBtn);
+  }
+
+  // Si il y'a nouevaus données → reconstruire l'interface
+  const sites = nouvellesDonneesSites || (donneesGlobales && donneesGlobales.sites);
+  if (sites) {
+    console.log('🆕 Chargement de nouvelles livraisons...');
+    extraerYMostrarLivraisons(sites);
+  } else {
+    console.warn('Aucune donnée de sites disponible pour le reset.');
+  }
+}

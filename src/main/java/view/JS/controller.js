@@ -123,6 +123,7 @@ class ApplicationController {
         this.livraisonChargee = true;
         this.livraisonCalculee = false;
         document.getElementById("deliverer").setAttribute("style","display : block;");
+        resetAssignations()
         this.livraison
         this.setState(AppState.LIVRAISON_CHARGEE);
     }
