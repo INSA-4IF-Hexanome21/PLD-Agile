@@ -98,19 +98,25 @@ public class Carte {
         Integer indexCollecteSol = 0;
         Integer indexDepotSol = 0;
 
+        //Insertion de la collecte dans la solution
         for (int i = 0; i<solutionLong.size();++i){
             Long idSite = solutionLong.get(i);
             nouvSolutionLong.add(idSite);
             if(i<solutionLong.size() - 1 && Objects.equals(idSite, idPrecCollecte)){
                 nouvSolutionLong.add(idCollecte);
                 indexCollecteSol = i+1;
+                if(Objects.equals(idPrecDepot, idCollecte)){
+                    nouvSolutionLong.add(idDepot);
+                    indexDepotSol = i+2;
+                }
             }
+
             else if(i<solutionLong.size() - 1 && Objects.equals(idSite, idPrecDepot)){
                 nouvSolutionLong.add(idDepot);
                 indexDepotSol = i+2;
             }
-        }
 
+        }
 
         //Recherche Dijkstra Collecte
         List<Site> siteARechercher = new ArrayList<Site>();
