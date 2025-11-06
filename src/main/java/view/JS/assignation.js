@@ -345,6 +345,21 @@ function devolverAlPool(livraisonId) {
 }
 
 /**
+ * Vérifie si toutes les livraisons sont déjà assignées...
+ */
+function toutesLivraisonsAssignees() {
+  if (!livraisonsData || livraisonsData.length === 0) return false;
+
+  // Construire set de livraisons assignees
+  const assignedIds = new Set();
+  Object.values(assignationsState).forEach(arr => arr.forEach(id => assignedIds.add(id))); 
+  const allAssigned = livraisonsData.every(liv => assignedIds.has(liv.id)); // Verifier sils sont tous dans le set
+
+  console.log('🔎 Toutes les livraisons assignées ?', allAssigned);
+  return allAssigned;
+}
+
+/**
  * Réinitialise complètement le système d’assignation
  */
 function resetAssignations(nouvellesDonneesSites = null) {
