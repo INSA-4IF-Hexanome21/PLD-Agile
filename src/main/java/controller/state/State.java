@@ -38,6 +38,8 @@ public interface State {
      */
     public default void assignerLivreur(Controller c, CarteController carteC, HashMap<String, List<String>> assignations) {}
 
+    public default void ajouterLivraison(Controller c, CarteController carteC, String idCollecte,String idPrecCollecte,String idDepot,String idPrecDepot,String numTrajet) {}
+
     /**
      * Méthode appelée par le controlleur pour changer l'emplacement d'une livraison
      * @param c le controlleur

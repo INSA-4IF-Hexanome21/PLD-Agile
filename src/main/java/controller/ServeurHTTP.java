@@ -396,7 +396,7 @@ public class ServeurHTTP {
                 System.out.println("  Trajet = " + trajet);
 
                 // Le gars, ici vous pouvez appeler le controller pour créer/ajouter la livraison.
-
+                controller.ajouterLivraison(idCollecte,idPrecCollecte,idDepot,idPrecDepot,trajet);
                 // Ici on construit l'objet JSON de retour avec les valeurs parsees
                 StringBuilder sb = new StringBuilder();
                 sb.append("{");

@@ -876,19 +876,19 @@ function envoyerNouvellesLivraisons(numeroTrajet) {
   console.log('📦 Payload préparé:', payload);
   console.log('📦 Payload JSON:', JSON.stringify(payload, null, 2));
   
-  // POUR L'INSTANT: Juste afficher dans la console
-  alert(`✅ Données prêtes à envoyer !
+//   // POUR L'INSTANT: Juste afficher dans la console
+//   alert(`✅ Données prêtes à envoyer !
 
-📦 Format:
-${JSON.stringify(payload, null, 2)}
+// 📦 Format:
+// ${JSON.stringify(payload, null, 2)}
 
-(Vérifiez la console pour voir les détails)`);
+// (Vérifiez la console pour voir les détails)`);
   
 
   fetch('/api/ajouter-livraison', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload, null, 2)
   })
   .then(res => {
     if (!res.ok) throw new Error('Erreur serveur: ' + res.status);
@@ -902,9 +902,15 @@ ${JSON.stringify(payload, null, 2)}
     fetch("/api/carte")
       .then(res => res.json())
       .then(donnees => {
+        console.log('Données reçues:', donnees);
         donneesGlobales = donnees;
         afficherDonneesSurCarte(donnees);
         configurerControlesVisibilite();
+        mettreAJourTrajetsFlottant();
+        mettreAJourSitesImpactesFlottant();
+        if (document.getElementById('form-livreurs')) {
+          assignationLivraison();
+      }
       });
   })
   .catch(err => {

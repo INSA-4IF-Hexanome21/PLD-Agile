@@ -3,6 +3,8 @@ package controller.state;
 import java.util.HashMap;
 import java.util.List;
 
+import com.sun.jdi.LongValue;
+
 import controller.CarteController;
 
 public class LivraisonCalculeState implements State {
@@ -87,5 +89,10 @@ public class LivraisonCalculeState implements State {
         // Le calcul est invalidé, on retourne à LivraisonChargeState
         c.setCurrentState(c.livraisonChargeState);
         System.out.println(">>> [LivraisonCalculeState] Livraison modifiée, transition vers LivraisonChargeState");
+    }
+
+    @Override
+    public void ajouterLivraison(Controller c, CarteController carteC, String idCollecte,String idPrecCollecte,String idDepot,String idPrecDepot,String numTrajet) {
+        carteC.ajouterLivraison(Long.valueOf(idCollecte), Long.valueOf(idPrecCollecte), Long.valueOf(idDepot), Long.valueOf(idPrecDepot), carteC.getCarte().getTrajets().get(Integer.valueOf(numTrajet)-1));
     }
 }
