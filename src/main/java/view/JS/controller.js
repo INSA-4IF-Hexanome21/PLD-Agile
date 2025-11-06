@@ -122,6 +122,8 @@ class ApplicationController {
         console.log('✅ [Controller] Livraison chargée');
         this.livraisonChargee = true;
         this.livraisonCalculee = false;
+        document.getElementById("deliverer").setAttribute("style","display : block;");
+        resetAssignations()
         this.livraison
         this.setState(AppState.LIVRAISON_CHARGEE);
     }
@@ -136,6 +138,7 @@ class ApplicationController {
         }
         console.log('✅ [Controller] Livraison calculée');
         this.livraisonCalculee = true;
+        document.getElementById("deliverer").setAttribute("style","display : none;");
         this.setState(AppState.LIVRAISON_CALCULEE);
     }
 

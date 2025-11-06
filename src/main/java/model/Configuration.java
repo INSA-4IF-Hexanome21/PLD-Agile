@@ -58,25 +58,33 @@ public class Configuration {
 
     // Getters et Setters
     public boolean setNbLivreurs(Integer nbLiv){
+        
         if(nbLiv == 0){
             return false;
         }
-        
-        if(this.nbLivreurs > nbLiv){
-            for(int i = livreurs.size() - 1;i>=nbLiv;--i){
-                livreurs.remove(i);
-            }
-            this.nbLivreurs=nbLiv;
-            return true;
+
+        this.livreurs.clear();
+        for(int i=1;i<=nbLiv;++i){
+            Livreur livreur = obtenirNouveauLivreur(i);
+            livreurs.add(livreur);
         }
-        else{
-            for(int i = this.nbLivreurs;i<nbLiv+1;++i){
-                Livreur livreur = obtenirNouveauLivreur(i);
-                livreurs.add(livreur);
-            }
-            this.nbLivreurs=nbLiv;
-            return true;
-        }
+        this.nbLivreurs=nbLiv;
+        return true;
+        // if(this.nbLivreurs > nbLiv){
+        //     for(int i = livreurs.size() - 1;i>=nbLiv;--i){
+        //         livreurs.remove(i);
+        //     }
+        //     this.nbLivreurs=nbLiv;
+        //     return true;
+        // }
+        // else{
+        //     for(int i = this.nbLivreurs;i<nbLiv+1;++i){
+        //         Livreur livreur = obtenirNouveauLivreur(i);
+        //         livreurs.add(livreur);
+        //     }
+        //     this.nbLivreurs=nbLiv;
+        //     return true;
+        // }
     }
 
     public Integer getNbLivreur(){
@@ -84,11 +92,13 @@ public class Configuration {
     }
 
     public Livreur getLivreurbyId(Integer id){
-        return this.livreurs.get(id);
+        System.out.println(id);
+        System.err.println(this.livreurs);
+        return this.livreurs.get(id-1);
     }
 
     public String getNomPrenom(Integer id){
-        Livreur nom = this.livreurs.get(id);
+        Livreur nom = this.livreurs.get(id - 1);
         return nom.getNom();
     }
     

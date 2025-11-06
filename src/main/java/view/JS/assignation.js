@@ -50,17 +50,25 @@ function envoyerAssignations() {
 /**
  * Extrae livraisons de los sites y las agrupa
  */
-var CLICK = 0; //Variable permettant de savoir si l'évènement click a déjà été défini
+// var NB_CLICK = 0; //Variable permettant de savoir si l'évènement click a déjà été défini
+var CLICK_DEF = false;
 function extraerYMostrarLivraisons(sites) {
+  console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+  if(!CLICK_DEF){
+    document.getElementById('btn-calcul-tournee').addEventListener('click', () => {
+      // if(NB_CLICK%3 === 0){
+      if(toutesLivraisonsAssignees()){
+        envoyerAssignations();
+        setTimeout(lancerCalculTimeout,1000);
+      }
+      
+        // console.warn('click : ', NB_CLICK);
+      // }
+      // ++NB_CLICK;
+    });
+    CLICK_DEF = true;
+  }
   
- 
-  document.getElementById('envoyer-assignations').addEventListener('click', () => {
-    if(CLICK%3 === 0){
-      envoyerAssignations();
-      console.warn('click : ', CLICK);
-    }
-    ++CLICK;
-  });
 
   console.log('📦 Extrayendo livraisons de sites...', sites);
   
@@ -88,6 +96,11 @@ function extraerYMostrarLivraisons(sites) {
   
   console.log('✅ Livraisons encontradas:', livraisonsData);
   mostrarLivraisonsDisponibles(livraisonsData);
+}
+
+function lancerCalculTimeout(){
+    lancerCalcul();
+    chargerComposantPrincipal('/components/Map.html');
 }
 
 /**
@@ -342,4 +355,54 @@ function devolverAlPool(livraisonId) {
   }
   
   mostrarLivraisonsDisponibles(livraisonsData);
+}
+
+/**
+ * Vérifie si toutes les livraisons sont déjà assignées...
+ */
+function toutesLivraisonsAssignees() {
+  if (!livraisonsData || livraisonsData.length === 0) return false;
+
+  // Construire set de livraisons assignees
+  const assignedIds = new Set();
+  Object.values(assignationsState).forEach(arr => arr.forEach(id => assignedIds.add(id))); 
+  const allAssigned = livraisonsData.every(liv => assignedIds.has(liv.id)); // Verifier sils sont tous dans le set
+
+  console.log('🔎 Toutes les livraisons assignées ?', allAssigned);
+  return allAssigned;
+}
+
+/**
+ * Réinitialise complètement le système d’assignation
+ */
+function resetAssignations(nouvellesDonneesSites = null) {
+  CLICK_DEF = false;
+  console.log('🔄 Réinitialisation des assignations...');
+
+  // Reset des variables globales
+  livraisonsData = [];
+  assignationsState = {};
+  CLICK = 0;
+
+  // Vider les conteneurs
+  const poolContainer = document.getElementById('livraisons-list');
+  const livreursContainer = document.getElementById('livreurs-zones');
+  if (poolContainer) poolContainer.innerHTML = '';
+  if (livreursContainer) livreursContainer.innerHTML = '';
+
+  // Supprimer anciens écouteurs éventuels sur le bouton
+  const envoyerBtn = document.getElementById('btn-calcul-tournee');
+  if (envoyerBtn) {
+    const newBtn = envoyerBtn.cloneNode(true);
+    envoyerBtn.parentNode.replaceChild(newBtn, envoyerBtn);
+  }
+
+  // Si il y'a nouevaus données → reconstruire l'interface
+  const sites = nouvellesDonneesSites || (donneesGlobales && donneesGlobales.sites);
+  if (sites) {
+    console.log('🆕 Chargement de nouvelles livraisons...');
+    extraerYMostrarLivraisons(sites);
+  } else {
+    console.warn('Aucune donnée de sites disponible pour le reset.');
+  }
 }
