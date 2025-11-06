@@ -182,7 +182,7 @@ public class CarteController {
         //this.supprimerLivraison(gt, Long.valueOf(55444018), Long.valueOf(26470086), this.getCarte().getTrajets().get(0));
         //this.supprimerLivraison(gt, Long.valueOf(27362899), Long.valueOf(505061101), this.getCarte().getTrajets().get(0));
         //TEST
-        //ajouterLivraison();
+        //ajouterLivraison( Long.valueOf(1679901320), Long.valueOf(342873658), Long.valueOf(26086123), Long.valueOf(208769039),carte.getTrajets().get(0));
         // supprimerLivraison();
         // undo();
         // redo();
@@ -270,6 +270,7 @@ public class CarteController {
         }
 
         System.out.println(">>> CarteController: livraisons précédentes effacées.");
+        System.out.println(getCarteJSON());
     }
     /**
      * Génère le JSON complet de la carte avec noeuds, troncons et sites
@@ -477,4 +478,14 @@ public class CarteController {
             trajet.genererFeuilleDeRoute();
         }
     }
+
+    public void resetCarte() {
+        this.carte = new Carte();      // New empty map
+        this.history.clear(); // Reset undo/redo
+        this.config = new Configuration();   // Reset config if needed
+        this.gt = null; // reset graphe ou calcul si existait
+
+        System.out.println(">>> Carte réinitialisée.");
+    }
 }
+

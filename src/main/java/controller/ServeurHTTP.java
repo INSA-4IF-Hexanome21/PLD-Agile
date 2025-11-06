@@ -77,23 +77,23 @@ public class ServeurHTTP {
                 try {
                     // Lecture du corps de la requête
                     byte[] bytes = exchange.getRequestBody().readAllBytes();
-                    System.out.println("Bytes recibidos: " + bytes.length);
+                    System.out.println("Octets reçus: " + bytes.length);
                     
                     // Obtenir le nom du fichier de l'en-tête
                     String fileName = exchange.getRequestHeaders().getFirst("X-File-Name");
                     if (fileName != null) {
                         fileName = java.net.URLDecoder.decode(fileName, "UTF-8");
-                        System.out.println("Nombre del archivo: " + fileName);
+                        System.out.println("Non du fichier: " + fileName);
                     } else {
                         fileName = "plan_" + System.currentTimeMillis() + ".xml";
-                        System.out.println("Nombre generado: " + fileName);
+                        System.out.println("Nombre généré: " + fileName);
                     }
                     
                     // Créer un répertoire s'il n'existe pas
                     File uploadDir = new File(cheminBaseRessources + "uploads/plans/");
                     if (!uploadDir.exists()) {
                         boolean created = uploadDir.mkdirs();
-                        System.out.println("Directorio de plans creado: " + created);
+                        System.out.println("Dossier de plans créé: " + created);
                     }
                     
                     // Enregistrer le fichier
@@ -153,7 +153,7 @@ public class ServeurHTTP {
             try {
                 // Lecture du corps de la requête
                 byte[] bytes = exchange.getRequestBody().readAllBytes();
-                System.out.println("Bytes recibidos: " + bytes.length);
+                System.out.println("Octets reçus: " + bytes.length);
                 
                 // Obtenir le nom du fichier de l'en-tête
                 String fileName = exchange.getRequestHeaders().getFirst("X-File-Name");
@@ -162,7 +162,7 @@ public class ServeurHTTP {
                     System.out.println("Nombre del archivo: " + fileName);
                 } else {
                     fileName = "demande_" + System.currentTimeMillis() + ".xml";
-                    System.out.println("Nombre generado: " + fileName);
+                    System.out.println("Nombre généré: " + fileName);
                 }
                 
                 
@@ -230,7 +230,7 @@ public class ServeurHTTP {
             try {
                 // Lecture du corps de la requête
                 byte[] bytes = exchange.getRequestBody().readAllBytes();
-                System.out.println("Bytes recibidos: " + bytes.length);
+                System.out.println("Octets reçus: " + bytes.length);
                 
                 // Lancer le calcul de la livraison par le contrôleur
                 System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
@@ -497,6 +497,48 @@ public class ServeurHTTP {
             exchange.sendResponseHeaders(200, octets.length);
             exchange.getResponseBody().write(octets);
             exchange.close();
+        });
+
+        serveur.createContext("/api/undoAction", exchange -> {
+            
+            System.out.println(">>> Requête reçue sur /api/undoAction <<<");
+        
+            String jsonResponse = controller.undoAction();
+            byte[] octets = jsonResponse.getBytes("UTF-8");
+            
+            exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            exchange.sendResponseHeaders(200, octets.length);
+            exchange.getResponseBody().write(octets);
+            exchange.close();
+            
+            System.out.println(">>> Réponse envoyée <<<");
+        });
+
+        serveur.createContext("/api/redoAction", exchange -> {
+            
+            System.out.println(">>> Requête reçue sur /api/redoAction <<<");
+        
+            String jsonResponse = controller.redoAction();
+            byte[] octets = jsonResponse.getBytes("UTF-8");
+            
+            exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            exchange.sendResponseHeaders(200, octets.length);
+            exchange.getResponseBody().write(octets);
+            exchange.close();
+            
+            System.out.println(">>> Réponse envoyée <<<");
+        });
+
+        serveur.createContext("/api/resetCarte", exchange -> {
+            
+            System.out.println(">>> Requête reçue sur /api/resetCarte <<<");
+        
+            controller.resetCarte();
+            exchange.sendResponseHeaders(200, -1);
+            exchange.close();
+            
         });
     }
     

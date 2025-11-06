@@ -92,8 +92,6 @@ public class Configuration {
     }
 
     public Livreur getLivreurbyId(Integer id){
-        System.out.println(id);
-        System.err.println(this.livreurs);
         return this.livreurs.get(id-1);
     }
 

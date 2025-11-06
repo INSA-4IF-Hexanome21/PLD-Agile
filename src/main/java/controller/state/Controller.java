@@ -79,7 +79,21 @@ public class Controller{
         currentState.changerLivraison(this);
     }
 
-	 public String getCarteJSON() {
+	public String getCarteJSON() {
 		return carteController.getCarteJSON();
-	 }
+	}
+
+	public String undoAction() {
+		carteController.undo();
+		return getCarteJSON();
+	}
+
+	public String redoAction() {
+		carteController.redo();
+		return getCarteJSON();
+	}
+
+	public void resetCarte() {
+		carteController.resetCarte();
+	}
 }
