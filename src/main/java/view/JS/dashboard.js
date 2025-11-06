@@ -37,14 +37,15 @@ function chargerComposantPrincipal(url) {
     console.error('Element #main-content introuvable');
     return;
   }
-  // main.innerHTML = '<p>Chargement en cours...</p>';
-
+  //main.innerHTML = '<p>Chargement en cours...</p>';
+  showMainLoader('Chargement en cours...');
   fetch(url)
     .then(res => {
       if (!res.ok) throw new Error('Erreur de chargement: ' + url + ' (' + res.status + ')');
       return res.text();
     })
     .then(html => {
+      hideMainLoader();
       main.innerHTML = html;
       if (url.includes('Map.html')) {
         requestAnimationFrame(() => {
@@ -74,6 +75,75 @@ function chargerComposantPrincipal(url) {
       console.error("Erreur lors du chargement du composant:", err);
       main.innerHTML = '<p style="color: #e74c3c;">Erreur lors du chargement du composant</p>';
     });
+}
+
+function showMainLoader(message = 'Chargement en cours...') {
+  const main = document.getElementById('main-content');
+  if (!main) return;
+
+  let loader = document.getElementById('main-loader');
+  if (!loader) {
+    loader = document.createElement('div');
+    loader.id = 'main-loader';
+    loader.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      backdrop-filter: blur(2px);
+    `;
+    loader.innerHTML = `
+      <div style="
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #489FB5;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+      "></div>
+      <p id="main-loader-message" style="
+        margin-top: 20px; 
+        font-size: 1.3rem; 
+        color: #489FB5;
+        font-weight: 600;
+      "></p>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    `;
+    
+    // S'assurer que main a une position relative
+    if (getComputedStyle(main).position === 'static') {
+      main.style.position = 'relative';
+    }
+    
+    main.appendChild(loader);
+  } else {
+    loader.style.display = 'flex';
+  }
+  
+  const messageElement = document.getElementById('main-loader-message');
+  if (messageElement) {
+    messageElement.textContent = message;
+  }
+}
+
+// Fonction pour masquer le loader
+function hideMainLoader() {
+  const loader = document.getElementById('main-loader');
+  if (loader) {
+    loader.style.display = 'none';
+  }
 }
 
 function computeSiteRadius(map) {
