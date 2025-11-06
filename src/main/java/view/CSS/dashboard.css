@@ -46,7 +46,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 10px 0;
   padding: 8px;
   border-radius: 6px;
   transition: background 0.2s ease;
@@ -71,7 +70,7 @@
   align-items: center;
   gap: 6px; /* Espacement réduit */
   flex: 1;
-  font-size: 0.85rem; /* Texte plus petit */
+  font-size: 0.65rem; 
   color: #333;
   user-select: none;
   white-space: nowrap; /* Évite le retour à la ligne */
@@ -94,7 +93,8 @@
 }
 
 /* Conteneur principal de la fenêtre flottante */
-.control-trajets {
+.control-trajets,
+.control-sites-impactes {
   background: rgba(255, 255, 255, 0.95); 
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -106,19 +106,21 @@
 }
 
 /* En-tête */
-.trajets-header {
+.trajets-header,
+.sites-impactes-header {
   background: rgba(72, 159, 181, 0.9);
   color: white;
   padding: 8px 12px; 
   border-radius: 8px 8px 0 0;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
 /* Corps */
-.trajets-body {
+.trajets-body,
+.sites-impactes-body {
   padding: 8px; /* Réduit l'espacement */
-  max-height: 300px; /* Hauteur max réduite */
+  max-height: 100px; /* Hauteur max réduite */
   overflow-y: auto;
   overflow-x: hidden; /* Évite le débordement horizontal */
 }
@@ -145,7 +147,8 @@
 }
 
 /* Liste des trajets */
-.trajets-list {
+.trajets-list,
+.sites-impactes-list {
   display: flex;
   flex-direction: column;
   gap: 4px; /* Espacement réduit */
@@ -527,6 +530,32 @@ display: flex;
 
 .leaflet-popup-pane {
   z-index: 10000 !important;
+}
+
+.delete-control {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.delete-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.delete-control img {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
 }
 
 /* //! Marqueurs personnalisés */

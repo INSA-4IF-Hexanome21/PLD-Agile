@@ -138,6 +138,7 @@ class ApplicationController {
         }
         console.log('✅ [Controller] Livraison calculée');
         this.livraisonCalculee = true;
+        console.log(document.getElementById("deliverer"));
         document.getElementById("deliverer").setAttribute("style","display : none;");
         this.setState(AppState.LIVRAISON_CALCULEE);
     }
