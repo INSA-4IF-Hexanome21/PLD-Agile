@@ -82,12 +82,12 @@ function creerInstructionOverlay() {
         <div class="progress-bar">
           <div id="progress-fill" class="progress-fill" style="width: 25%"></div>
         </div>
-        <div class="trajet-buttons-container">
-          ${boutonsTrajets}
-        </div>
       </div>
       <div class="selections-recap">
         <div id="recap-content"><small>Aucune sélection</small></div>
+         <div class="trajet-buttons-container">
+          ${boutonsTrajets}
+        </div>
       </div>
     `;
     
