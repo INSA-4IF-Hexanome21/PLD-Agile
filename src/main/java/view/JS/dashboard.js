@@ -1247,10 +1247,10 @@ fetch('/components/Sidebar.html')
     const sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.innerHTML = html;
         
-    // if (typeof updateUIBasedOnState === 'function') {
-    //   console.log("APPEL DANS LE TYPEOF")
-    //   setTimeout(updateUIBasedOnState, 50);
-    // }
+    if (typeof updateUIBasedOnState === 'function') {
+      console.log("APPEL DANS LE TYPEOF")
+      setTimeout(updateUIBasedOnState, 50);
+    }
 
     document.getElementById('btn-map')?.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
@@ -1278,10 +1278,6 @@ fetch('/components/Sidebar.html')
     //   lancerCalcul();
     //   chargerComposantPrincipal('/components/Map.html');
     // });
-
-    document.getElementById('btn-roadmap')?.addEventListener('click', () => {
-      lancerTelechargement();
-    });
 
     document.getElementById('btn-roadmap')?.addEventListener('click', () => {
       lancerTelechargement();
