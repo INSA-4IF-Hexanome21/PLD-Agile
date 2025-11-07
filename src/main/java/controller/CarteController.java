@@ -1,12 +1,14 @@
 package controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.time.LocalTime;
 
 import tsp.*;
@@ -129,11 +131,18 @@ public class CarteController {
             throw new NullPointerException("Il n'y a pas de données de livreurs");
         }
 
-        config.setNbLivreurs(assignation.size());
+        //Trouver le max dans les clés
+        Integer maxKey = Collections.max(
+                    assignation.keySet().stream()
+                        .map(Integer::parseInt)
+                        .collect(Collectors.toList())
+);
+        config.setNbLivreurs(maxKey);
 
         for(Map.Entry<String, List<String>> e : assignation.entrySet()){
-
+            System.out.println(e);
             int idLivreur = Integer.parseInt(e.getKey());
+            System.out.println(idLivreur);
             System.out.println(">>> CarteController: Livreur" + config.getNomPrenom(idLivreur));
 
             for(int i=0; i<e.getValue().size(); ++i){

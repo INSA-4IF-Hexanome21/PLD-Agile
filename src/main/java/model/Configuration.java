@@ -96,6 +96,7 @@ public class Configuration {
     }
 
     public String getNomPrenom(Integer id){
+        System.out.println(this.livreurs);
         Livreur nom = this.livreurs.get(id - 1);
         return nom.getNom();
     }
