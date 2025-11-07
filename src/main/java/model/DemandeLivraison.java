@@ -39,8 +39,11 @@ public class DemandeLivraison {
     public void assignerLivreur(Livreur livreur, Integer idLivraison, Carte carte ){
         
         List<Long> idsSiteslivraison = livraisons.get(idLivraison);
-        //On vérifie si la livraison a déjà été assignée si ce n'est pas le cas on la défini comme assignée
-        if(!livraisonsAssignees.get(idLivraison)){
+
+        // On vérifie si la livraison a déjà été assignée si ce n'est pas le cas on la défini comme assignée
+        // Utiliser Boolean.TRUE.equals pour éviter NullPointerException
+        Boolean dejaAssignee = livraisonsAssignees.get(idLivraison);
+        if (!Boolean.TRUE.equals(dejaAssignee)){
             livraisonsAssignees.put(idLivraison,true);
             --this.nbLivraisonsNonAssignees;
             carte.setNbLivraisons(carte.getNbLivraisons()+1);

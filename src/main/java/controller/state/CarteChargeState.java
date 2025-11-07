@@ -21,8 +21,6 @@ public class CarteChargeState implements State {
             return false;
         }
     }
-
-
    
     @Override
     public boolean chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
@@ -53,6 +51,12 @@ public class CarteChargeState implements State {
     @Override
     public void changerLivraison(Controller c) {
         System.err.println(">>> [CarteChargeState] ERREUR: Impossible de changer une livraison sans calcul!");
+        throw new IllegalStateException("Veuillez d'abord calculer une livraison");
+    }
+
+    @Override
+    public void genererFeuillesdeRoute(Controller c, CarteController carteC) {
+        System.err.println(">>> [CarteChargeState] ERREUR: Impossible de générer des feuilles de route sans calcul!");
         throw new IllegalStateException("Veuillez d'abord calculer une livraison");
     }
 }

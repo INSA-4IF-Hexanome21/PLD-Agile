@@ -51,8 +51,6 @@ public class LivraisonChargeState implements State {
         System.out.println(">>> [LivraisonChargeState] Transition vers LivreurAssigneState");
     }
 
-
-
     @Override
     public void calculerLivraison(Controller c, CarteController carteC) {
         System.err.println(">>> [InitialState] ERREUR: Impossible de calculer sans carte et livraison!");
@@ -62,6 +60,12 @@ public class LivraisonChargeState implements State {
     @Override
     public void changerLivraison(Controller c) {
         System.err.println(">>> [LivraisonChargeState] ERREUR: Impossible de changer une livraison sans calcul!");
+        throw new IllegalStateException("Veuillez d'abord calculer la livraison");
+    }
+
+    @Override
+    public void genererFeuillesdeRoute(Controller c, CarteController carteC) {
+        System.err.println(">>> [LivraisonChargeState] ERREUR: Impossible de générer des feuilles de route sans calcul!");
         throw new IllegalStateException("Veuillez d'abord calculer la livraison");
     }
 }

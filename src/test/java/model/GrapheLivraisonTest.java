@@ -6,7 +6,6 @@ import tsp.*;
 public class GrapheLivraisonTest {
     
     public static void main(String[] args) {
-        System.out.println("====== Test GrapheLivraison ====== ");
         // Exemple de mapDistances:
 		// {0=[(1, 2.0), (2, 3.5)], 1=[(0, 2.0), (2, 1.5)], 2=[(0, 3.5), (1, 1.5)]}
 		Map<Integer, List<SimpleEntry<Integer, Float>>> mapDistances = new HashMap<Integer, List<SimpleEntry<Integer, Float>>>();

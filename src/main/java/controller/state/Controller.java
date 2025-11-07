@@ -6,6 +6,7 @@ import java.util.List;
 
 import controller.CarteController;
 
+
 public class Controller{
 	private State currentState;
 	private CarteController carteController;
@@ -25,6 +26,13 @@ public class Controller{
 	public Controller() {
 		currentState = initialState;
 		carteController = new CarteController();
+	}
+
+	/**
+	 * Getter pour l'état courant
+	 */
+	public State getCurrentState() {
+		return currentState;
 	}
 
     /**

@@ -45,6 +45,11 @@ public class CarteController {
         if (carte == null) {
             carte = new Carte();
         }
+        // Chemin vide ou null -> échec de chargement
+        if (cheminFichier == null || cheminFichier.isBlank()) {
+            System.err.println(">>> CarteController: chemin de carte invalide");
+            return false;
+        }
         
         HashMap<Long, Noeud> noeuds = GestionnaireXML.chargerPlanNoeuds(cheminFichier);
         carte.setNoeuds(noeuds);
@@ -66,6 +71,12 @@ public class CarteController {
             carte = new Carte();
         }
         carte.resetTournee();
+        
+        // Chemin vide ou null -> échec de chargement
+        if (cheminFichierDemandes == null || cheminFichierDemandes.isBlank()) {
+            System.err.println(">>> CarteController: chemin de demandes invalide");
+            return false;
+        }
 
         // Avant d'ajouter la nouvelle demande, supprimer l'ancienne pour éviter accumulation
         System.out.println(">>> CarteController: début chargement demandes, effacement des livraisons existantes...");

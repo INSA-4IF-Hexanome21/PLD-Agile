@@ -131,7 +131,7 @@ public class GestionnaireXML {
                 Noeud noeudCollecte = trouverNoeud(adresseEnlevement, mapNoeuds);
                 Collecte collecte;
                 if (noeudCollecte == null) {
-                    collecte = new Collecte(idEnlevement, numLivraison, dureeEnlevement);  
+                    return null;  
                 } else {
                     collecte = new Collecte(
                             idEnlevement,

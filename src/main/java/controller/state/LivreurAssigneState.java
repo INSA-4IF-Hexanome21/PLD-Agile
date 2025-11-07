@@ -76,4 +76,10 @@ public class LivreurAssigneState implements State {
         System.err.println(">>> [LivreurAssigneState] ERREUR: Impossible de changer une livraison sans calcul!");
         throw new IllegalStateException("Veuillez d'abord calculer la livraison");
     }
+
+    @Override
+    public void genererFeuillesdeRoute(Controller c, CarteController carteC) {
+        System.err.println(">>> [LivreurAssigneState] ERREUR: Impossible de générer des feuilles de route avant le calcul!");
+        throw new IllegalStateException("Veuillez d'abord calculer la livraison");
+    }
 }

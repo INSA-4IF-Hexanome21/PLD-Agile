@@ -189,7 +189,7 @@ public class GrapheTotal implements Graphe {
 		for (Site siteDepart : sites) { 
 			int indexDepart = this.idToIndex.get(siteDepart.getId()); 
 			// Calculer les distances minimales depuis le site de départ vers tous les autres sommets du gt
-			Map<Integer, Float> distancesDepuisDepart = Dijsktra.dijkstra(this, siteDepart.getId(), cheminsMin);  
+			Map<Integer, Float> distancesDepuisDepart = Dijkstra.dijkstra(this, siteDepart.getId(), cheminsMin);  
 
 			List<SimpleEntry<Integer, Float>> voisins = new ArrayList<>(); 
 			
