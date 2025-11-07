@@ -1094,11 +1094,11 @@ function lancerTelechargement() {
     params += "files=";
     var firstT = true;
     trajetsAffiches.forEach(t => {
-      params += t + ".txt";
-      if (firstT) {
+      if (!firstT) {
         params += ',';
-        firstT = false;
       }
+      params += t + ".txt";
+      firstT = false;
     });
   } 
 
