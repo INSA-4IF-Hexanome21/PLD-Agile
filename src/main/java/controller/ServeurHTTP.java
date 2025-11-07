@@ -2,10 +2,19 @@
 package controller;
 import com.sun.net.httpserver.HttpServer;
 import controller.state.Controller;
+import utils.ZipUtils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Serveur HTTP pour servir les fichiers statiques et l'API
@@ -24,7 +33,7 @@ public class ServeurHTTP {
      * 
      * @param port Le port sur lequel le serveur écoute
      * @param cheminBase Le chemin de base des fichiers à servir
-     * @para Le contrôleur de carte pour l'API
+     * @param controller Le contrôleur de carte pour l'API
      * @throws IOException Si le serveur ne peut pas être créé
      */
     public ServeurHTTP(int port, String cheminBase, String cheminBaseRessources, Controller controller) throws IOException {
@@ -67,21 +76,21 @@ public class ServeurHTTP {
             
             if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
                 try {
-                    // Lecture du coprs de la requête
+                    // Lecture du corps de la requête
                     byte[] bytes = exchange.getRequestBody().readAllBytes();
-                    System.out.println("Bytes recibidos: " + bytes.length);
+                    System.out.println("Octets reçus: " + bytes.length);
                     
                     // Obtenir le nom du fichier de l'en-tête
                     String fileName = exchange.getRequestHeaders().getFirst("X-File-Name");
                     if (fileName != null) {
                         fileName = java.net.URLDecoder.decode(fileName, "UTF-8");
-                        System.out.println("Nombre del archivo: " + fileName);
+                        System.out.println("Nom du fichier: " + fileName);
                     } else {
                         fileName = "plan_" + System.currentTimeMillis() + ".xml";
-                        System.out.println("Nombre generado: " + fileName);
+                        System.out.println("Nom généré: " + fileName);
                     }
                     
-                    // Vérifier qu'il s'agit d'une fichier XML
+                    // Vérifier qu'il s'agit d'un fichier XML
                     if (!fileName.toLowerCase().endsWith(".xml")) {
                         throw new Exception("Le fichier doit être un XML");
                     }
@@ -90,24 +99,24 @@ public class ServeurHTTP {
                     File uploadDir = new File(cheminBaseRessources + "uploads/plans/");
                     if (!uploadDir.exists()) {
                         boolean created = uploadDir.mkdirs();
-                        System.out.println("Directorio de plans creado: " + created);
+                        System.out.println("Répertoire des plans créé: " + created);
                     }
                     
                     // Enregistrer le fichier
                     File outFile = new File(uploadDir, fileName);
                     Files.write(outFile.toPath(), bytes);
-                    System.out.println("Plan guardado en: " + outFile.getAbsolutePath());
-                    
-                    // Charger le plan dans le controleur
-                    System.out.println(">>> Chargement du plan dans le contrôleur <<<");
 
-                    controller.chargerCarte(outFile.getAbsolutePath());
+                    System.out.println("Plan enregistré dans : " + outFile.getAbsolutePath());
 
-                    // carteController.chargerCarteDepuisXML(outFile.getAbsolutePath());
-                    // System.out.println(">>> Plan chargé avec succès <<<");
+                    // Charger le plan dans le contrôleur
+
+                    boolean carteChargeReussi = controller.chargerCarte(outFile.getAbsolutePath());
+                    if (!carteChargeReussi) {
+                        throw new Exception("Le fichier ne permet pas de charger une carte");
+                    }
                     
-                    // Rrépondre au client
-                    String response = "{\"status\":\"ok\",\"type\":\"plan\",\"path\":\"uploads/plans/" 
+                    // Répondre au client
+                    String response = "{\"status\":\"ok\",\"type\":\"plan\",\"path\":\"uploads/plans/"
                                     + fileName + "\",\"size\":" + bytes.length + ",\"message\":\"Plan chargé avec succès\"}";
                     byte[] responseBytes = response.getBytes("UTF-8");
                     
@@ -120,7 +129,7 @@ public class ServeurHTTP {
                     System.out.println(">>> Réponse envoyée: " + response + " <<<");
                     
                 } catch (Exception e) {
-                    System.err.println("ERROR al procesar plan: " + e.getMessage());
+                    System.err.println("ERREUR lors du traitement du plan: " + e.getMessage());
                     e.printStackTrace();
                     
                     String errorResponse = "{\"status\":\"error\",\"type\":\"plan\",\"message\":\"" 
@@ -132,7 +141,7 @@ public class ServeurHTTP {
                     exchange.close();
                 }
             } else {
-                System.out.println("Método no permitido: " + exchange.getRequestMethod());
+                System.out.println("Méthode non autorisée: " + exchange.getRequestMethod());
                 exchange.sendResponseHeaders(405, -1);
                 exchange.close();
             }
@@ -148,48 +157,49 @@ public class ServeurHTTP {
         
         if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             try {
-                // Lecture du coprs de la requête
+                // Lecture du corps de la requête
                 byte[] bytes = exchange.getRequestBody().readAllBytes();
-                System.out.println("Bytes recibidos: " + bytes.length);
+                System.out.println("Octets reçus: " + bytes.length);
                 
-                // Obtener el nombre del archivo del header
+                // Obtenir le nom du fichier de l'en-tête
                 String fileName = exchange.getRequestHeaders().getFirst("X-File-Name");
                 if (fileName != null) {
                     fileName = java.net.URLDecoder.decode(fileName, "UTF-8");
-                    System.out.println("Nombre del archivo: " + fileName);
+                    System.out.println("Nom du fichier: " + fileName);
                 } else {
                     fileName = "demande_" + System.currentTimeMillis() + ".xml";
-                    System.out.println("Nombre generado: " + fileName);
+                    System.out.println("Nom généré: " + fileName);
                 }
                 
-                // Validar que sea XML
+                // Valider qu'il s'agit d'un XML
                 if (!fileName.toLowerCase().endsWith(".xml")) {
                     throw new Exception("Le fichier doit être un XML");
                 }
                 
-                // Crear directorio si no existe
+                // Créer le répertoire s'il n'existe pas
                 File uploadDir = new File(cheminBaseRessources + "uploads/demandes/");
                 if (!uploadDir.exists()) {
                     boolean created = uploadDir.mkdirs();
-                    System.out.println("Directorio de demandes creado: " + created);
+                    System.out.println("Dossier de demandes créé: " + created);
                 }
                 
-                // Guardar el archivo
+                // Enregistrer le fichier
                 File outFile = new File(uploadDir, fileName);
                 Files.write(outFile.toPath(), bytes);
-                System.out.println("Demande guardado en: " + outFile.getAbsolutePath());
+                System.out.println("Demande enregistrée dans: " + outFile.getAbsolutePath());
                 
-                // CARGAR LA DEMANDE EN EL CONTROLADOR
-                // Asumiendo que tienes un método para cargar demandes
+                // CHARGER LA DEMANDE DANS LE CONTRÔLEUR
+                // En supposant que vous avez une méthode pour charger les demandes
                 System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
 
-                controller.chargerLivraison(outFile.getAbsolutePath());
-
-                // carteController.chargerDemandesDepuisXML(outFile.getAbsolutePath());
+                 boolean carteChargeReussi =  controller.chargerLivraison(outFile.getAbsolutePath());
+                    if (!carteChargeReussi) {
+                        throw new Exception("Le fichier ne permet pas de charger une carte");
+                    }
                 System.out.println(">>> Demande chargée avec succès <<<");
                 
-                // Responder al cliente
-                String response = "{\"status\":\"ok\",\"type\":\"demande\",\"path\":\"uploads/demandes/" 
+                // Répondre au client
+                String response = "{\"status\":\"ok\",\"type\":\"demande\",\"path\":\"uploads/demandes/"
                                 + fileName + "\",\"size\":" + bytes.length + ",\"message\":\"Demande chargée avec succès\"}";
                 byte[] responseBytes = response.getBytes("UTF-8");
                 
@@ -202,7 +212,7 @@ public class ServeurHTTP {
                 System.out.println(">>> Réponse envoyée: " + response + " <<<");
                 
             } catch (Exception e) {
-                System.err.println("ERROR al procesar demande: " + e.getMessage());
+                System.err.println("ERREUR lors du traitement de la demande: " + e.getMessage());
                 e.printStackTrace();
                 
                 String errorResponse = "{\"status\":\"error\",\"type\":\"demande\",\"message\":\"" 
@@ -214,17 +224,243 @@ public class ServeurHTTP {
                 exchange.close();
             }
         } else {
-            System.out.println("Método no permitido: " + exchange.getRequestMethod());
+            System.out.println("Méthode non autorisée: " + exchange.getRequestMethod());
             exchange.sendResponseHeaders(405, -1);
             exchange.close();
         }
     });
         
+    /**
+     * ! Calculer une livraison (avec les livreurs assignés)
+     */
+           // Endpoint pour calculer la livraison (demande)
+    serveur.createContext("/api/calcul", exchange -> {
+        System.out.println(">>> Requête reçue sur /api/calcul <<<");
+        
+        if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            try {
+                // Lecture du corps de la requête
+                byte[] bytes = exchange.getRequestBody().readAllBytes();
+                System.out.println("Octets reçus: " + bytes.length);
+                
+                // Lancer le calcul de la livraison par le contrôleur
+                System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
+                controller.calculerLivraison();
+
+                System.out.println(">>> Demande chargée avec succès <<<");
+                
+                // Répondre au client
+                String response = "{\"status\":\"ok\",\"type\":\"demande\",\"path\":\"cacul\",\"message\":\"Demande chargée avec succès\"}";
+                byte[] responseBytes = response.getBytes("UTF-8");
+                
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                exchange.sendResponseHeaders(200, responseBytes.length);
+                exchange.getResponseBody().write(responseBytes);
+                exchange.close();
+                
+                System.out.println(">>> Réponse envoyée: " + response + " <<<");
+                
+            } catch (Exception e) {
+                System.err.println("ERREUR lors du traitement du calcul: " + e.getMessage());
+                e.printStackTrace();
+                
+                String errorResponse = "{\"status\":\"error\",\"type\":\"demande\",\"message\":\"" 
+                                    + e.getMessage().replace("\"", "'") + "\"}";
+                byte[] errorBytes = errorResponse.getBytes("UTF-8");
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.sendResponseHeaders(500, errorBytes.length);
+                exchange.getResponseBody().write(errorBytes);
+                exchange.close();
+            }
+        } else {
+            System.out.println("Méthode non permise: " + exchange.getRequestMethod());
+            exchange.sendResponseHeaders(405, -1);
+            exchange.close();
+        }
+    });
+
+    serveur.createContext("/api/assignations", exchange -> {
+        System.out.println(">>> Requête reçue sur /api/assignations <<<");
+
+        if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            try {
+                byte[] bytes = exchange.getRequestBody().readAllBytes();
+                String body = new String(bytes, "UTF-8");
+                System.out.println("Body reçu: " + body);
+
+                // Parse simple: { "1": ["L001","L003"], "2": ["L002"] }
+               HashMap<String, List<String>> assignations = new HashMap<>(); 
+
+                body = body.trim();
+                if (body.startsWith("{") && body.endsWith("}")) {
+                    body = body.substring(1, body.length() - 1); // SUPRRIMER {}
+                    String[] entries = body.split("(?<=\\]),"); // separer keywords
+
+                    for (String entry : entries) {
+                        String[] parts = entry.split(":", 2);
+                        if (parts.length == 2) {
+                            String livreurId = parts[0].trim().replaceAll("\"", "");
+                            String values = parts[1].trim();
+                            values = values.replaceAll("\\[|\\]|\"", ""); // suprimer [], "
+                            List<String> livraisonIds = new ArrayList<>();
+                            if (!values.isEmpty()) {
+                                for (String id : values.split(",")) {
+                                    livraisonIds.add(id.trim());
+                                }
+                            }
+                            assignations.put(livreurId, livraisonIds);
+                        }
+                    }
+                }
+                
+                 // Vérifier si assignations est vide
+                boolean empty = assignations.isEmpty() || assignations.values().stream().allMatch(List::isEmpty);
+                if (empty) {
+                    String errorResponse = "{\"status\":\"error\",\"message\":\"Aucune assignation fournie\"}";
+                    byte[] errorBytes = errorResponse.getBytes("UTF-8");
+                    exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                    exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                    exchange.sendResponseHeaders(400, errorBytes.length);
+                    exchange.getResponseBody().write(errorBytes);
+                    exchange.close();
+                    return;
+                }
+                // Por ahora solo log
+                System.out.println("Assignations reçues: " + assignations);
+
+                // Lancer l'assignation des livraisons par le contrôleur
+                System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
+                controller.assignerLivreur(assignations);
+
+                // Responder
+                String response = "{\"status\":\"ok\",\"message\":\"Assignations reçues\"}";
+                byte[] responseBytes = response.getBytes("UTF-8");
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                exchange.sendResponseHeaders(200, responseBytes.length);
+                exchange.getResponseBody().write(responseBytes);
+                exchange.close();
+
+            } catch (Exception e) {
+                String errorResponse = "{\"status\":\"error\",\"message\":\"" 
+                                        + e.getMessage().replace("\"", "'") + "\"}";
+                byte[] errorBytes = errorResponse.getBytes("UTF-8");
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.sendResponseHeaders(500, errorBytes.length);
+                exchange.getResponseBody().write(errorBytes);
+                exchange.close();
+            }
+        } else {
+            exchange.sendResponseHeaders(405, -1);
+            exchange.close();
+        }
+    });
+
+    serveur.createContext("/api/ajouter-livraison", exchange -> {
+        if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            try {
+                byte[] bytes = exchange.getRequestBody().readAllBytes();
+                String body = new String(bytes, "UTF-8").trim();
+                System.out.println("📦 Nouvelle livraison reçue:");
+                System.out.println(body);
+
+                // Parse simple JSON-like body (accepte clés sans guillemets aussi)
+                Map<String, String> data = new HashMap<>();
+                if (body.startsWith("{") && body.endsWith("}")) {
+                    String inner = body.substring(1, body.length() - 1).trim();
+                    String[] entries = inner.split(",");
+                    for (String entry : entries) {
+                        String[] kv = entry.split(":", 2);
+                        if (kv.length == 2) {
+                            String key = kv[0].trim().replaceAll("^\"|\"$|^'|'$", "");
+                            String value = kv[1].trim();
+                            value = value.replaceAll("^\\[|\\]$", "").replaceAll("^\"|\"$|^'|'$", "").trim();
+                            data.put(key, value);
+                        }
+                    }
+                } else {
+                    // fallback on essaye de parser lignes key: value
+                    String[] lines = body.split("\\r?\\n");
+                    for (String line : lines) {
+                        String[] kv = line.split(":", 2);
+                        if (kv.length == 2) {
+                            String key = kv[0].trim().replaceAll("^\"|\"$|^'|'$", "");
+                            String value = kv[1].trim().replaceAll("^\"|\"$|^'|'$", "");
+                            data.put(key, value);
+                        }
+                    }
+                }
+
+                String idCollecte = data.get("idCollecte");
+                String idPrecCollecte = data.get("idPrecCollecte");
+                String idDepot = data.get("idDepot");
+                String idPrecDepot = data.get("idPrecDepot");
+                String trajet = data.get("Trajet"); 
+
+                System.out.println("Parsed livraison:");
+                System.out.println("  idCollecte = " + idCollecte);
+                System.out.println("  idPrecCollecte = " + idPrecCollecte);
+                System.out.println("  idDepot = " + idDepot);
+                System.out.println("  idPrecDepot = " + idPrecDepot);
+                System.out.println("  Trajet = " + trajet);
+
+                // Le gars, ici vous pouvez appeler le controller pour créer/ajouter la livraison.
+                controller.ajouterLivraison(idCollecte,idPrecCollecte,idDepot,idPrecDepot,trajet);
+                // Ici on construit l'objet JSON de retour avec les valeurs parsees
+                StringBuilder sb = new StringBuilder();
+                sb.append("{");
+                boolean first = true;
+                for (Map.Entry<String, String> e : data.entrySet()) {
+                    if (!first) sb.append(",");
+                    first = false;
+                    String k = e.getKey();
+                    String v = e.getValue();
+                    // échapper valeur
+                    String esc = v == null ? "" : v.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
+                    // si la valeur est un entier pur on la renvoie sans guillemets, sinon en string
+                    if (esc.matches("^-?\\d+$")) {
+                        sb.append("\"").append(k).append("\":").append(esc);
+                    } else if (esc.isEmpty()) {
+                        sb.append("\"").append(k).append("\":\"\"");
+                    } else {
+                        sb.append("\"").append(k).append("\":\"").append(esc).append("\"");
+                    }
+                }
+                sb.append("}");
+
+                String response = "{\"status\":\"ok\",\"message\":\"Livraison ajoutée\",\"data\":" + sb.toString() + "}";
+                byte[] responseBytes = response.getBytes("UTF-8");
+
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                exchange.sendResponseHeaders(200, responseBytes.length);
+                exchange.getResponseBody().write(responseBytes);
+                exchange.close();
+
+            } catch (Exception e) {
+                System.err.println("Erreur ajout livraison: " + e.getMessage());
+                e.printStackTrace();
+                String errorResponse = "{\"status\":\"error\",\"message\":\"" + e.getMessage().replace("\"", "'") + "\"}";
+                try {
+                    byte[] errorBytes = errorResponse.getBytes("UTF-8");
+                    exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                    exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                    exchange.sendResponseHeaders(500, errorBytes.length);
+                    exchange.getResponseBody().write(errorBytes);
+                } catch (IOException ignored) {}
+                exchange.close();
+            }
+        } else {
+            exchange.sendResponseHeaders(405, -1);
+            exchange.close();
+        }
+    });
+
     serveur.createContext("/api/carte", exchange -> {
         System.out.println(">>> Requête reçue sur /api/carte <<<");
         
         String jsonResponse = controller.getCarteJSON();
-        //String jsonResponse = carteController.getCarteJSON();
         byte[] octets = jsonResponse.getBytes("UTF-8");
         
         exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
@@ -235,7 +471,75 @@ public class ServeurHTTP {
         
         System.out.println(">>> Réponse envoyée <<<");
     });
-        // ! Route pour les fichiers JavaScript
+
+    // Endpoint pour télécharger feuille de route
+    serveur.createContext("/api/roadmap", exchange -> {
+        System.out.println(">>> Requête reçue sur /api/roadmap <<<");
+
+        try {
+            String query = exchange.getRequestURI().getQuery();
+            Map<String, String> params = parseQuery(query);
+            System.out.println(params);
+            controller.genererFeuillesdeRoute();
+
+            if ((params.get("files") != null)
+            ) {
+                Path dossier = Paths.get(cheminBaseRessources + "downloads/");
+                if (!Files.exists(dossier)) {
+                    Files.createDirectories(dossier);
+                    System.out.println("Dossier 'downloads' créé !");
+                } 
+                Map<String, byte[]> fichiers = new HashMap<String, byte[]>();
+                Files.list(dossier)
+                    .forEach(f -> {
+                        try {
+                            String nomFichier = f.getFileName().toString();
+                            byte[] contenu = Files.readAllBytes(f);
+                            if (params.get("files").contains(f.getFileName().toString())) {
+                                fichiers.put(nomFichier, contenu);
+                            } 
+                        } catch (Exception e) {
+                            System.err.println("ERREUR lors du téléchargement des fichiers: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                        
+                });
+                String nomZipFic = cheminBaseRessources+"downloads/roadmap.zip";
+                ZipUtils.createZip(fichiers, nomZipFic); 
+                File zipFic = new File(nomZipFic);
+                byte[] octets = Files.readAllBytes(zipFic.toPath());
+
+                exchange.getResponseHeaders().set("Content-Type", "application/zip");
+                exchange.getResponseHeaders().set("Content-Disposition", "attachment; filename=\"roadmap.zip\"");
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+
+                exchange.sendResponseHeaders(200, octets.length);
+                exchange.getResponseBody().write(octets);
+
+            } else if (params.get("file") != null) {
+                String nomFichier = params.get("file");
+                File fichier = new File(cheminBaseRessources + "downloads/" + nomFichier);
+                byte[] octets = Files.readAllBytes(fichier.toPath());
+                exchange.getResponseHeaders().add("Content-Type", "text/plain; charset=UTF-8");
+                exchange.getResponseHeaders().add("Content-Disposition", "attachment; filename=\"roadmap.txt\"");
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+
+                exchange.sendResponseHeaders(200, octets.length);
+                exchange.getResponseBody().write(octets);
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            exchange.sendResponseHeaders(500, -1);
+        } finally {
+            
+            exchange.close();
+            System.out.println(">>> Réponse envoyée <<<");
+        }
+    });
+
+        //  Route pour les fichiers JavaScript
         serveur.createContext("/js/", exchange -> {
             String chemin = exchange.getRequestURI().getPath().replaceFirst("/js/", "");
             File fichier = new File(cheminBase + "JS/" + chemin);
@@ -252,7 +556,7 @@ public class ServeurHTTP {
             exchange.close();
         });
         
-        // ! Route pour les fichiers CSS
+        //  Route pour les fichiers CSS
         serveur.createContext("/css/", exchange -> {
             String chemin = exchange.getRequestURI().getPath().replaceFirst("/css/", "");
             File fichier = new File(cheminBase + "CSS/" + chemin);
@@ -315,6 +619,150 @@ public class ServeurHTTP {
             exchange.getResponseBody().write(octets);
             exchange.close();
         });
+
+        serveur.createContext("/api/undoAction", exchange -> {
+            
+            try {
+                System.out.println(">>> Requête reçue sur /api/undoAction <<<");
+                
+                exchange.getRequestBody().readAllBytes();
+
+                controller.undoAction();
+
+                byte[] response = "{}".getBytes(StandardCharsets.UTF_8);
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                exchange.getResponseHeaders().add("Content-Type", "application/json");
+                exchange.sendResponseHeaders(200, response.length);
+                exchange.getResponseBody().write(response);
+                exchange.getResponseBody().close();
+                
+                System.out.println(">>> Réponse envoyée <<<");
+                
+            } catch (Exception e) {
+                System.err.println("!!! ERREUR dans /api/undoAction !!!");
+                e.printStackTrace();
+                
+                try {
+                    String errorMsg = "{\"error\": \"" + e.getMessage() + "\"}";
+                    byte[] errorResponse = errorMsg.getBytes(StandardCharsets.UTF_8);
+                    exchange.getResponseHeaders().add("Content-Type", "application/json");
+                    exchange.sendResponseHeaders(500, errorResponse.length);
+                    exchange.getResponseBody().write(errorResponse);
+                    exchange.getResponseBody().close();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            } finally {
+                exchange.close();
+            }
+        });
+
+        serveur.createContext("/api/redoAction", exchange -> {
+            
+            try {
+                System.out.println(">>> Requête reçue sur /api/redoAction <<<");
+                
+                exchange.getRequestBody().readAllBytes();
+
+                controller.redoAction();
+
+                byte[] response = "{}".getBytes(StandardCharsets.UTF_8);
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                exchange.getResponseHeaders().add("Content-Type", "application/json");
+                exchange.sendResponseHeaders(200, response.length);
+                exchange.getResponseBody().write(response);
+                exchange.getResponseBody().close();
+                
+                System.out.println(">>> Réponse envoyée <<<");
+                
+            } catch (Exception e) {
+                System.err.println("!!! ERREUR dans /api/redoAction !!!");
+                e.printStackTrace();
+                
+                try {
+                    String errorMsg = "{\"error\": \"" + e.getMessage() + "\"}";
+                    byte[] errorResponse = errorMsg.getBytes(StandardCharsets.UTF_8);
+                    exchange.getResponseHeaders().add("Content-Type", "application/json");
+                    exchange.sendResponseHeaders(500, errorResponse.length);
+                    exchange.getResponseBody().write(errorResponse);
+                    exchange.getResponseBody().close();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            } finally {
+                exchange.close();
+            }
+        });
+
+        serveur.createContext("/api/resetCarte", exchange -> {
+            
+            System.out.println(">>> Requête reçue sur /api/resetCarte <<<");
+        
+            controller.resetCarte();
+            exchange.sendResponseHeaders(200, -1);
+            exchange.close();
+            
+        });
+
+        serveur.createContext("/api/deleteSite", exchange -> {
+            System.out.println(">>> Requête reçue sur /api/deleteSite <<<");
+
+            if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            try {
+                byte[] bytes = exchange.getRequestBody().readAllBytes();
+                String body = new String(bytes, "UTF-8");
+                System.out.println("Body reçu: " + body);
+                // Parse simple: { "idSite": 1243543253, "typeSite": "collecte", "numLivraison": 3 }
+                Map<String, String> params = new HashMap<>();
+                
+                body = body.trim()
+                        .replace("{", "")
+                        .replace("}", "")
+                        .replace("\"", "");
+
+                // split sur chaque champ
+                String[] pairs = body.split(",");
+
+                for (String p : pairs) {
+                    String[] kv = p.split(":");
+                    if (kv.length == 2) {
+                        params.put(kv[0].trim(), kv[1].trim());
+                    }
+                }
+                Long idSite = Long.valueOf(params.get("idSite"));
+                String typeSite = params.get("typeSite").toString();
+                Integer numLivraison = Integer.valueOf(params.get("numLivraison"));
+
+                // Por ahora solo log
+                System.out.println("idSite=" + idSite+", typeSite=" + typeSite+ ", numLivraison=" + numLivraison);
+
+                // Lancer la suppression du site par le contrôleur
+                System.out.println(">>> Chargement de la demande dans le contrôleur <<<");
+                controller.supprimerLivraison(idSite, typeSite, numLivraison);;
+
+                // Responder
+                String response = "{\"status\":\"ok\",\"message\":\"Suppression reçue\"}";
+                byte[] responseBytes = response.getBytes("UTF-8");
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                exchange.sendResponseHeaders(200, responseBytes.length);
+                exchange.getResponseBody().write(responseBytes);
+                exchange.close(); 
+
+            } catch (Exception e) {
+                String errorResponse = "{\"status\":\"error\",\"message\":\"" 
+                                        + e.getMessage().replace("\"", "'") + "\"}";
+                byte[] errorBytes = errorResponse.getBytes("UTF-8");
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.sendResponseHeaders(500, errorBytes.length);
+                exchange.getResponseBody().write(errorBytes);
+                exchange.close();
+            }
+        } else {
+            exchange.sendResponseHeaders(405, -1);
+            exchange.close();
+        }
+        });
     }
     
 
@@ -335,5 +783,16 @@ public class ServeurHTTP {
     public void arreter() {
         serveur.stop(0);
         System.out.println("Serveur arrêté");
+    }
+
+    private static Map<String, String> parseQuery(String query) {
+        Map<String, String> map = new HashMap<>();
+        if (query == null) return map;
+        for (String param : query.split("&")) {
+            String[] pair = param.split("=");
+            if (pair.length == 2)
+                map.put(pair[0], pair[1]);
+        }
+        return map;
     }
 }

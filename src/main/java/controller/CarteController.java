@@ -1,27 +1,59 @@
 package controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import tsp.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.time.LocalTime;
 
+import tsp.*;
+import controller.command.*;
 import model.*;
+import model.utils.CarteUtils;
 
 public class CarteController {
     private Carte carte;
+    private DemandeLivraison demandeLivraison;
+    private GrapheTotal gt;
+    private final ListOfCommands history;
+    private Configuration config;
 
     public CarteController() {
         this.carte = new Carte();
+        this.history = new ListOfCommands();
+        this.config = new Configuration();
+        this.gt = null;
     }
 
+    // Getters et Setters
+    public void setGrapheTotal(GrapheTotal gt) {
+        this.gt = gt;
+    }
+
+    public GrapheTotal getGrapheTotal() {
+        return this.gt;
+    }
+
+    // Méthodes
     /**
      * Charge le plan (noeuds et troncons) depuis un fichier XML
      */
-    public void chargerCarteDepuisXML(String cheminFichier) {
+    public boolean chargerCarteDepuisXML(String cheminFichier) {
         if (carte == null) {
             carte = new Carte();
+        }
+        else{
+            carte.resetTournee();
+        }
+        // Chemin vide ou null -> échec de chargement
+        if (cheminFichier == null || cheminFichier.isBlank()) {
+            System.err.println(">>> CarteController: chemin de carte invalide");
+            return false;
         }
         
         HashMap<Long, Noeud> noeuds = GestionnaireXML.chargerPlanNoeuds(cheminFichier);
@@ -30,29 +62,41 @@ public class CarteController {
         List<Troncon> troncons = GestionnaireXML.chargerPlanTroncons(cheminFichier, noeuds);
         carte.setTroncons(troncons);
         
-        System.out.println("Plan chargé: " + noeuds.size() + " noeuds, " + troncons.size() + " troncons");
+        if(noeuds.isEmpty() & troncons.isEmpty()){
+            return false;
+        } else {
+            System.out.println("Plan chargé: " + noeuds.size() + " noeuds, " + troncons.size() + " troncons");
+            return true;
+        }
     }
     
-  public synchronized void chargerDemandesDepuisXML(String cheminFichierDemandes) {
+    public synchronized boolean chargerDemandesDepuisXML(String cheminFichierDemandes) {
         // Protection contre appels concurrents
         if (carte == null) {
             carte = new Carte();
+        }
+        carte.resetTournee();
+        
+        // Chemin vide ou null -> échec de chargement
+        if (cheminFichierDemandes == null || cheminFichierDemandes.isBlank()) {
+            System.err.println(">>> CarteController: chemin de demandes invalide");
+            return false;
         }
 
         // Avant d'ajouter la nouvelle demande, supprimer l'ancienne pour éviter accumulation
         System.out.println(">>> CarteController: début chargement demandes, effacement des livraisons existantes...");
         this.effacerLivraison();
 
-        Trajet trajet = GestionnaireXML.chargerDemandeLivraisons(
+        demandeLivraison = GestionnaireXML.chargerDemandeLivraisons(
             cheminFichierDemandes, 
             carte.getNoeuds()
         );
+        if(demandeLivraison == null){
+            throw new NullPointerException("Un site de la demande de livraison n'est pas disponible sur le plan actuellement chargé");
+        }
 
-        // Ajout du trajet (nouveau)
-        carte.ajouterTrajet(trajet);
-
-        // Ajouter les sites du trajet à la carte, mais éviter les doublons par id
-        List<Site> sitesTrajet = trajet.getSites();
+        // Ajouter les sites de la demande de livraison à la carte, mais éviter les doublons par id
+        List<Site> sitesTrajet = demandeLivraison.getSites();
         HashSet<Long> idsExistants = new HashSet<>();
         for (Site s : carte.getSites()) {
             idsExistants.add(s.getId());
@@ -68,28 +112,72 @@ public class CarteController {
                 System.out.println(">>> Site déjà présent, id=" + site.getId());
             }
         }
+        
+       if(ajout == 0){
+            return false;
+        } else {
+            System.out.println(">>> CarteController: demande chargée, sites ajoutés=" + ajout + ", total sites=" + carte.getSites().size());
+            return true;
+        }
+  }
 
-        System.out.println(">>> CarteController: demande chargée, sites ajoutés=" + ajout + ", total sites=" + carte.getSites().size());
+  //Assigner les livreurs
+
+    public void assignerLivreurs(HashMap<String, List<String>> assignation) {
+        // Avant d'ajouter la nouvelle demande, supprimer l'ancienne pour éviter accumulation
+        System.out.println(">>> CarteController: début du chargement de l'assignation des livraisons");
+
+        if(assignation == null){
+            throw new NullPointerException("Il n'y a pas de données de livreurs");
+        }
+
+        //Trouver le max dans les clés
+        Integer maxKey = Collections.max(
+                    assignation.keySet().stream()
+                        .map(Integer::parseInt)
+                        .collect(Collectors.toList())
+);
+        config.setNbLivreurs(maxKey);
+
+        for(Map.Entry<String, List<String>> e : assignation.entrySet()){
+            System.out.println(e);
+            int idLivreur = Integer.parseInt(e.getKey());
+            System.out.println(idLivreur);
+            System.out.println(">>> CarteController: Livreur" + config.getNomPrenom(idLivreur));
+
+            for(int i=0; i<e.getValue().size(); ++i){
+                System.out.println(e.getValue() + " TTT " + i);
+
+                Integer idLivraison = Integer.parseInt(e.getValue().get(i));
+                System.out.println("Id : " + idLivraison);
+                demandeLivraison.assignerLivreur(config.getLivreurbyId(idLivreur), idLivraison, carte);
+
+                // System.out.println(">>> CarteController: Trajets" + this.getCarte().getTrajets().getLast().getLivreur().getNom());
+                // System.out.println(">>> CarteController: Sites" + this.getCarte().getTrajets().getLast().getSites());
+            }
+        }
+        System.out.println(">>> CarteController: Livreur" + config.getNbLivreur());
     }
-
 
   // --- modifications dans controller/CarteController.java ---
 
     public void calculerTournee() throws Exception {
         // Vérifications préalables
-        if (this.getCarte() == null) {
+        if (carte == null) {
             throw new IllegalStateException("Carte non chargée");
         }
-        if (this.getCarte().getSites() == null || this.getCarte().getSites().isEmpty()) {
+        if (carte.getSites() == null || carte.getSites().isEmpty()) {
             throw new IllegalStateException("Aucune demande / sites non chargés dans la carte");
         }
-
+        if(config.getNbLivreur() == 0){
+            throw new IllegalStateException("Aucun livreur assigné");
+        }
         // Effacer les calculs précédents pour éviter d'utiliser des structures obsolètes
         this.effacerCalcul();
 
         // chercher entrepot
         Entrepot e = null;
-        for (Site site : this.getCarte().getSites()) {
+        for (Site site : carte.getSites()) {
             if (site instanceof Entrepot) {
                 e = (Entrepot) site;
                 break;
@@ -100,8 +188,29 @@ public class CarteController {
         }
 
         // creer graphe total et calculer chemins minimaux
-        GrapheTotal gt = creerGrapheTotal(this.getCarte(), e.getId());
-        this.chercherCheminsMin(gt, this.getCarte().getSites());
+        // System.out.println("Création graphe total");
+       creerGrapheTotal(carte, e.getId());
+        if (gt == null ) {
+            throw new IllegalStateException("La création du graphe a échoué");
+        }
+
+        for(Trajet trajet: this.getCarte().getTrajets()){
+            //System.out.println("Trajet : "+ trajet);
+            //System.out.println("Sites : "+ trajet.getSites());
+            this.chercherCheminsMin(trajet.getSites(), trajet);
+            //trajet.genererFeuilleDeRoute();
+        }
+       
+        //this.supprimerLivraison(gt, Long.valueOf(25610684), Long.valueOf(21717915), this.getCarte().getTrajets().get(0));
+        //this.supprimerLivraison(gt, Long.valueOf(21992645), Long.valueOf(55444215), this.getCarte().getTrajets().get(0));
+        //this.supprimerLivraison(gt, Long.valueOf(55444018), Long.valueOf(26470086), this.getCarte().getTrajets().get(0));
+        //this.supprimerLivraison(gt, Long.valueOf(27362899), Long.valueOf(505061101), this.getCarte().getTrajets().get(0));
+        //TEST
+        //ajouterLivraison( Long.valueOf(1679901320), Long.valueOf(342873658), Long.valueOf(26086123), Long.valueOf(208769039),carte.getTrajets().get(0));
+        // supprimerLivraison();
+        // undo();
+        // redo();
+        
     }
 
     /**
@@ -185,74 +294,169 @@ public class CarteController {
         }
 
         System.out.println(">>> CarteController: livraisons précédentes effacées.");
+        // System.out.println(getCarteJSON());
     }
-
-    
     /**
      * Génère le JSON complet de la carte avec noeuds, troncons et sites
      */
- public String getCarteJSON() {
-    System.out.println(">>> getCarteJSON appelé <<<");
+    public String getCarteJSON() {
+        System.out.println(">>> getCarteJSON appelé <<<");
 
-    StringBuilder json = new StringBuilder();
-    json.append("{");
+        StringBuilder json = new StringBuilder();
+        json.append("{");
 
-    // -- Noeuds
-    json.append("\"noeuds\":[");
-    boolean firstNoeud = true;
-    for (Noeud n : carte.getNoeuds().values()) {
-        if (!firstNoeud) json.append(",");
-        firstNoeud = false;
-        json.append(String.format(Locale.US,"{\"id\":%d,\"lat\":%f,\"lng\":%f}",
-                n.getId(), n.getLatitude(), n.getLongitude()));
-    }
-    json.append("]");
-
-    // -- Troncons
-    json.append(",\"troncons\":[");
-    boolean firstTroncon = true;
-    for (Troncon t : carte.getTroncons()) {
-        if (!firstTroncon) json.append(",");
-        firstTroncon = false;
-        json.append(String.format("{\"from\":%d,\"to\":%d}",
-                t.getOrigine().getId(), t.getDestination().getId()));
-    }
-    json.append("]");
-
-    // -- Sites
-    json.append(",\"sites\":[");
-    boolean firstSite = true;
-    for (Site s : carte.getSites()) {
-        if (!firstSite) json.append(",");
-        firstSite = false;
-        Integer numLivraison = null;
-        if (s instanceof Depot ) numLivraison = ((Depot) s).getNumLivraison();
-        else if (s instanceof Collecte ) numLivraison = ((Collecte) s).getNumLivraison();
-
-        try {
-            double lat = s.getLatitude();
-            double lng = s.getLongitude();
-            json.append(String.format(Locale.US,
-                "{\"id\":%d,\"lat\":%f,\"lng\":%f,\"type\":\"%s\"",
-                s.getId(), lat, lng, s.getTypeSite()));
-
-            if (s.getDepartHeure() != null) {
-                json.append(String.format(",\"depart\":\"%s\"", s.getDepartHeure().toString()));
-            }
-            if (s.getArriveeHeure() != null) {
-                json.append(String.format(",\"arrivee\":\"%s\"", s.getArriveeHeure().toString()));
-            }
-            if (numLivraison != null) {
-                json.append(String.format(",\"numLivraison\":%d", numLivraison));
-            }
-            if (s.getNumPassage() != null) {
-                json.append(String.format(",\"numPassage\":%d", s.getNumPassage()));
-            }
-            json.append("}");
-        } catch (Exception e) {
-            System.err.println("Erreur lors du traitement du site " + s.getId() + ": " + e.getMessage());
-            e.printStackTrace();
+        // -- Noeuds
+        json.append("\"noeuds\":[");
+        boolean firstNoeud = true;
+        for (Noeud n : carte.getNoeuds().values()) {
+            if (!firstNoeud) json.append(",");
+            firstNoeud = false;
+            json.append(String.format(Locale.US,"{\"id\":%d,\"lat\":%f,\"lng\":%f}",
+                    n.getId(), n.getLatitude(), n.getLongitude()));
         }
+        json.append("]");
+
+        // -- Troncons
+        json.append(",\"troncons\":[");
+        boolean firstTroncon = true;
+        for (Troncon t : carte.getTroncons()) {
+            if (!firstTroncon) json.append(",");
+            firstTroncon = false;
+            json.append(String.format("{\"from\":%d,\"to\":%d}",
+                    t.getOrigine().getId(), t.getDestination().getId()));
+        }
+        json.append("]");
+
+        // -- Trajets 
+        json.append(",\"trajets\":{");
+        List<Trajet> trajets = carte.getTrajets();
+        HashMap<Site,Long> sitesImpactes = new HashMap<>(); 
+        List<LocalTime> heuresArrivees = new ArrayList<LocalTime>();;
+        for (int i = 0; i < trajets.size(); i++) {
+            Trajet t = trajets.get(i);
+            if(t.getHeureFin() != null){
+                heuresArrivees.add(t.getHeureFin());
+            }
+            json.append("\"").append(i).append("\":[");
+            List<Troncon> troncons = t.getTroncons();
+            for (int j = 0; j < troncons.size(); j++) {
+                Troncon tr = troncons.get(j);
+                json.append(String.format("{\"from\":%d,\"to\":%d}", 
+                    tr.getOrigine().getId(), 
+                    tr.getDestination().getId()));
+                if (j < troncons.size() - 1) json.append(","); // <-- virgule entre tronçons
+            }
+
+            json.append("]");
+            if (i < trajets.size() - 1) json.append(","); // <-- virgule entre trajets
+            HashMap<Site,Long> sites = t.getSitesImpactes(); 
+            if (!sites.isEmpty()) {
+                for (var key : sites.keySet()) {
+                    sitesImpactes.put(key, sites.get(key));
+                }
+            }
+        }
+        json.append("}");
+
+        // sites par trajets
+        json.append(",\"SiteParTrajet\":{");
+
+        for (int i = 0; i < trajets.size(); i++) {
+            Trajet t = trajets.get(i);
+            json.append("\"").append(i).append("\":{"); // objet pour chaque trajet
+
+            // Liste des sites
+            json.append("\"sites\":[");
+            List<Site> sites = t.getSites();
+            for (int j = 0; j < sites.size(); j++) {
+                Site s = sites.get(j);
+                json.append("{\"Id\":").append(s.getId()).append("}");
+                if (j < sites.size() - 1) json.append(",");
+            }
+            json.append("]"); // fin du tableau sites
+
+            json.append("}"); // fin de l'objet trajet
+
+            if (i < trajets.size() - 1) json.append(","); // virgule entre trajets
+        }
+
+        json.append("}");
+
+
+
+
+        // -- Sites
+        json.append(",\"sites\":[");
+        boolean firstSite = true;
+        for (Site s : carte.getSites()) {
+            if (!firstSite) json.append(",");
+            firstSite = false;
+            Integer numLivraison = null;
+            List<LocalTime> heuresArriveesTrajets = null;
+            if (s instanceof Depot ) numLivraison = ((Depot) s).getNumLivraison();
+            else if (s instanceof Collecte ) numLivraison = ((Collecte) s).getNumLivraison();
+            else {
+                ((Entrepot) s).changeHeures(heuresArrivees);
+                heuresArriveesTrajets = ((Entrepot) s).getHeures();
+            }
+            try {
+                double lat = s.getLatitude();
+                double lng = s.getLongitude();
+                json.append(String.format(Locale.US,
+                    "{\"id\":%d,\"lat\":%f,\"lng\":%f,\"type\":\"%s\"",
+                    s.getId(), lat, lng, s.getTypeSite()));
+
+                if (s.getDepartHeure() != null) {
+                    json.append(String.format(",\"depart\":\"%s\"", s.getDepartHeure().toString()));
+                }
+                if (heuresArriveesTrajets == null  && s.getArriveeHeure() != null) {
+                    json.append(String.format(",\"arrivee\":\"%s\"", s.getArriveeHeure().toString()));
+                }
+                if (numLivraison != null) {
+                    json.append(String.format(",\"numLivraison\":%d", numLivraison));
+                }
+                if (s.getNumPassage() != null) {
+                    json.append(String.format(",\"numPassage\":%d", s.getNumPassage()));
+                }
+                if(!(heuresArriveesTrajets == null)){
+                    json.append(",\"heures\": [");
+                    for (int i = 0;i<heuresArriveesTrajets.size();++i){
+                        json.append("\""+ heuresArriveesTrajets.get(i).toString() + "\"");
+                        if(i<heuresArriveesTrajets.size()-1){
+                            json.append(",");
+                        }
+                    }
+                    json.append("]");
+                }
+                json.append("}");
+            } catch (Exception e) {
+                System.err.println("Erreur lors du traitement du site " + s.getId() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        json.append("]");
+        
+        // -- Sites Impactes 
+        json.append(",\"sitesImpactes\":[");
+        firstSite = true;
+        for (var s : sitesImpactes.keySet()) {
+            if (!firstSite) json.append(",");
+            firstSite = false;
+            var delay = sitesImpactes.get(s);
+            try {
+                json.append(String.format(Locale.US,
+                    "{\"id\":%d,\"delay\":\"%d\"}",
+                    s.getId(), delay));
+                
+            } catch (Exception e) {
+                System.err.println("Erreur lors du traitement du site " + s.getId() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+
+        }
+        json.append("]");
+        json.append("}");
+        return json.toString();
     }
     json.append("]");
 
@@ -282,14 +486,18 @@ public class CarteController {
         List<Troncon> troncons = carte.getTroncons();
 
         GrapheTotal gt = new GrapheTotal(troncons, noeuds, idEntrepot);
+        setGrapheTotal(gt);
         //gt.printGraphe();
         return gt;
     }
 
-    public void chercherCheminsMin(GrapheTotal gt, List<Site> sites){
+    public void chercherCheminsMin(List<Site> sites, Trajet trajet){
+        // System.out.println("ChercherCheminMin (Controller)");
         gt.RechercheDijkstra(sites);
-        GrapheLivraison gl = new GrapheLivraison(carte.getSites().size(), gt.getMapDistances());
+        // System.out.println("Fin recherche dijkstra");
+        GrapheLivraison gl = new GrapheLivraison(sites.size(), gt.getMapDistances());
         gl.setContrainteHashMap(gt.getContrainteHashMap());
+
         TSP tsp = new TSP2();
         tsp.chercheSolution(60000, gl);
 
@@ -298,9 +506,11 @@ public class CarteController {
             solution.add(gl.getIdFromIndex(tsp.getSolution(i)));
         }
         solution.add(solution.get(0));
+        //System.out.println("Fin creation solution : " + solution);
 
         // Reconstruction du chemin complet : vérifier que getCheminComplet ne renvoie pas null
         List<Integer> cheminComplet = gt.getCheminComplet(solution);
+        // System.out.println("Chemin Complet : " + cheminComplet);
         if (cheminComplet == null) {
             // Fournir un message utile pour le debug (indices, taille des maps, etc.)
             String msg = "Erreur: getCheminComplet a renvoyé null. Solution: " + solution
@@ -311,12 +521,57 @@ public class CarteController {
         }
 
         List<Long> cheminCompletConverti = gt.convertirCheminComplet(cheminComplet);
-        majTrajet(carte, gt, cheminCompletConverti, solution);
+        // System.out.println("cheminCompletConverti : " + cheminCompletConverti);
+        CarteUtils.majTrajet(carte, gt, cheminCompletConverti, solution, trajet);
     }
 
+    // Exécution d'une commande d'ajout
+    public void ajouterLivraison(Long idCollecte,Long idPrecCollecte, Long idDepot,Long idPrecDepot,Trajet trajet) {
+        Command alc = new AjouterLivraisonCommand(gt, idCollecte, idPrecCollecte, idDepot, idPrecDepot, trajet, carte);
+        history.add(alc);
+    }
 
-    public void majTrajet(Carte carte, GrapheTotal gt, List<Long> cheminComplet, List<Integer> solution){
-        carte.majTrajetDepuisChemin(gt,cheminComplet,solution,carte.getTrajets().get(0));
-        //System.out.println(carte.getTrajets().get(0));
+    // Exécution d'une commande de suppression
+    public void supprimerLivraison(Long idSite, String typeSite, Integer numLivraison) {
+        Trajet trajet = null;
+        for (var t : carte.getTrajets()) {
+            if (t.getSite(idSite) != null) {trajet = t; break;}
+        }
+        Collecte collecte;
+        Depot depot;
+        Long idSiteAssocie = carte.getSiteAssocie(numLivraison, idSite);
+        
+        if (Objects.equals(typeSite,"collecte")) {
+            collecte = (Collecte) carte.getSiteById(idSite) ;
+            depot = (Depot) carte.getSiteById(idSiteAssocie); 
+        }
+        else {
+            depot = (Depot) carte.getSiteById(idSite);
+            collecte = (Collecte) carte.getSiteById(idSiteAssocie);
+        }
+        
+        Command slc = new SupprimerLivraisonCommand(gt, collecte, depot, trajet, carte);
+        history.add(slc);   
+    }
+
+    // Undo / Redo
+    public void undo() { history.undo(); }
+
+    public void redo() { history.redo(); }
+
+    public void genererFeuillesdeRoute(){
+        for(Trajet trajet: this.getCarte().getTrajets()){
+            trajet.genererFeuilleDeRoute();
+        }
+    }
+
+    public void resetCarte() {
+        this.carte = new Carte();      // New empty map
+        this.history.clear(); // Reset undo/redo
+        this.config = new Configuration();   // Reset config if needed
+        this.gt = null; // reset graphe ou calcul si existait
+
+        System.out.println(">>> Carte réinitialisée.");
     }
 }
+

@@ -1,15 +1,22 @@
 package controller.state;
 
+
+import java.util.HashMap;
+import java.util.List;
+
 import controller.CarteController;
+
 
 public class Controller{
 	private State currentState;
 	private CarteController carteController;
+	
 
      // Instances associées avec chaque état possible du controlleur 
 	protected final InitialState initialState = new InitialState();
 	protected final CarteChargeState carteChargeState = new CarteChargeState();
 	protected final LivraisonChargeState livraisonChargeState = new LivraisonChargeState();
+	protected final LivreurAssigneState livreurAssigneState = new LivreurAssigneState();
 	protected final LivraisonCalculeState livraisonCalculeState = new LivraisonCalculeState();
 
     /**
@@ -19,6 +26,13 @@ public class Controller{
 	public Controller() {
 		currentState = initialState;
 		carteController = new CarteController();
+	}
+
+	/**
+	 * Getter pour l'état courant
+	 */
+	public State getCurrentState() {
+		return currentState;
 	}
 
     /**
@@ -33,22 +47,41 @@ public class Controller{
 	/**
 	 * Méthode pour charger la carte
 	 */
-	public void chargerCarte(String cheminFichier) {
-		currentState.chargerCarte(this, carteController, cheminFichier);
+	public boolean chargerCarte(String cheminFichier) {
+		return currentState.chargerCarte(this, carteController, cheminFichier);
 	}
 
 	/**
 	 *Méthode pour charger une livraison
 	 */
-	public void chargerLivraison(String cheminFichier) {
-		currentState.chargerLivraison(this, carteController, cheminFichier);
+	public boolean chargerLivraison(String cheminFichier) {
+		return currentState.chargerLivraison(this, carteController, cheminFichier);
 	}
 
     /**
 	 * Méthode pour calculer une livraison
 	 */
     public void calculerLivraison() {
-        currentState.calculerLivraison(this);
+        currentState.calculerLivraison(this, carteController);
+    }
+
+	/**
+	 * Méthode pour assigner les livraisons aux livreurs
+	 * VerifAssignation : temp, juste pour pouvoir tester une fois (et une seule avant de devoir recompiler)
+	 */
+	public void assignerLivreur(HashMap<String, List<String>> assignations){
+			currentState.assignerLivreur(this, carteController, assignations);
+	}
+
+	public void ajouterLivraison(String idCollecte,String idPrecCollecte,String idDepot,String idPrecDepot,String numTrajet){
+		currentState.ajouterLivraison(this, carteController,idCollecte,idPrecCollecte,idDepot,idPrecDepot,numTrajet );
+	}
+
+	/**
+	 * Méthode pour générer les feuilles de routes
+	 */
+    public void genererFeuillesdeRoute() {
+        currentState.genererFeuillesdeRoute(this, carteController);
     }
 
 	/**
@@ -58,7 +91,23 @@ public class Controller{
         currentState.changerLivraison(this);
     }
 
-	 public String getCarteJSON() {
+	public void supprimerLivraison(Long idSite, String typeSite, Integer numLivraison) {
+		carteController.supprimerLivraison(idSite, typeSite, numLivraison);
+	}
+
+	public String getCarteJSON() {
 		return carteController.getCarteJSON();
-	 }
+	}
+
+	public void undoAction() {
+		carteController.undo();
+	}
+
+	public void redoAction() {
+		carteController.redo();
+	}
+
+	public void resetCarte() {
+		carteController.resetCarte();
+	}
 }

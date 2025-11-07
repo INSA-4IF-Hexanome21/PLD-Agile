@@ -90,6 +90,15 @@ class ApplicationController {
         }
     }
 
+     /**
+     * Marque la carte comme à l'état initial
+     */
+    onInitial() {
+        this.carteChargee = false;
+        this.livraisonChargee = false;
+        this.setState(AppState.INITIAL);
+    }
+
     /**
      * Marque la carte comme chargée
      */
@@ -97,8 +106,31 @@ class ApplicationController {
         console.log('✅ [Controller] Carte chargée');
         this.carteChargee = true;
         this.livraisonChargee = false;
-        this.livraisonCalculee = false;
         this.setState(AppState.CARTE_CHARGEE);
+        const fileAreas = document.getElementsByClassName('file-area');
+        if (fileAreas.length > 1) {
+            const livraisonInput = fileAreas[1].querySelector('input[type="file"]');
+            const livraisonDummy = fileAreas[1].querySelector('.file-dummy');
+            if (livraisonInput) {
+                // Réinitialiser la valeur de l'input
+                livraisonInput.value = '';
+                
+                // Réinitialiser l'affichage visuel
+                if (livraisonDummy) {
+                    const defaultSpan = livraisonDummy.querySelector('.default');
+                    const selectedSpan = livraisonDummy.querySelector('.selected');
+                    if (defaultSpan) defaultSpan.style.display = '';
+                    if (selectedSpan) selectedSpan.style.display = 'none';
+                }
+
+                const statusDemande = document.getElementById('status-demande');
+                if (statusDemande) {
+                    statusDemande.classList.remove('success');
+                }
+
+                document.getElementById("deliverer").setAttribute("style","display : none;");
+            }
+        }
     }
 
     /**
@@ -112,6 +144,9 @@ class ApplicationController {
         console.log('✅ [Controller] Livraison chargée');
         this.livraisonChargee = true;
         this.livraisonCalculee = false;
+        document.getElementById("deliverer").setAttribute("style","display : block;");
+        resetAssignations()
+        this.livraison
         this.setState(AppState.LIVRAISON_CHARGEE);
     }
 
@@ -125,6 +160,8 @@ class ApplicationController {
         }
         console.log('✅ [Controller] Livraison calculée');
         this.livraisonCalculee = true;
+        console.log(document.getElementById("deliverer"));
+        document.getElementById("deliverer").setAttribute("style","display : none;");
         this.setState(AppState.LIVRAISON_CALCULEE);
     }
 

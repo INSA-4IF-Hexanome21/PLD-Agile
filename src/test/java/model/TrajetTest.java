@@ -5,6 +5,9 @@ import static org.junit.Assert.*;
 import java.time.LocalTime;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.Arrays;
+
 public class TrajetTest {
 
     @Test
@@ -18,8 +21,8 @@ public class TrajetTest {
         assertTrue(trajet.getSites().isEmpty());
         assertNotNull(trajet.getTroncons());
         assertTrue(trajet.getTroncons().isEmpty());
-        assertNotNull(trajet.getSitesNonAccessibles());
-        assertTrue(trajet.getSitesNonAccessibles().isEmpty());
+        assertNotNull(trajet.getSitesImpactes());
+        assertTrue(trajet.getSitesImpactes().isEmpty());
     }
 
     @Test
@@ -28,6 +31,46 @@ public class TrajetTest {
         assertNull(trajet.getLivreur());
         assertEquals(LocalTime.of(8, 0), trajet.getHeureDebut());
         assertNull(trajet.getHeureFin());
+    }
+
+    @Test
+    public void GettersSettersEtToString_fonctionnent() {
+        Trajet trajet1 = new Trajet();
+        Trajet trajet2 = new Trajet();
+        Livreur livreur = new Livreur(0, "Petit", "Bobert");
+        Noeud n1 = new Noeud(1L, 1f, 1f);
+        Noeud n2 = new Noeud(2L, 2f, 2f);
+        Troncon a = new Troncon("Rue A", 10f, n1, n2);
+        Troncon b = new Troncon("Rue B", 20f, n2, n1);
+        Troncon c = new Troncon("Rue B", 10f, n1, n2);
+        List<Troncon> troncons = Arrays.asList(a, b, c);
+
+
+        trajet1.setLivreur(livreur);
+        trajet1.setdureeTrajet(2.5f);
+        trajet1.setTroncons(troncons);
+        String s1 = trajet1.toString();
+        String s2 = trajet2.toString();
+
+
+        
+        assertEquals(2.5f, trajet1.getdureeTrajet(), 0.001f);
+        assertTrue(s1.contains("Livreur: Livreur n°0"));
+        assertTrue(s1.contains("Nom : Petit"));
+        assertTrue(s1.contains("Prénom : Bobert"));
+        assertTrue(s1.contains("Heure de début: 08:00"));
+        assertTrue(s1.contains("Heure de fin: 10:30"));
+        assertTrue(s1.contains("Durée du trajet: 2,50 heures") || s1.contains("Durée du trajet: 2.50 heures"));
+        assertTrue(s1.contains("Nombre de sites : 0"));
+        assertTrue(s1.contains("[Troncon{nomRue='Rue A', longueur=10.0, origine=1, destination=2}, Troncon{nomRue='Rue B', longueur=20.0, origine=2, destination=1}, Troncon{nomRue='Rue B', longueur=10.0, origine=1, destination=2}]"));
+        
+        assertTrue(s2.contains("Livreur: Non assigné"));
+        assertTrue(s2.contains("Heure de début: 08:00"));
+        assertTrue(s2.contains("Heure de fin: Non calculée"));
+        assertTrue(s2.contains("Durée du trajet: Non calculée"));
+        assertTrue(s2.contains("Nombre de sites : 0"));
+        assertTrue(s2.contains("[]"));
+        
     }
 
 }

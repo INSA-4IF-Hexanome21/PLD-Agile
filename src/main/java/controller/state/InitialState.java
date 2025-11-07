@@ -1,26 +1,34 @@
 package controller.state;
 
+import java.util.HashMap;
+import java.util.List;
+
 import controller.CarteController;
 
 public class InitialState implements State {
     // Etat initial - seule action possible: charger une carte
     
     @Override
-    public void chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
+    public boolean chargerCarte(Controller c, CarteController carteC, String cheminFichier) {
         System.out.println(">>> [InitialState] Chargement de la carte...");
-        carteC.chargerCarteDepuisXML(cheminFichier);
-        c.setCurrentState(c.carteChargeState);
-        System.out.println(">>> [InitialState] Transition vers CarteChargeState");
+        boolean chargementCarteReussi = carteC.chargerCarteDepuisXML(cheminFichier);
+        if (chargementCarteReussi == true){
+            c.setCurrentState(c.carteChargeState);
+            System.out.println(">>> [InitialState] Transition vers CarteChargeState");
+            return true;
+        } else {
+            return false;
+        }
     }
     
     @Override
-    public void chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
+    public boolean chargerLivraison(Controller c, CarteController carteC, String cheminFichier) {
         System.err.println(">>> [InitialState] ERREUR: Impossible de charger une livraison sans carte!");
         throw new IllegalStateException("Veuillez d'abord charger une carte");
     }
     
     @Override
-    public void calculerLivraison(Controller c) {
+    public void calculerLivraison(Controller c, CarteController carteC) {
         System.err.println(">>> [InitialState] ERREUR: Impossible de calculer sans carte et livraison!");
         throw new IllegalStateException("Veuillez d'abord charger une carte et une livraison");
     }
@@ -30,4 +38,17 @@ public class InitialState implements State {
         System.err.println(">>> [InitialState] ERREUR: Impossible de changer une livraison sans calcul!");
         throw new IllegalStateException("Veuillez d'abord calculer une livraison");
     }
+
+    @Override
+    public void assignerLivreur(Controller c, CarteController carteC, HashMap<String, List<String>> assignations) {
+        System.err.println(">>> [InitialState] ERREUR: Impossible de changer une livraison sans calcul!");
+        throw new IllegalStateException("Veuillez d'abord charger une carte et une livraison");
+    }
+
+    @Override
+    public void genererFeuillesdeRoute(Controller c, CarteController carteC) {
+        System.err.println(">>> [InitialState] ERREUR: Impossible de générer des feuilles de route sans calcul!");
+        throw new IllegalStateException("Veuillez d'abord calculer une livraison");
+    }
+
 }
