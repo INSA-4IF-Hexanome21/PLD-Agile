@@ -790,6 +790,7 @@ function terminerAjout() {
     
     if (sitePrecedent && sitePrecedent.options.numLivraison != null) {
       numeroTrajet = parseInt(sitePrecedent.options.numLivraison);
+      
     }
   }
   
@@ -822,6 +823,7 @@ Voulez-vous enregistrer ces modifications ?
   `;
   
   if (confirm(recap)) {
+    numeroTrajet = trajetChoisi.key
     envoyerNouvellesLivraisons(numeroTrajet);
   }
 }

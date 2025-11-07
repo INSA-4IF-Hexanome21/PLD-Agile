@@ -82,6 +82,6 @@ public class LivraisonCalculeState implements State {
 
     @Override
     public void ajouterLivraison(Controller c, CarteController carteC, String idCollecte,String idPrecCollecte,String idDepot,String idPrecDepot,String numTrajet) {
-        carteC.ajouterLivraison(Long.valueOf(idCollecte), Long.valueOf(idPrecCollecte), Long.valueOf(idDepot), Long.valueOf(idPrecDepot), carteC.getCarte().getTrajets().get(Integer.valueOf(numTrajet)-1));
+        carteC.ajouterLivraison(Long.valueOf(idCollecte), Long.valueOf(idPrecCollecte), Long.valueOf(idDepot), Long.valueOf(idPrecDepot), carteC.getCarte().getTrajets().get(Integer.valueOf(numTrajet)));
     }
 }
