@@ -4,11 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Entrepot extends Site {
-    
-    // Constructeur minimal (lat/lng null)
-    public Entrepot(long id) {
-        super(id); // lat/lng null
-    }
 
     private List<LocalTime> heuresArriveesTrajets;
     

@@ -458,24 +458,6 @@ public class CarteController {
         json.append("}");
         return json.toString();
     }
-    json.append("]");
-
-    // -- Trajets (concaténation de tous les troncons de tous les trajets)
-    json.append(",\"trajets\":[");
-    boolean firstTrajetEntry = true;
-    for (Trajet t : carte.getTrajets()) {
-        for (Troncon tr : t.getTroncons()) {
-            if (!firstTrajetEntry) json.append(",");
-            firstTrajetEntry = false;
-            json.append(String.format("{\"from\":%d,\"to\":%d}",
-                    tr.getOrigine().getId(), tr.getDestination().getId()));
-        }
-    }
-    json.append("]");
-
-    json.append("}");
-    return json.toString();
-}
 
     public Carte getCarte() {
         return carte;
