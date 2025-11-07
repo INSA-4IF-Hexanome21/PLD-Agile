@@ -1,0 +1,348 @@
+/* --- ajouter.css --- */
+/* Styles pour le mode ajout de livraisons - Palette SPIE */
+
+.instruction-overlay {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(22, 105, 122, 0.25);
+  padding: 0;
+  min-width: 340px;
+  max-width: 420px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  z-index: 1000;
+  animation: slideInFromLeft 0.3s ease-out;
+  border: 2px solid var(--spie-medium-teal);
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.instruction-header {
+  background: linear-gradient(135deg, #16697A 0%, #489FB5 100%);
+  color: white;
+  padding: 14px 18px;
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.instruction-header strong {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.btn-cancel {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  font-size: 18px;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-weight: bold;
+}
+
+.btn-cancel:hover {
+  background: rgba(239, 65, 54, 0.9);
+  transform: scale(1.1);
+}
+
+.btn-cancel:active {
+  transform: scale(0.95);
+}
+
+.instruction-body {
+  padding: 18px;
+  background: white;
+}
+
+.etape-numero {
+  font-size: 15px;
+  color: #16697A;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#etape-icon {
+  font-size: 20px;
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+#instruction-texte {
+  font-size: 15px;
+  color: #2C3E50;
+  margin: 0 0 14px 0;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #ECF0F1;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 14px;
+  border: 1px solid #E0E0E0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #16697A 0%, #489FB5 50%, #82C0CC 100%);
+  border-radius: 5px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(22, 105, 122, 0.3);
+}
+
+.selections-recap {
+  padding: 14px 18px;
+  background: #EDE7E3;
+  border-radius: 0 0 8px 8px;
+  border-top: 2px solid #ECF0F1;
+}
+
+.selections-recap small {
+  color: #16697A;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.recap-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0 0;
+}
+
+.recap-list li {
+  font-size: 13px;
+  color: #2C3E50;
+  padding: 6px 0;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.recap-list li code {
+  background: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #16697A;
+  border: 1px solid #ECF0F1;
+}
+
+/* Cursor special durante el modo ajout */
+.leaflet-container.mode-ajout-actif {
+  cursor: crosshair !important;
+}
+
+.leaflet-container.mode-ajout-actif * {
+  cursor: crosshair !important;
+}
+
+.leaflet-container.mode-ajout-actif .leaflet-marker-icon,
+.leaflet-container.mode-ajout-actif .leaflet-interactive {
+  cursor: pointer !important;
+}
+
+/* Highlight al hover sobre marcadores en modo ajout */
+.mode-ajout-actif .leaflet-interactive:hover {
+  filter: brightness(1.3) drop-shadow(0 0 8px #FFA62B);
+  transition: all 0.2s;
+  transform: scale(1.1);
+}
+
+/* Animación de pulse para los nodos en modo ajout */
+@keyframes pulse-highlight {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.2); 
+    opacity: 0.8;
+  }
+}
+
+.mode-ajout-actif .marqueur-noeud {
+  animation: pulse-highlight 1.2s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(255, 166, 43, 0.6) !important;
+}
+
+/* Efecto de brillo en elementos interactivos */
+.mode-ajout-actif .leaflet-interactive {
+  transition: all 0.3s ease;
+}
+
+.mode-ajout-actif .leaflet-interactive:hover {
+  filter: brightness(1.25) saturate(1.3);
+}
+
+/* Toast/notification styles */
+.ajout-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #16697A 0%, #489FB5 100%);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(22, 105, 122, 0.4);
+  z-index: 10000;
+  animation: slideInFromRight 0.3s ease-out;
+  font-weight: 600;
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Feedback visual al seleccionar */
+@keyframes selection-pulse {
+  0% { 
+    box-shadow: 0 0 0 0 rgba(255, 166, 43, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(255, 166, 43, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 166, 43, 0);
+  }
+}
+
+/* Popups personalizados para el modo ajout */
+.leaflet-popup.ajout-popup .leaflet-popup-content-wrapper {
+  background: linear-gradient(135deg, #16697A 0%, #489FB5 100%);
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(22, 105, 122, 0.4);
+}
+
+.leaflet-popup.ajout-popup .leaflet-popup-tip {
+  background: #489FB5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .instruction-overlay {
+    min-width: 280px;
+    max-width: 90vw;
+  }
+  
+  .instruction-header strong {
+    font-size: 15px;
+  }
+  
+  #instruction-texte {
+    font-size: 14px;
+  }
+  
+  .etape-numero {
+    font-size: 14px;
+  }
+}
+
+/* Asegurar que los nodos sean clickeables en modo ajout */
+.mode-ajout-actif .marqueur-noeud {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+}
+
+.mode-ajout-actif .leaflet-marker-icon {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Highlight más visible para nodos */
+@keyframes pulse-highlight {
+  0%, 100% { 
+    transform: scale(1); 
+    box-shadow: 0 0 10px #FFA62B;
+  }
+  50% { 
+    transform: scale(1.3); 
+    box-shadow: 0 0 20px #FFA62B, 0 0 30px #FFA62B;
+  }
+}
+
+/* Conteneur des boutons de trajets en ligne */
+.trajets-buttons-container {
+  display: flex;
+  flex-wrap: wrap;       /* Permet de passer à la ligne si trop de boutons */
+  gap: 6px;              /* Espacement horizontal et vertical entre boutons */
+  max-width: 100%;       /* Limite la largeur totale */
+  padding: 4px;
+  overflow-x: auto;      /* Scroll horizontal si trop de boutons */
+}
+
+/* Boutons/cases blanches compactes */
+.btn-trajet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;       /* Largeur minimale */
+  height: 28px;          /* Hauteur fixe */
+  padding: 0 8px;        /* Petit padding horizontal */
+  background: #ffffff;   /* Fond blanc */
+  color: var(--spie-dark-teal);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(0,0,0,0.1);  /* Bord fin */
+  border-radius: 6px;    /* Bords arrondis */
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Hover */
+.btn-trajet:hover {
+  background: var(--spie-light-teal);
+  color: var(--spie-dark-teal);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(72,159,181,0.3);
+}
+
+/* Active / sélectionné */
+.btn-trajet.active {
+  background: var(--spie-medium-teal);
+  color: #fff;
+  border-color: var(--spie-medium-teal);
+  box-shadow: 0 2px 6px rgba(72,159,181,0.4);
+}
