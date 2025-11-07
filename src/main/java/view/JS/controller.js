@@ -21,7 +21,6 @@ class ApplicationController {
         this.livraisonCalculee = false;
         this.listeners = [];
         
-        console.log('🎮 [Controller] Initialisation en état:', this.currentState);
     }
 
     /**
@@ -37,7 +36,6 @@ class ApplicationController {
      */
     notifyStateChange() {
         const stateInfo = this.getStateInfo();
-        console.log('📢 [Controller] Notification changement d\'état:', stateInfo);
         this.listeners.forEach(listener => listener(stateInfo));
     }
 
@@ -48,7 +46,6 @@ class ApplicationController {
     setState(newState) {
         const oldState = this.currentState;
         this.currentState = newState;
-        console.log(`🔄 [Controller] Transition: ${oldState} → ${newState}`);
         this.notifyStateChange();
     }
 
@@ -104,7 +101,6 @@ class ApplicationController {
      * Marque la carte comme chargée
      */
     onCarteLoaded() {
-        console.log('✅ [Controller] Carte chargée');
         this.carteChargee = true;
         this.carteChargee = true;
         this.livraisonChargee = false;
@@ -119,7 +115,6 @@ class ApplicationController {
             console.error('❌ [Controller] Impossible de charger une livraison sans carte!');
             throw new Error('Veuillez d\'abord charger un plan de distribution');
         }
-        console.log('✅ [Controller] Livraison chargée');
         this.livraisonChargee = true;
         this.livraisonCalculee = false;
         document.getElementById("deliverer").setAttribute("style","display : block;");
@@ -136,9 +131,7 @@ class ApplicationController {
             console.error('❌ [Controller] Impossible de calculer sans carte et livraison!');
             throw new Error('Veuillez d\'abord charger un plan et une livraison');
         }
-        console.log('✅ [Controller] Livraison calculée');
         this.livraisonCalculee = true;
-        console.log(document.getElementById("deliverer"));
         document.getElementById("deliverer").setAttribute("style","display : none;");
         this.setState(AppState.LIVRAISON_CALCULEE);
     }
@@ -147,7 +140,6 @@ class ApplicationController {
      * Réinitialise l'état (retour au début)
      */
     reset() {
-        console.log('🔄 [Controller] Réinitialisation');
         this.carteChargee = false;
         this.livraisonChargee = false;
         this.livraisonCalculee = false;

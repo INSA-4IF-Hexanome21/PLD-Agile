@@ -126,7 +126,6 @@ function creerInstructionOverlay() {
             lignes: sitesParTrajet[trajetKey]?.lignes || [],
             couleur: sitesParTrajet[trajetKey]?.couleur || '#FFA62B'
           };
-          console.log('🚚 Trajet choisi:', trajetChoisi);
 
           // Supprimer la div contenant les boutons
           const container = div.querySelector('.trajet-buttons-container');
@@ -175,7 +174,6 @@ function creerInstructionOverlay() {
     const btnCancel = document.getElementById('annuler-ajout');
     if (btnCancel) {
       btnCancel.addEventListener('click', annulerAjout);
-      console.log('✅ Bouton annuler attaché');
     }
   }, 100);
 }
@@ -285,7 +283,6 @@ function highlightAvailableMarkers() {
   
   if (!Array.isArray(targetMarkers)) return;
   
-  console.log(`🎨 Highlighting ${targetMarkers.length} ${etape.type}s pour l'étape ${etape.numero}`);
   
 
   Object.keys(visibilityState).forEach(k => visibilityState[k] = false);
@@ -389,7 +386,6 @@ function highlightAvailableMarkers() {
             marker.on('click', function(e) {
               L.DomEvent.stopPropagation(e);
               L.DomEvent.preventDefault(e);
-              console.log('🟡 Nœud HIGHLIGHT clicked:', marker.options.siteId);
               if (modeAjoutActif) {
                 gererClicMarqueur(marker, 'noeud');
               }
@@ -461,7 +457,6 @@ function highlightAvailableMarkers() {
     highlightedMarkers.push(marker);
   });
   
-  console.log(`✅ ${highlightedMarkers.length} markers highlighted`);
 }
 
 /**
@@ -533,12 +528,6 @@ function clearHighlights() {
  * Gère le clic sur un marqueur pendant le mode ajout
  */
 function gererClicMarqueur(marker, type) {
-  console.log('🎯 gererClicMarqueur appelé:', { 
-    type, 
-    modeActif: modeAjoutActif, 
-    etapeActuelle: etapeAjout,
-    markerId: marker.options.siteId 
-  });
   
   if (!modeAjoutActif) {
     console.warn('⚠️ Mode ajout non actif!');
@@ -547,7 +536,6 @@ function gererClicMarqueur(marker, type) {
   
   const etape = ETAPES[etapeAjout];
   
-  console.log('🖱️ Click detectado:', { type, etapeType: etape.type, marker });
   
   
   // Vérifier que le type correspond à l'étape
@@ -625,9 +613,7 @@ function demarrerAjoutLivraison() {
     return;
   }
   
-  console.log('🚀 Démarrage mode ajout...');
-  console.log('Sites disponibles:', siteMarkers ? siteMarkers.length : 0);
-  console.log('Nœuds disponibles:', noeudMarkers ? noeudMarkers.length : 0);
+
   
 
   if (!noeudMarkers || noeudMarkers.length === 0) {
@@ -657,16 +643,13 @@ function demarrerAjoutLivraison() {
   activerEcouteursMarqueurs();
   highlightAvailableMarkers();
   
-  console.log('✅ Mode ajout activé');
 }
 
 /**
  * Active les écouteurs de clics sur tous les marqueurs
  */
 function activerEcouteursMarqueurs() {
-  console.log('🎯 Activation des écouteurs...');
-  console.log('Sites disponibles:', siteMarkers ? siteMarkers.length : 0);
-  console.log('Nœuds disponibles:', noeudMarkers ? noeudMarkers.length : 0);
+  
   
   // Sites
   if (Array.isArray(siteMarkers)) {
@@ -684,7 +667,6 @@ function activerEcouteursMarqueurs() {
         // add nouvau listener
         marker.on('click', function(e) {
           L.DomEvent.stopPropagation(e);
-          console.log('🔴 Site clicked:', marker.options.siteId, 'modeAjout:', modeAjoutActif);
           
           if (modeAjoutActif) {
             gererClicMarqueur(marker, 'site');
@@ -698,7 +680,6 @@ function activerEcouteursMarqueurs() {
         marker._ajoutHandlerAttached = true;
       }
     });
-    console.log(`✅ ${siteMarkers.length} sites activés`);
   }
   
   // Nœuds
@@ -723,7 +704,6 @@ function activerEcouteursMarqueurs() {
         L.DomEvent.stopPropagation(e);
         L.DomEvent.preventDefault(e);
         
-        console.log('🔵 Nœud clicked:', marker.options.siteId, 'modeAjout:', modeAjoutActif);
         
         if (modeAjoutActif) {
           gererClicMarqueur(marker, 'noeud');
@@ -739,11 +719,9 @@ function activerEcouteursMarqueurs() {
       marker.on('mousedown', function(e) {
         if (modeAjoutActif) {
           L.DomEvent.stopPropagation(e);
-          console.log('🔵 Nœud mousedown:', marker.options.siteId);
         }
       });
     });
-    console.log(`✅ ${noeudMarkers.length} nœuds activés`);
   } else {
     console.warn("⚠️ Aucun nœud marker disponible");
   }
@@ -753,7 +731,6 @@ function activerEcouteursMarqueurs() {
  * Désactive les écouteurs de clics
  */
 function desactiverEcouteursMarqueurs() {
-  console.log('🔇 Désactivation des écouteurs...');
   
   if (Array.isArray(siteMarkers)) {
     siteMarkers.forEach(marker => {
@@ -785,7 +762,6 @@ function desactiverEcouteursMarqueurs() {
  * Termine le processus d'ajout
  */
 function terminerAjout() {
-  console.log('🎉 Terminer ajout - Données:', selectionData);
   
   modeAjoutActif = false;
   
@@ -814,7 +790,6 @@ function terminerAjout() {
     
     if (sitePrecedent && sitePrecedent.options.numLivraison != null) {
       numeroTrajet = parseInt(sitePrecedent.options.numLivraison);
-      console.log('📍 Trajet détecté:', numeroTrajet);
     }
   }
   
@@ -848,8 +823,6 @@ Voulez-vous enregistrer ces modifications ?
   
   if (confirm(recap)) {
     envoyerNouvellesLivraisons(numeroTrajet);
-  } else {
-    console.log('Ajout annulé par l\'utilisateur');
   }
 }
 
@@ -882,14 +855,12 @@ function annulerAjout() {
   updateVisibility();
   mettreAJourTrajetsFlottant();
   
-  console.log('Mode ajout annulé');
 }
 
 /**
  * Envoie les nouvelles livraisons au serveur
  */
 function envoyerNouvellesLivraisons(numeroTrajet) {
-  console.log('📤 Envoi des nouvelles livraisons...', selectionData);
   
   // Préparer le payload selon le format requis
   const payload = {
@@ -900,8 +871,6 @@ function envoyerNouvellesLivraisons(numeroTrajet) {
     Trajet: numeroTrajet
   };
   
-  console.log('📦 Payload préparé:', payload);
-  console.log('📦 Payload JSON:', JSON.stringify(payload, null, 2));
   
 //   // POUR L'INSTANT: Juste afficher dans la console
 //   alert(`✅ Données prêtes à envoyer !
@@ -922,14 +891,11 @@ function envoyerNouvellesLivraisons(numeroTrajet) {
     return res.json();
   })
   .then(data => {
-    console.log('✅ Livraisons ajoutées avec succès', data);
-    alert('✅ Livraisons ajoutées avec succès !');
     
     // Recharger la carte
     fetch("/api/carte")
       .then(res => res.json())
       .then(donnees => {
-        console.log('Données reçues:', donnees);
         donneesGlobales = donnees;
         afficherDonneesSurCarte(donnees);
         configurerControlesVisibilite();
@@ -984,7 +950,6 @@ function griserTousLesElementsCliquables() {
       if ('disabled' in el) el.disabled = true;
   });
 
-  console.log('🩶 Tous les éléments cliquables ont été désactivés sauf overlay et zoom. Undo/Redo est caché.');
 }
 
 
@@ -1054,6 +1019,5 @@ function restaurerElementsCliquables() {
         });
     });
 
-    console.log('🎨 Tous les éléments ont retrouvé leur état d’origine, y compris Undo/Redo.');
 }
 

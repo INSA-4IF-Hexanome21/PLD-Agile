@@ -5,7 +5,6 @@ let assignationsState = {}; // { livreurId: [livraisonId, ...] }
  * Initialise le système d'assignation
  */
 function assignationLivraison() {
-  console.log('🚚 Setup assignation livreurs...');
   
   const form = document.getElementById('form-livreurs');
   if (!form) {
@@ -40,7 +39,6 @@ function envoyerAssignations() {
           return;
       }
 
-      console.log('✅ Assignations envoyées:', data);
       document.getElementById('envoyer-assignations').style.display = 'none';
   })
   .catch(err => {
@@ -70,7 +68,6 @@ function extraerYMostrarLivraisons(sites) {
   }
   
 
-  console.log('📦 Extrayendo livraisons de sites...', sites);
   
   const livraisonsMap = new Map();
   
@@ -94,13 +91,11 @@ function extraerYMostrarLivraisons(sites) {
   livraisonsData = Array.from(livraisonsMap.values())
     .filter(liv => liv.collecte && liv.depot);
   
-  console.log('✅ Livraisons encontradas:', livraisonsData);
   mostrarLivraisonsDisponibles(livraisonsData);
 }
 
 function lancerCalculTimeout(){
     lancerCalcul();
-    console.log("LANCERCALCULTIMEOUT");
     chargerComposantPrincipal('/components/Map.html');
 }
 
@@ -257,7 +252,6 @@ function crearZoneLivreur(numero) {
   });
   
   dropzone.addEventListener('drop', (e) => {
-    console.log(e);
     e.preventDefault();
     dropzone.classList.remove('dragover');
     
@@ -265,7 +259,6 @@ function crearZoneLivreur(numero) {
     const draggedEl = document.querySelector(`[data-livraison-id="${livraisonId}"]`);
     
     if (draggedEl) {
-      console.log(draggedEl);
       // Quitar empty state si existe
       const emptyState = dropzone.querySelector('.empty-state');
       if (emptyState) emptyState.remove();
@@ -329,7 +322,6 @@ function actualizarContadorLivreur(livreurId) {
  * Envia la asignación al backend
  */
 function assignerLivraisonAuLivreur(livraisonId, livreurId) {
-  console.log(`📮 Assignant L${livraisonId} → Livreur ${livreurId}`);
   
   fetch('/api/assigner', {
     method: 'POST',
@@ -337,7 +329,6 @@ function assignerLivraisonAuLivreur(livraisonId, livreurId) {
     body: JSON.stringify({ livraisonId, livreurId })
   })
   .then(res => res.json())
-  .then(data => console.log('✅ Assigné:', data))
   .catch(err => console.error('❌ Erreur assignation:', err));
 }
 
@@ -369,7 +360,6 @@ function toutesLivraisonsAssignees() {
   Object.values(assignationsState).forEach(arr => arr.forEach(id => assignedIds.add(id))); 
   const allAssigned = livraisonsData.every(liv => assignedIds.has(liv.id)); // Verifier sils sont tous dans le set
 
-  console.log('🔎 Toutes les livraisons assignées ?', allAssigned);
   return allAssigned;
 }
 
@@ -378,7 +368,6 @@ function toutesLivraisonsAssignees() {
  */
 function resetAssignations(nouvellesDonneesSites = null) {
   CLICK_DEF = false;
-  console.log('🔄 Réinitialisation des assignations...');
 
   // Reset des variables globales
   livraisonsData = [];
@@ -401,7 +390,6 @@ function resetAssignations(nouvellesDonneesSites = null) {
   // Si il y'a nouevaus données → reconstruire l'interface
   const sites = nouvellesDonneesSites || (donneesGlobales && donneesGlobales.sites);
   if (sites) {
-    console.log('🆕 Chargement de nouvelles livraisons...');
     extraerYMostrarLivraisons(sites);
   } else {
     console.warn('Aucune donnée de sites disponible pour le reset.');
