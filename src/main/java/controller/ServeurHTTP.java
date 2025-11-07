@@ -357,7 +357,105 @@ public class ServeurHTTP {
         }
     });
 
+    serveur.createContext("/api/ajouter-livraison", exchange -> {
+        if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            try {
+                byte[] bytes = exchange.getRequestBody().readAllBytes();
+                String body = new String(bytes, "UTF-8").trim();
+                System.out.println("📦 Nouvelle livraison reçue:");
+                System.out.println(body);
 
+                // Parse simple JSON-like body (accepte clés sans guillemets aussi)
+                Map<String, String> data = new HashMap<>();
+                if (body.startsWith("{") && body.endsWith("}")) {
+                    String inner = body.substring(1, body.length() - 1).trim();
+                    String[] entries = inner.split(",");
+                    for (String entry : entries) {
+                        String[] kv = entry.split(":", 2);
+                        if (kv.length == 2) {
+                            String key = kv[0].trim().replaceAll("^\"|\"$|^'|'$", "");
+                            String value = kv[1].trim();
+                            value = value.replaceAll("^\\[|\\]$", "").replaceAll("^\"|\"$|^'|'$", "").trim();
+                            data.put(key, value);
+                        }
+                    }
+                } else {
+                    // fallback on essaye de parser lignes key: value
+                    String[] lines = body.split("\\r?\\n");
+                    for (String line : lines) {
+                        String[] kv = line.split(":", 2);
+                        if (kv.length == 2) {
+                            String key = kv[0].trim().replaceAll("^\"|\"$|^'|'$", "");
+                            String value = kv[1].trim().replaceAll("^\"|\"$|^'|'$", "");
+                            data.put(key, value);
+                        }
+                    }
+                }
+
+                String idCollecte = data.get("idCollecte");
+                String idPrecCollecte = data.get("idPrecCollecte");
+                String idDepot = data.get("idDepot");
+                String idPrecDepot = data.get("idPrecDepot");
+                String trajet = data.get("Trajet"); 
+
+                System.out.println("Parsed livraison:");
+                System.out.println("  idCollecte = " + idCollecte);
+                System.out.println("  idPrecCollecte = " + idPrecCollecte);
+                System.out.println("  idDepot = " + idDepot);
+                System.out.println("  idPrecDepot = " + idPrecDepot);
+                System.out.println("  Trajet = " + trajet);
+
+                // Le gars, ici vous pouvez appeler le controller pour créer/ajouter la livraison.
+                controller.ajouterLivraison(idCollecte,idPrecCollecte,idDepot,idPrecDepot,trajet);
+                // Ici on construit l'objet JSON de retour avec les valeurs parsees
+                StringBuilder sb = new StringBuilder();
+                sb.append("{");
+                boolean first = true;
+                for (Map.Entry<String, String> e : data.entrySet()) {
+                    if (!first) sb.append(",");
+                    first = false;
+                    String k = e.getKey();
+                    String v = e.getValue();
+                    // échapper valeur
+                    String esc = v == null ? "" : v.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
+                    // si la valeur est un entier pur on la renvoie sans guillemets, sinon en string
+                    if (esc.matches("^-?\\d+$")) {
+                        sb.append("\"").append(k).append("\":").append(esc);
+                    } else if (esc.isEmpty()) {
+                        sb.append("\"").append(k).append("\":\"\"");
+                    } else {
+                        sb.append("\"").append(k).append("\":\"").append(esc).append("\"");
+                    }
+                }
+                sb.append("}");
+
+                String response = "{\"status\":\"ok\",\"message\":\"Livraison ajoutée\",\"data\":" + sb.toString() + "}";
+                byte[] responseBytes = response.getBytes("UTF-8");
+
+                exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                exchange.sendResponseHeaders(200, responseBytes.length);
+                exchange.getResponseBody().write(responseBytes);
+                exchange.close();
+
+            } catch (Exception e) {
+                System.err.println("Erreur ajout livraison: " + e.getMessage());
+                e.printStackTrace();
+                String errorResponse = "{\"status\":\"error\",\"message\":\"" + e.getMessage().replace("\"", "'") + "\"}";
+                try {
+                    byte[] errorBytes = errorResponse.getBytes("UTF-8");
+                    exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+                    exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                    exchange.sendResponseHeaders(500, errorBytes.length);
+                    exchange.getResponseBody().write(errorBytes);
+                } catch (IOException ignored) {}
+                exchange.close();
+            }
+        } else {
+            exchange.sendResponseHeaders(405, -1);
+            exchange.close();
+        }
+    });
 
     serveur.createContext("/api/carte", exchange -> {
         System.out.println(">>> Requête reçue sur /api/carte <<<");

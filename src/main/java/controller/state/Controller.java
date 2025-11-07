@@ -73,6 +73,10 @@ public class Controller{
 			currentState.assignerLivreur(this, carteController, assignations);
 	}
 
+	public void ajouterLivraison(String idCollecte,String idPrecCollecte,String idDepot,String idPrecDepot,String numTrajet){
+		currentState.ajouterLivraison(this, carteController,idCollecte,idPrecCollecte,idDepot,idPrecDepot,numTrajet );
+	}
+
 	/**
 	 * Méthode pour générer les feuilles de routes
 	 */

@@ -346,6 +346,33 @@ public class CarteController {
         }
         json.append("}");
 
+        // sites par trajets
+        json.append(",\"SiteParTrajet\":{");
+
+        for (int i = 0; i < trajets.size(); i++) {
+            Trajet t = trajets.get(i);
+            json.append("\"").append(i).append("\":{"); // objet pour chaque trajet
+
+            // Liste des sites
+            json.append("\"sites\":[");
+            List<Site> sites = t.getSites();
+            for (int j = 0; j < sites.size(); j++) {
+                Site s = sites.get(j);
+                json.append("{\"Id\":").append(s.getId()).append("}");
+                if (j < sites.size() - 1) json.append(",");
+            }
+            json.append("]"); // fin du tableau sites
+
+            json.append("}"); // fin de l'objet trajet
+
+            if (i < trajets.size() - 1) json.append(","); // virgule entre trajets
+        }
+
+        json.append("}");
+
+
+
+
         // -- Sites
         json.append(",\"sites\":[");
         boolean firstSite = true;

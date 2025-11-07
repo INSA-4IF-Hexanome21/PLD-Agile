@@ -559,6 +559,32 @@ display: flex;
 }
 
 /* //! Marqueurs personnalisés */
+
+/* Asegurar que los nodos sean clickeables */
+.marqueur-personnalise {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.marqueur-noeud {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  position: relative;
+  z-index: 1000;
+}
+
+/* En modo ajout, hacer más visible */
+.mode-ajout-actif .marqueur-noeud {
+  cursor: crosshair !important;
+  pointer-events: auto !important;
+}
+
+.mode-ajout-actif .marqueur-personnalise {
+  cursor: crosshair !important;
+  pointer-events: auto !important;
+  z-index: 10000 !important;
+}
+
 .marqueur-noeud {
   background: var(--spie-dark-teal);
   border: 3px solid var(--white);
@@ -857,4 +883,67 @@ a:focus {
     font-size: 0.75em;
     font-weight: bold;
     z-index: 10;
+}
+/* === CRÍTICO: Forzar clickabilidad de nœuds SIN position === */
+.leaflet-pane.leaflet-noeud-pane {
+  z-index: 850 !important;
+  pointer-events: auto !important;
+}
+
+.marqueur-noeud-container {
+  pointer-events: all !important;
+  z-index: 10000 !important;
+  /* NO position: relative aquí */
+}
+
+.marqueur-noeud {
+  pointer-events: all !important;
+  cursor: pointer !important;
+  z-index: 10000 !important;
+  touch-action: manipulation !important;
+  /* NO position, NO transform, NO top/left */
+}
+
+/* En modo ajout, máxima prioridad */
+.mode-ajout-actif .marqueur-noeud-container {
+  z-index: 99999 !important;
+  pointer-events: all !important;
+}
+
+.mode-ajout-actif .marqueur-noeud {
+  cursor: crosshair !important;
+  pointer-events: all !important;
+  z-index: 99999 !important;
+}
+
+/* Prevenir que el mapa capture el click */
+.mode-ajout-actif .leaflet-container {
+  cursor: crosshair !important;
+}
+
+.mode-ajout-actif .leaflet-tile-pane {
+  pointer-events: none !important;
+}
+
+/* Forzar que los markers sean clickeables */
+.mode-ajout-actif .leaflet-marker-pane {
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+}
+
+/* Animación de pulse más visible */
+@keyframes pulse-highlight {
+  0%, 100% { 
+    box-shadow: 0 0 15px #FFA62B, 0 0 25px #FFA62B;
+  }
+  50% { 
+    box-shadow: 0 0 25px #FFA62B, 0 0 40px #FFA62B, 0 0 60px #FFA62B;
+  }
+}
+
+.marqueur-noeud-highlight {
+  animation: pulse-highlight 1.5s infinite !important;
+  z-index: 100000 !important;
+  pointer-events: all !important;
+  cursor: crosshair !important;
 }
