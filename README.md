@@ -2,7 +2,19 @@
 
 **Hexanôme H21**
 
-## Utilisation
+## Execution
+
+Générer le .jar :
+```bash
+mvn clean package
+```
+
+Exécuter le .jar :
+```bash
+java -jar target/CarteBoard-1.0.jar
+```
+
+## Compilation
 
 Compiler le code principal :
 ```bash
