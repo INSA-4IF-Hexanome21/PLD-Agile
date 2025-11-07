@@ -8,7 +8,7 @@ function assignationLivraison() {
   
   const form = document.getElementById('form-livreurs');
   if (!form) {
-    console.warn('form-livreurs no encontrado');
+    console.warn('form-livreurs non trouvé');
     return;
   }
 
@@ -20,9 +20,9 @@ function assignationLivraison() {
   });
 
   if (donneesGlobales && donneesGlobales.sites) {
-    extraerYMostrarLivraisons(donneesGlobales.sites);
+    extrairEtAfficherLivraisons(donneesGlobales.sites);
   } else {
-    console.warn('donneesGlobales.sites no disponible aún');
+    console.warn('donneesGlobales.sites pas encore disponible');
   }
 }
 
@@ -47,11 +47,11 @@ function envoyerAssignations() {
 }
 
 /**
- * Extrae livraisons de los sites y las agrupa
+ * Extrait les livraisons des sites et les regroupe
  */
 // var NB_CLICK = 0; //Variable permettant de savoir si l'évènement click a déjà été défini
 var CLICK_DEF = false;
-function extraerYMostrarLivraisons(sites) {
+function extrairEtAfficherLivraisons(sites) {
   if(!CLICK_DEF){
     document.getElementById('btn-calcul-tournee').addEventListener('click', () => {
       // if(NB_CLICK%3 === 0){
@@ -89,9 +89,10 @@ function extraerYMostrarLivraisons(sites) {
   });
   
   livraisonsData = Array.from(livraisonsMap.values())
-    .filter(liv => liv.collecte && liv.depot);
+    .filter(liv => liv.collecte && liv.depot)
+    .sort((a, b) => a.id - b.id); // Tri lexicographique par ID
   
-  mostrarLivraisonsDisponibles(livraisonsData);
+  afficherLivraisonsDisponibles(livraisonsData);
 }
 
 function lancerCalculTimeout(){
@@ -100,18 +101,18 @@ function lancerCalculTimeout(){
 }
 
 /**
- * Muestra las livraisons disponibles en el pool
+ * Affiche les livraisons disponibles dans le pool
  */
-function mostrarLivraisonsDisponibles(livraisons) {
+function afficherLivraisonsDisponibles(livraisons) {
   const container = document.getElementById('livraisons-list');
   if (!container) {
-    console.warn('livraisons-list no encontrado');
+    console.warn('livraisons-list non trouvé');
     return;
   }
 
   container.innerHTML = '';
   
-  // Filtrar solo las NO asignadas
+  // Filtrer seulement les NON assignées
   const assignedIds = new Set();
   Object.values(assignationsState).forEach(arr => arr.forEach(id => assignedIds.add(id)));
   
@@ -123,15 +124,15 @@ function mostrarLivraisonsDisponibles(livraisons) {
   }
   
   disponibles.forEach(liv => {
-    const el = crearElementoLivraison(liv);
+    const el = creerElementLivraison(liv);
     container.appendChild(el);
   });
 }
 
 /**
- * Crea un elemento visual para una livraison
+ * Crée un élément visuel pour une livraison
  */
-function crearElementoLivraison(livraison) {
+function creerElementLivraison(livraison) {
   const div = document.createElement('div');
   div.className = 'livraison-card';
   div.draggable = true;
@@ -172,24 +173,24 @@ function crearElementoLivraison(livraison) {
 }
 
 /**
- * Genera las zonas de drop para N livreurs (preservando asignaciones)
+ * Génère les zones de dépôt pour N livreurs (en préservant les assignations)
  */
 function genererZonesLivreurs(nombre) {
   const container = document.getElementById('livreurs-zones');
   if (!container) return;
   
-  // Guardar estado actual antes de limpiar
-  const estadoActual = {};
+  // Sauvegarder l'état actuel avant de nettoyer
+  const etatActuel = {};
   container.querySelectorAll('.livreur-zone').forEach(zone => {
     const livreurId = parseInt(zone.dataset.livreurId);
     const cards = Array.from(zone.querySelectorAll('.livraison-card'));
-    estadoActual[livreurId] = cards.map(c => parseInt(c.dataset.livraisonId));
+    etatActuel[livreurId] = cards.map(c => parseInt(c.dataset.livraisonId));
   });
   
-  // Fusionner avec l’état enregistré
-  Object.keys(estadoActual).forEach(key => {
+  // Fusionner avec l'état enregistré
+  Object.keys(etatActuel).forEach(key => {
     if (!assignationsState[key]) assignationsState[key] = [];
-    estadoActual[key].forEach(id => {
+    etatActuel[key].forEach(id => {
       if (!assignationsState[key].includes(id)) {
         assignationsState[key].push(id);
       }
@@ -199,10 +200,10 @@ function genererZonesLivreurs(nombre) {
   container.innerHTML = '';
   
   for (let i = 1; i <= nombre; i++) {
-    const zone = crearZoneLivreur(i);
+    const zone = creerZoneLivreur(i);
     container.appendChild(zone);
     
-    // Restaurar livraisons asignadas
+    // Restaurer les livraisons assignées
     if (assignationsState[i] && assignationsState[i].length > 0) {
       const dropzone = zone.querySelector('.dropzone-content');
       const emptyState = dropzone.querySelector('.empty-state');
@@ -211,21 +212,21 @@ function genererZonesLivreurs(nombre) {
       assignationsState[i].forEach(livraisonId => {
         const livraison = livraisonsData.find(l => l.id === livraisonId);
         if (livraison) {
-          const el = crearElementoLivraison(livraison);
+          const el = creerElementLivraison(livraison);
           dropzone.appendChild(el);
         }
       });
     }
   }
   
-  // Actualizar pool (quitar las asignadas)
-  mostrarLivraisonsDisponibles(livraisonsData);
+  // Actualiser le pool (retirer les assignées)
+  afficherLivraisonsDisponibles(livraisonsData);
 }
 
 /**
- * Crea una zona de drop para un livreur
+ * Crée une zone de dépôt pour un livreur
  */
-function crearZoneLivreur(numero) {
+function creerZoneLivreur(numero) {
   const div = document.createElement('div');
   div.className = 'livreur-zone';
   div.dataset.livreurId = numero;
@@ -259,11 +260,11 @@ function crearZoneLivreur(numero) {
     const draggedEl = document.querySelector(`[data-livraison-id="${livraisonId}"]`);
     
     if (draggedEl) {
-      // Quitar empty state si existe
+      // Retirer l'état vide s'il existe
       const emptyState = dropzone.querySelector('.empty-state');
       if (emptyState) emptyState.remove();
       
-      // Mover el elemento
+      // Déplacer l'élément
       dropzone.appendChild(draggedEl);
 
       //On supprime l'assignation faîtes éventuellement à d'autres livreurs
@@ -274,7 +275,7 @@ function crearZoneLivreur(numero) {
         }
       });
       
-      // Actualizar estado
+      // Actualiser l'état
       if (!assignationsState[numero]) assignationsState[numero] = [];
       if (!assignationsState[numero].includes(livraisonId)) {
         assignationsState[numero].push(livraisonId);
@@ -282,14 +283,14 @@ function crearZoneLivreur(numero) {
 
       
       
-      // Actualizar contador
-      // actualizarContadorLivreur(numero);
+      // Actualiser le compteur
+      // actualiserCompteurLivreur(numero);
       actualiserAllConteneurs()
       
-      // Actualizar pool
-      mostrarLivraisonsDisponibles(livraisonsData);
+      // Actualiser le pool
+      afficherLivraisonsDisponibles(livraisonsData);
       
-      // Enviar al backend
+      // Envoyer au backend
       //assignerLivraisonAuLivreur(livraisonId, numero);
     }
   });
@@ -300,13 +301,13 @@ function crearZoneLivreur(numero) {
 function actualiserAllConteneurs(){
   var zones = document.querySelectorAll(`.livreur-zone`);
   zones.forEach(function(zone){
-    actualizarContadorLivreur(zone.attributes[1].value)
+    actualiserCompteurLivreur(zone.attributes[1].value)
   });
 }
 /**
- * Actualiza el contador de livraisons de un livreur
+ * Actualise le compteur de livraisons d'un livreur
  */
-function actualizarContadorLivreur(livreurId) {
+function actualiserCompteurLivreur(livreurId) {
   const zone = document.querySelector(`.livreur-zone[data-livreur-id="${livreurId}"]`);
   if (!zone) return;
   
@@ -319,7 +320,7 @@ function actualizarContadorLivreur(livreurId) {
 }
 
 /**
- * Envia la asignación al backend
+ * Envoie l'assignation au backend
  */
 function assignerLivraisonAuLivreur(livraisonId, livreurId) {
   
@@ -333,20 +334,20 @@ function assignerLivraisonAuLivreur(livraisonId, livreurId) {
 }
 
 /**
- * Permite devolver una livraison al pool
+ * Permet de retourner une livraison au pool
  */
-function devolverAlPool(livraisonId) {
-  // Buscar en qué zona está
+function retournerAuPool(livraisonId) {
+  // Chercher dans quelle zone elle se trouve
   for (let livreurId in assignationsState) {
     const index = assignationsState[livreurId].indexOf(livraisonId);
     if (index > -1) {
       assignationsState[livreurId].splice(index, 1);
-      actualizarContadorLivreur(parseInt(livreurId));
+      actualiserCompteurLivreur(parseInt(livreurId));
       break;
     }
   }
   
-  mostrarLivraisonsDisponibles(livraisonsData);
+  afficherLivraisonsDisponibles(livraisonsData);
 }
 
 /**
@@ -355,10 +356,10 @@ function devolverAlPool(livraisonId) {
 function toutesLivraisonsAssignees() {
   if (!livraisonsData || livraisonsData.length === 0) return false;
 
-  // Construire set de livraisons assignees
+  // Construire set de livraisons assignées
   const assignedIds = new Set();
   Object.values(assignationsState).forEach(arr => arr.forEach(id => assignedIds.add(id))); 
-  const allAssigned = livraisonsData.every(liv => assignedIds.has(liv.id)); // Verifier sils sont tous dans le set
+  const allAssigned = livraisonsData.every(liv => assignedIds.has(liv.id)); // Vérifier s'ils sont tous dans le set
 
   return allAssigned;
 }
@@ -387,10 +388,10 @@ function resetAssignations(nouvellesDonneesSites = null) {
     envoyerBtn.parentNode.replaceChild(newBtn, envoyerBtn);
   }
 
-  // Si il y'a nouevaus données → reconstruire l'interface
+  // S'il y a de nouvelles données → reconstruire l'interface
   const sites = nouvellesDonneesSites || (donneesGlobales && donneesGlobales.sites);
   if (sites) {
-    extraerYMostrarLivraisons(sites);
+    extrairEtAfficherLivraisons(sites);
   } else {
     console.warn('Aucune donnée de sites disponible pour le reset.');
   }
