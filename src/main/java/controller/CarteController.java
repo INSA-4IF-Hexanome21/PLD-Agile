@@ -45,6 +45,9 @@ public class CarteController {
         if (carte == null) {
             carte = new Carte();
         }
+        else{
+            carte.resetTournee();
+        }
         // Chemin vide ou null -> échec de chargement
         if (cheminFichier == null || cheminFichier.isBlank()) {
             System.err.println(">>> CarteController: chemin de carte invalide");
