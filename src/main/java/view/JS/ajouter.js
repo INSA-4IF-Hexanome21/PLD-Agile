@@ -891,6 +891,7 @@ function envoyerNouvellesLivraisons(numeroTrajet) {
     return res.json();
   })
   .then(data => {
+    alert('✅ Livraisons ajoutées avec succès !');
     
     // Recharger la carte
     fetch("/api/carte")
