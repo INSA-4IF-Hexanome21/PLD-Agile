@@ -210,7 +210,7 @@ public class Trajet {
             if (!Files.exists(dossier)) {
                 Files.createDirectories(dossier);
             }
-            FileWriter writer = new FileWriter("ressources/downloads/trajet-" + numTrajet + ".txt");
+            FileWriter writer = new FileWriter("ressources/downloads/trajet-" + (numTrajet-1) + ".txt");
 
             // write the string to the file
             writer.write(data);
