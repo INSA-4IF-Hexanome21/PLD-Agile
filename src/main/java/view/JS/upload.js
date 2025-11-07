@@ -1,7 +1,6 @@
 // upload.js - Gestion de chargement de fichiers avec validation d'état
 
 $(document).ready(function() {
-    console.log('🔵 upload.js chargé');
     
     // Initialiser l'interface selon l'état actuel
     updateUIBasedOnState();
@@ -19,7 +18,6 @@ $(document).ready(function() {
         var uploadType = $fileArea.data('upload-type'); // 'plan' ou 'demande'
         
         if (fileName) {
-            console.log('📁 Fichier sélectionné:', fileName, '- Type:', uploadType);
             
             // Validation: fichier XML
             if (!fileName.toLowerCase().endsWith('.xml')) {
@@ -92,7 +90,6 @@ $(document).ready(function() {
     
     // Bouton de retour
     $(document).on('click', '#btn-retour-carte', function() {
-        console.log('🔙 Retour à la carte');
         $('#btn-map').trigger('click');
     });
 });
@@ -104,7 +101,6 @@ function updateUIBasedOnState() {
     if (!window.appController) return;
     
     const state = window.appController.getStateInfo();
-    console.log('🎨 Mise à jour UI selon état:', state);
     
     // Activer/désactiver la zone de demande
     const $demandeArea = $('.file-area[data-upload-type="demande"]');
@@ -197,7 +193,6 @@ function subirArchivo(file, uploadType) {
     var endpoint = uploadType === 'plan' ? '/api/upload/plan' : '/api/upload/demande';
     var statusId = uploadType === 'plan' ? '#status-plan' : '#status-demande';
     
-    console.log('📤 Début du téléversement :', file.name, file.size, 'octets →', endpoint);
     
     // État visuel : chargement
     $(statusId).removeClass('success error').addClass('loading')
@@ -207,7 +202,6 @@ function subirArchivo(file, uploadType) {
     
     reader.onload = function(e) {
         var arrayBuffer = e.target.result;
-        console.log('✅ Fichier lu en mémoire :', arrayBuffer.byteLength, 'octets');
         
         fetch(endpoint, {
             method: 'POST',
@@ -231,7 +225,6 @@ function subirArchivo(file, uploadType) {
             return response.json();
         })
         .then(data => {
-            console.log('✅ Téléversement traité par le serveur :', data);
             
             $(statusId).removeClass('loading error').addClass('success')
                 .text('✅ ' + file.name + ' chargé avec succès !');

@@ -95,7 +95,6 @@ class ApplicationController {
      */
     onInitial() {
         this.carteChargee = false;
-        this.carteChargee = false;
         this.livraisonChargee = false;
         this.setState(AppState.INITIAL);
     }
@@ -106,9 +105,32 @@ class ApplicationController {
     onCarteLoaded() {
         console.log('✅ [Controller] Carte chargée');
         this.carteChargee = true;
-        this.carteChargee = true;
         this.livraisonChargee = false;
         this.setState(AppState.CARTE_CHARGEE);
+        const fileAreas = document.getElementsByClassName('file-area');
+        if (fileAreas.length > 1) {
+            const livraisonInput = fileAreas[1].querySelector('input[type="file"]');
+            const livraisonDummy = fileAreas[1].querySelector('.file-dummy');
+            if (livraisonInput) {
+                // Réinitialiser la valeur de l'input
+                livraisonInput.value = '';
+                
+                // Réinitialiser l'affichage visuel
+                if (livraisonDummy) {
+                    const defaultSpan = livraisonDummy.querySelector('.default');
+                    const selectedSpan = livraisonDummy.querySelector('.selected');
+                    if (defaultSpan) defaultSpan.style.display = '';
+                    if (selectedSpan) selectedSpan.style.display = 'none';
+                }
+
+                const statusDemande = document.getElementById('status-demande');
+                if (statusDemande) {
+                    statusDemande.classList.remove('success');
+                }
+
+                document.getElementById("deliverer").setAttribute("style","display : none;");
+            }
+        }
     }
 
     /**

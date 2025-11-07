@@ -29,7 +29,6 @@ const visibilityState = {
 
 
 async function chargerSites() {
-  console.log('🔄 Chargement des sites...');
   
   const response = await fetch('/api/carte');
   if (!response.ok) throw new Error('Erreur lors du chargement des sites');
@@ -64,21 +63,17 @@ async function chargerSites() {
       }
     });
     
-    console.log(`✅ ${siteMarkers.length} sites chargés`);
   }
   
   if (typeof activerEcouteursMarqueurs === 'function') {
-    console.log('🎯 Activation des écouteurs depuis chargerSites...');
     activerEcouteursMarqueurs();
   }
 }
 
 /* //! ----------------- UTILIDADES / INIT ----------------- */
 function chargerComposantPrincipal(url) {
-  console.log('Chargement du composant:', url);
   const main = document.getElementById('main-content');
   if (!main) {
-    console.error('Element #main-content introuvable');
     return;
   }
   //main.innerHTML = '<p>Chargement en cours...</p>';
@@ -95,7 +90,6 @@ function chargerComposantPrincipal(url) {
         requestAnimationFrame(() => {
           // Si le map est présent initialiser direcetmenet
           if (document.getElementById('map')) {
-            console.log("L 53 DASH.JS");
             initialiserCarte();
             // assignationLivraison();
             return;
@@ -198,7 +192,6 @@ function computeSiteRadius(map) {
 /* //! ----------------- MAP INITIALIZATION ----------------- */
 
 function initialiserCarte() {
-  console.log('Initialisation de la carte...');
 
   nettoyerCarte();
 
@@ -321,7 +314,6 @@ function initialiserCarte() {
       return res.json();
     })
     .then(donnees => {
-      console.log('Données reçues:', donnees);
       donneesGlobales = donnees;
       afficherDonneesSurCarte(donnees);
       configurerControlesVisibilite();
@@ -359,7 +351,6 @@ function afficherDonneesSurCarte(donnees) {
 
   // 1) Tronçons (fondo)
   if (donnees.troncons && donnees.troncons.length > 0) {
-    console.log('Affichage de', donnees.troncons.length, 'tronçons');
     donnees.troncons.forEach(troncon => {
       const depart = donnees.noeuds && donnees.noeuds.find(n => n.id === troncon.from);
       const arrivee = donnees.noeuds && donnees.noeuds.find(n => n.id === troncon.to);
@@ -377,7 +368,6 @@ function afficherDonneesSurCarte(donnees) {
   
 // 2) Nœuds (medio)
 if (donnees.noeuds && donnees.noeuds.length > 0) {
-  console.log('Affichage de', donnees.noeuds.length, 'nœuds');
   donnees.noeuds.forEach(noeud => {
     const icone = L.divIcon({
       className: 'marqueur-personnalise marqueur-noeud-container',
@@ -412,7 +402,6 @@ if (donnees.noeuds && donnees.noeuds.length > 0) {
     marker.on('click', function(e) {
       L.DomEvent.stopPropagation(e);
       L.DomEvent.preventDefault(e);
-      console.log('🔵 Click en nœud:', noeud.id);
       
       if (typeof gererClicMarqueur === 'function' && modeAjoutActif) {
         gererClicMarqueur(marker, 'noeud');
@@ -428,11 +417,9 @@ if (donnees.noeuds && donnees.noeuds.length > 0) {
     
     noeudMarkers.push(marker);
   });
-  console.log(`✅ ${noeudMarkers.length} nœuds créés avec handlers`);
 }
 
 // 3) Sites (encima)
-  console.log('Sites reçus:', donnees.sites);
   if (donnees.sites && donnees.sites.length > 0) {
 
     siteMarkers.forEach(m => { try { carte.removeLayer(m); } catch (e) {} });
@@ -469,7 +456,6 @@ if (donnees.noeuds && donnees.noeuds.length > 0) {
     });
 
     // 5.sites impactes 
-    console.log('Sites impactés:', donnees.sitesImpactes);
     if (donnees.sitesImpactes) {
       donnees.sitesImpactes.forEach( s => {
       sitesImpactes.push(s);
@@ -478,7 +464,6 @@ if (donnees.noeuds && donnees.noeuds.length > 0) {
     }
 
     // 4.trajets (si hay)
-    console.log('Trajets reçus:', donnees.trajets);
     if (donnees.trajets) {
       //desactiver noeuds et troncons affichage
       visibilityState.troncons = false;
@@ -783,7 +768,6 @@ function creerMarqueurSite(site, type, color, radius) {
         <br>Heures arrivées : `
       var i = 1;
       site.heures.forEach(function (heure){
-        console.log(heure);
         html += `<br>-Trajet ${i} : ${heure}`;
         i+=1;
       });
@@ -826,7 +810,26 @@ function creerMarqueurSite(site, type, color, radius) {
 
 /* //! ----------------- PANE / HOVER / DIM ----------------- */
 function getRandomHexColor() {
-  return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+  const hue = Math.floor(Math.random() * 360);
+  const saturation = Math.floor(Math.random() * 20) + 80;
+  const lightness = Math.floor(Math.random() * 20) + 40;
+
+  // HSL to HEX
+  const hslToHex = (h, s, l) => {
+    s /= 100;
+    l /= 100;
+    const k = n => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = n =>
+      l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    const toHex = x =>
+      Math.round(x * 255)
+        .toString(16)
+        .padStart(2, '0');
+    return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+  };
+
+  return hslToHex(hue, saturation, lightness);
 }
 
 function ensureSitePane() {
@@ -1041,12 +1044,10 @@ function mettreAJourTrajetsFlottant() {
  * Lance le calcul
  */
 function lancerCalcul() {
-   console.log('Calcul lancé');
     // Déterminer l'endpoint selon le type
     var endpoint = '/api/calcul';
     var statusId = '#status-calcul';
     
-    console.log('📤 Début du calcul:', endpoint);
     
     // Afficher l'état de chargement
     $(statusId).removeClass('success error').addClass('loading')
@@ -1063,14 +1064,12 @@ function lancerCalcul() {
             },
         })
         .then(response => {
-            console.log('📥 Réponse du serveur:', response.status);
             if (!response.ok) {
                 throw new Error('Erreur serveur: ' + response.status);
             }
             return response.json();
         })
         .then(data => {
-            console.log('✅ Calcul effectué', data);
             
             $(statusId).removeClass('loading error').addClass('success')
                 .text('✅ Tournée chargée avec succès!');
@@ -1104,7 +1103,6 @@ function lancerCalcul() {
     };
 
 function lancerTelechargement() {  
-  console.log("Téléchargement roadmap");
   var trajetsAffiches = getTrajetAffiches();
   var params = "?"
   if (trajetsAffiches.length === 0) return;
@@ -1115,11 +1113,11 @@ function lancerTelechargement() {
     params += "files=";
     var firstT = true;
     trajetsAffiches.forEach(t => {
-      params += t + ".txt";
-      if (firstT) {
+      if (!firstT) {
         params += ',';
-        firstT = false;
       }
+      params += t + ".txt";
+      firstT = false;
     });
   } 
 
@@ -1197,7 +1195,6 @@ function undoAction() {
       return response.json();
     })
     .then(() => {
-      console.log('Undo réussi');
       initialiserCarte();
     })
     .catch(err => {
@@ -1222,7 +1219,6 @@ function redoAction() {
       return response.json();
     })
     .then(() => {
-      console.log('Redo réussi');
       initialiserCarte();
     })
     .catch(err => {
@@ -1367,7 +1363,6 @@ fetch('/components/Sidebar.html')
     if (sidebar) sidebar.innerHTML = html;
         
     if (typeof updateUIBasedOnState === 'function') {
-      console.log("APPEL DANS LE TYPEOF")
       setTimeout(updateUIBasedOnState, 50);
     }
 
@@ -1387,7 +1382,6 @@ fetch('/components/Sidebar.html')
     });
 
   document.getElementById('btn-ajouter')?.addEventListener('click', async () => {
-  console.log('📝 Bouton Ajouter livraison cliqué');
   
   document.querySelectorAll('.sidebar-nav').forEach(b => b.classList.remove('active'));
   document.getElementById('btn-ajouter')?.classList.add('active');
@@ -1408,10 +1402,7 @@ fetch('/components/Sidebar.html')
         await initialiserCarte();
         
 
-        console.log('Verificación markers:', {
-          sites: siteMarkers ? siteMarkers.length : 0,
-          noeuds: noeudMarkers ? noeudMarkers.length : 0
-        });
+        
         
         if (!noeudMarkers || noeudMarkers.length === 0) {
           alert('❌ Erreur: Aucun nœud chargé. Vérifiez que la carte est bien chargée.');
@@ -1432,11 +1423,7 @@ fetch('/components/Sidebar.html')
     await initialiserCarte();
   }
   
-  console.log('🔍 Verificación antes de démarrer:', {
-    carteExists: !!carte,
-    sitesLength: siteMarkers ? siteMarkers.length : 0,
-    noeudsLength: noeudMarkers ? noeudMarkers.length : 0
-  });
+  
   
   if (!noeudMarkers || noeudMarkers.length === 0) {
     alert('❌ Aucun nœud disponible. Chargez d\'abord un plan de distribution.');

@@ -231,7 +231,7 @@
   }
 }
 
-/* Feedback visual al seleccionar */
+/* Retour visuel lors de la sélection */
 @keyframes selection-pulse {
   0% { 
     box-shadow: 0 0 0 0 rgba(255, 166, 43, 0.7);
