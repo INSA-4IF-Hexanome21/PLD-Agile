@@ -832,6 +832,15 @@ function getRandomHexColor() {
   return hslToHex(hue, saturation, lightness);
 }
 
+function ensureSitePane() {
+  if (!carte) return;
+  if (!carte.getPane('sitePane')) {
+    const p = carte.createPane('sitePane');
+    p.style.zIndex = 750;
+    p.style.pointerEvents = 'auto';
+  }
+}
+
 function dimExcept(activeMarker) {
   tronconLines.forEach(l => { try { if (l.setStyle) l.setStyle({ opacity: 0.12 }); } catch (e) {} });
   noeudMarkers.forEach(m => { try { if (m.setOpacity) m.setOpacity(0.2); } catch (e) {} });
