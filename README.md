@@ -2,12 +2,19 @@
 
 **Hexanôme H21**
 
-## Utilisation
+## Execution
 
-Installer les dépendances Maven :
+Générer le .jar :
 ```bash
-mvn install
+mvn clean package
 ```
+
+Exécuter le .jar :
+```bash
+java -jar target/CarteBoard-1.0.jar
+```
+
+## Compilation
 
 Compiler le code principal :
 ```bash
@@ -21,14 +28,14 @@ java -cp target/classes app.Main
 
 ## Tests
 
-Compiler les tests :
-```bash
-javac -cp target/classes -d target/test-classes src/test/java/model/*.java
-```
-
 Exécuter les tests :
 ```bash
-java -cp target/classes model.<classTest>
+mvn clean test
+```
+
+Pour voir les résultats du test, ouvrir le fichier généré :
+```bash
+target/site/jacoco/index.html
 ```
 
 ## Ressources

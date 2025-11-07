@@ -7,7 +7,7 @@ import org.junit.Test;
 public class NoeudTest {
 
     @Test
-    public void gettersAndToString_workAsExpected() {
+    public void gettersEtToString_Fonctionnent() {
         Noeud n = new Noeud(1L, 45.0f, 4.0f);
         assertEquals(1L, n.getId());
         assertEquals(45.0f, n.getLatitude(), 0.0f);
@@ -18,13 +18,15 @@ public class NoeudTest {
     }
 
     @Test
-    public void equalsAndHashCode_byIdOnly() {
+    public void equalsAndHashCode_parIDSeulement() {
         Noeud a = new Noeud(2L, 10f, 20f);
         Noeud b = new Noeud(2L, 30f, 40f);
         Noeud c = new Noeud(3L, 10f, 20f);
+        int d = 0;
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
         assertNotEquals(a, c);
+        assertNotEquals(a, d);
     }
     
 }

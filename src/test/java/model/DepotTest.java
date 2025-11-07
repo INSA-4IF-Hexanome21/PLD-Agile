@@ -38,7 +38,7 @@ public class DepotTest {
     @Test
     public void getTypeSite_retourneLivraison() {
         Depot d = new Depot(3L, 8, 100);
-        assertEquals("livraison", d.getTypeSite());
+        assertEquals("depot", d.getTypeSite());
     }
 
     @Test

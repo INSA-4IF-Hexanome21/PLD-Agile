@@ -1,7 +1,6 @@
 // upload.js - Gestion de chargement de fichiers avec validation d'état
 
 $(document).ready(function() {
-    console.log('🔵 upload.js chargé');
     
     // Initialiser l'interface selon l'état actuel
     updateUIBasedOnState();
@@ -19,11 +18,10 @@ $(document).ready(function() {
         var uploadType = $fileArea.data('upload-type'); // 'plan' ou 'demande'
         
         if (fileName) {
-            console.log('📁 Fichier sélectionné:', fileName, '- Type:', uploadType);
             
             // Validation: fichier XML
             if (!fileName.toLowerCase().endsWith('.xml')) {
-                alert('❌ Veuillez sélectionner un fichier XML');
+                alert('Veuillez sélectionner un fichier XML');
                 this.value = '';
                 return;
             }
@@ -42,6 +40,7 @@ $(document).ready(function() {
             
             // Télécharger le fichier automatiquement
             subirArchivo(this.files[0], uploadType);
+            setTimeout(initialiserCarte, 1000);
         } else {
             $dummy.find('.selected').hide();
             $dummy.find('.default').show();
@@ -91,8 +90,7 @@ $(document).ready(function() {
     
     // Bouton de retour
     $(document).on('click', '#btn-retour-carte', function() {
-        console.log('🔙 Retour à la carte');
-        $('#btn-mapa').trigger('click');
+        $('#btn-map').trigger('click');
     });
 });
 
@@ -103,7 +101,6 @@ function updateUIBasedOnState() {
     if (!window.appController) return;
     
     const state = window.appController.getStateInfo();
-    console.log('🎨 Mise à jour UI selon état:', state);
     
     // Activer/désactiver la zone de demande
     const $demandeArea = $('.file-area[data-upload-type="demande"]');
@@ -130,109 +127,140 @@ function updateUIBasedOnState() {
             '⚠️ Veuillez d\'abord charger un plan de distribution</div>'
         );
     }
+
+    //Choisir les livreurs
+    if(state.canCalculate){
+        
+
+    }
     
     // Afficher les indicateurs de statut
     if (state.carteChargee) {
         $('#status-plan').removeClass('loading error').addClass('success')
             .html('✅ Plan de distribution chargé').show();
     } else {
-        $('#status-plan').hide();
+        $('#status-demande').hide();
     }
     
     if (state.livraisonChargee) {
         $('#status-demande').removeClass('loading error').addClass('success')
             .html('✅ Demandes de livraison chargées').show();
-    } else {
-        $('#status-demande').hide();
     }
 }
 
+//Helper pour mettre à jour les états lors des erreurs d'upload
+function miseAJourEtat (uploadType){
+    if (window.appController) {
+                try {
+                    if (uploadType === 'plan') {
+                        window.appController.onInitial();
+                    } else if (uploadType === 'demande') {
+                        window.appController.onCarteLoaded();
+                    }
+                } catch (err) {
+                    console.error('Erreur côté contrôleur :', err);
+                    $(statusId).removeClass('loading success').addClass('error')
+                        .text('' + (err.message || 'Erreur interne'));
+                }
+            }
+}
+
+// Helper pour afficher des erreurs d'upload
+function afficherErreurUpload(statusId, httpStatus, serverBody) {
+    var messageAmical = 'Erreur : ';
+    if (httpStatus === 500) {
+        messageAmical += "Le fichier n'est pas lisible ou n'a pas le bon format";
+    } else if (serverBody && serverBody.message) {
+        messageAmical += serverBody.message;
+    } else {
+        messageAmical += 'Erreur serveur (' + httpStatus + ')';
+    }
+
+    $(statusId).removeClass('loading success').addClass('error').text(messageAmical);
+}
+
 /**
- * Télécharge un fichier vers le serveur
- * @param {File} file - Fichier à télécharger
- * @param {string} uploadType - Type: 'plan' ou 'demande'
+ * Téléverse un fichier vers le serveur
+ * @param {File} file - Fichier à téléverser
+ * @param {string} uploadType - 'plan' ou 'demande'
  */
 function subirArchivo(file, uploadType) {
     if (!file) {
-        console.error('❌ Pas de fichier à télécharger');
+        console.error('Aucun fichier à téléverser');
         return;
     }
     
-    // Déterminer l'endpoint selon le type
     var endpoint = uploadType === 'plan' ? '/api/upload/plan' : '/api/upload/demande';
     var statusId = uploadType === 'plan' ? '#status-plan' : '#status-demande';
     
-    console.log('📤 Début téléchargement:', file.name, file.size, 'octets', '→', endpoint);
     
-    // Afficher l'état de chargement
+    // État visuel : chargement
     $(statusId).removeClass('success error').addClass('loading')
         .text('⏳ Chargement en cours...').show();
     
-    // Lire le fichier comme ArrayBuffer
     var reader = new FileReader();
     
     reader.onload = function(e) {
         var arrayBuffer = e.target.result;
-        console.log('✅ Fichier lu:', arrayBuffer.byteLength, 'octets');
         
-        // Envoyer directement l'ArrayBuffer
         fetch(endpoint, {
             method: 'POST',
             headers: {
+                // On précise le type pour info ; l'envoi est un ArrayBuffer
                 'Content-Type': 'application/xml',
                 'X-File-Name': encodeURIComponent(file.name)
             },
             body: arrayBuffer
         })
         .then(response => {
-            console.log('📥 Réponse du serveur:', response.status);
             if (!response.ok) {
-                throw new Error('Erreur serveur: ' + response.status);
+                // Tenter de parser un JSON d'erreur si présent, sinon renvoyer texte brut
+                return response.text().then(text => {
+                    let parsed = null;
+                    try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
+                    return Promise.reject({ status: response.status, body: parsed });
+                });
             }
+            // OK -> JSON normal attendu
             return response.json();
         })
         .then(data => {
-            console.log('✅ Fichier téléchargé et traité:', data);
             
             $(statusId).removeClass('loading error').addClass('success')
-                .text('✅ ' + file.name + ' chargé avec succès!');
+                .text('✅ ' + file.name + ' chargé avec succès !');
             
-            // Notifier le contrôleur du succès
+            // Notifier le contrôleur local
             if (window.appController) {
                 try {
                     if (uploadType === 'plan') {
                         window.appController.onCarteLoaded();
-                        // Afficher message encourageant à charger la demande
-                        setTimeout(() => {
-                            if (!window.appController.getStateInfo().livraisonChargee) {
-                            }
-                        }, 500);
                     } else if (uploadType === 'demande') {
                         window.appController.onLivraisonLoaded();
-                        // Afficher message et proposer d'aller à la carte
-                       
                     }
                 } catch (err) {
-                    console.error('❌ Erreur contrôleur:', err);
-                    alert('⚠️ ' + err.message);
-                    // Réinitialiser le status en cas d'erreur
+                    console.error('Erreur côté contrôleur :', err);
                     $(statusId).removeClass('loading success').addClass('error')
-                        .text('❌ ' + err.message);
-                    return;
+                        .text('' + (err.message || 'Erreur interne'));
                 }
             }
         })
         .catch(err => {
-            console.error('❌ Erreur lors du téléchargement:', err);
-            $(statusId).removeClass('loading success').addClass('error')
-                .text('❌ Erreur: ' + err.message);
+            console.error('Erreur lors du téléversement :', err);
+            // err peut être un Error ou l'objet {status, body}
+            if (err && typeof err === 'object' && 'status' in err) {
+                afficherErreurUpload(statusId, err.status, err.body);
+            } else {
+                $(statusId).removeClass('loading success').addClass('error')
+                    .text('Erreur : ' + (err.message || String(err)));
+            }
+            miseAJourEtat(uploadType);
         });
     };
     
     reader.onerror = function(e) {
-        console.error('❌ Erreur lors de la lecture du fichier:', e);
+        console.error('Erreur de lecture du fichier :', e);
         $(statusId).removeClass('loading success').addClass('error')
-            .text('❌ Erreur lors de la lecture du fichier');
+            .text('Erreur lors de la lecture du fichier');
     };
     
     reader.readAsArrayBuffer(file);

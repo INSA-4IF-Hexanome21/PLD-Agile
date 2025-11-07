@@ -12,7 +12,7 @@
   --light-gray: #ECF0F1;
 }
 
-/* //! --- CONTROLES DEL SIDEBAR --- */
+/* //! --- CONTROLES DE LA SIDEBAR --- */
 #sidebar {
   width: 280px;
   padding: 16px;
@@ -46,7 +46,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 10px 0;
   padding: 8px;
   border-radius: 6px;
   transition: background 0.2s ease;
@@ -57,21 +56,121 @@
 }
 
 .control-row input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
+  width: 16px; 
+  height: 16px;
   cursor: pointer;
-  accent-color: var(--spie-dark-teal);
+  accent-color: #489fb5;
+  flex-shrink: 0;
+  margin: 0;
 }
 
 .control-row label {
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px; /* Espacement réduit */
   flex: 1;
-  font-size: 0.95rem;
-  color: var(--dark-gray);
+  font-size: 0.65rem; 
+  color: #333;
   user-select: none;
+  white-space: nowrap; /* Évite le retour à la ligne */
 }
 
-/* //! Indicadores de color para tipos de sites */
+/* Items de trajet */
+.control-row.trajet-item {
+  padding: 4px 6px; /* Espacement réduit */
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.control-row.trajet-item:hover {
+  background: rgba(72, 159, 181, 0.1);
+}
+
+.control-row input[type="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Conteneur principal de la fenêtre flottante */
+.control-trajets,
+.control-sites-impactes {
+  background: rgba(255, 255, 255, 0.95); 
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 0;
+  width: 160px; 
+  font-family: Arial, sans-serif;
+  pointer-events: auto; 
+  animation: slideIn 0.3s ease-out;
+}
+
+/* En-tête */
+.trajets-header,
+.sites-impactes-header {
+  background: rgba(72, 159, 181, 0.9);
+  color: white;
+  padding: 8px 12px; 
+  border-radius: 8px 8px 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Corps */
+.trajets-body,
+.sites-impactes-body {
+  padding: 8px; /* Réduit l'espacement */
+  max-height: 100px; /* Hauteur max réduite */
+  overflow-y: auto;
+  overflow-x: hidden; /* Évite le débordement horizontal */
+}
+
+.empty-body {
+  padding: 8px; /* Réduit l'espacement */
+  font-size: 0.65rem;
+  color: #333;
+  text-align: center;
+}
+
+/* Scrollbar personnalisée */
+.trajets-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.trajets-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.trajets-body::-webkit-scrollbar-thumb {
+  background: rgba(72, 159, 181, 0.5);
+  border-radius: 2px;
+}
+
+/* Liste des trajets */
+.trajets-list,
+.sites-impactes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* Espacement réduit */
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* S'assurer que le contrôle ne bloque pas la carte */
+.leaflet-top.leaflet-right {
+  pointer-events: none;
+}
+
+/* //! Indicateur de couleur pour chaque type de sites */
 .site-indicator {
   display: inline-block;
   width: 7px;
@@ -87,7 +186,7 @@
 .site-indicator.depot { background: #e53e3e; }
 .site-indicator.noeuds { background: #16697A; }
 
-/* //! Botones de control */
+/* //! Boutons de contrôle */
 .control-btn {
   display: inline-block;
   border: none;
@@ -135,6 +234,10 @@
   animation: none;
 }
 
+#toggle-trajets:checked + label .site-indicator.trajets {
+  animation: none;
+}
+
 .site-indicator.trajets {
   background: #10b981; 
   border: 1px solid #059669;
@@ -150,6 +253,8 @@
 .site-marker-highlight {
   animation: none;
 }
+
+
 
 /* //! Reset et styles de base */
 * {
@@ -227,6 +332,50 @@ header h1 {
   width: 100%;
 }
 
+/* //! Colonnes pour assigners les livraisons 
+.column{
+  column-count: 3;
+}*/
+
+.dragElement, .dropZone {
+  width: 12rem;
+  height: 5rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  align-self: center;
+  background: var(--white);
+backdrop-filter: blur( 4px );
+-webkit-backdrop-filter: blur( 4px );
+border-radius: 10px;
+  transition: 0.3s;
+}
+
+.dropZone {
+  width: 13rem;
+  height: 6rem;
+  background:  var(--spie-light-teal);
+backdrop-filter: blur( 4.5px );
+-webkit-backdrop-filter: blur( 4.5px );
+border-radius: 10px;
+display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+}
+
+.beingDragged {
+ color: white;
+  background-color: black;
+}
+
+.hoverOver {
+  transition: 0.3s ease-out;
+  border: var(--spie-dark-teal);
+}
+
 /* //! Sidebar professionnel */
 #sidebar button.sidebar-nav {
   background: var(--white);
@@ -291,7 +440,7 @@ header h1 {
   border-top: 4px solid var(--spie-dark-teal);
 }
 
-/*//! Container du mapa */
+/*//! Conteneur de la carte */
 #map {
   width: 100%;
   height: calc(100vh - 250px);
@@ -303,8 +452,19 @@ header h1 {
   z-index: 1;
 }
 
+#deliverer {
+  margin-top: 30px;
+  width: 100%;
+  height: calc(100vh - 250px);
+  overflow: hidden;;
+  position: relative;
+  z-index: 1;
+  display: flex;
+}
+
 /* //! Styles pour les contrôles de Leaflet */
-.leaflet-control-zoom a {
+.leaflet-control-zoom a,
+.leaflet-control-undoRedo a {
   background: var(--spie-dark-teal) !important;
   color: var(--white) !important;
   border: none !important;
@@ -312,9 +472,43 @@ header h1 {
   transition: all 0.3s ease !important;
 }
 
-.leaflet-control-zoom a:hover {
+.leaflet-control-zoom a:hover,
+.leaflet-control-undoRedo a:hover {
   background: var(--spie-medium-teal) !important;
   transform: scale(1.05);
+}
+
+/* Container du zoom */
+.leaflet-bar {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 4px; 
+}
+
+/* Boutons zoom */
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.undo-btn, 
+.redo-btn {
+  width: 32px;  
+  height: 32px;
+  line-height: 32px;
+  text-align: center;
+}
+
+.undo-btn, 
+.redo-btn {
+  display: flex;             
+  justify-content: center;   
+  align-items: center;       
+  width: 32px;  
+  height: 32px;
+}
+
+
+.leaflet-top.leaflet-left {
+  display: flex;       
+  gap: 5px;            
 }
 
 /* //! Personnalisation des popups Leaflet */
@@ -338,7 +532,59 @@ header h1 {
   z-index: 10000 !important;
 }
 
+.delete-control {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.delete-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.delete-control img {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
 /* //! Marqueurs personnalisés */
+
+/* Asegurar que los nodos sean clickeables */
+.marqueur-personnalise {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.marqueur-noeud {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  position: relative;
+  z-index: 1000;
+}
+
+/* En modo ajout, hacer más visible */
+.mode-ajout-actif .marqueur-noeud {
+  cursor: crosshair !important;
+  pointer-events: auto !important;
+}
+
+.mode-ajout-actif .marqueur-personnalise {
+  cursor: crosshair !important;
+  pointer-events: auto !important;
+  z-index: 10000 !important;
+}
+
 .marqueur-noeud {
   background: var(--spie-dark-teal);
   border: 3px solid var(--white);
@@ -450,6 +696,10 @@ footer {
   #map {
     height: 60vh;
   }
+
+  #deliverer {
+    height: 60vh
+  }
 }
 
 @media (max-width: 640px) {
@@ -473,6 +723,16 @@ footer {
   
   #main-content {
     padding: 1rem;
+  }
+
+  .dragElement {
+    width: 6rem;
+    height: 5rem;
+    font-size: 60%;
+  }
+  .dropZone {
+    width: 8rem;
+    height: 5rem;
   }
 }
 
@@ -503,7 +763,7 @@ a:focus {
   outline-offset: 2px;
 }
 
-/* //! Indicadores de color en el sidebar */
+/* //! Indicateurs de couleur dans la sidebar */
 .site-indicator {
   display:inline-block;
   width: 12px;
@@ -517,13 +777,13 @@ a:focus {
 .site-indicator.livraison { background: #e53e3e; }
 .site-indicator.noeuds { background: #16697A; }
 
-/* //! Map dim class */
+/* //! Carte dim classe */
 .leaflet-container.map-dim {
   filter: grayscale(0.6) brightness(0.6);
   transition: filter 180ms ease;
 }
 
-/* //! small visual for sidebar buttons (ajusta según tu tema) */
+/* //! Petit visual pour la sidebar */
 .sidebar-nav { display:block; width:100%; padding:8px 10px; text-align:left; border:none; background:transparent; cursor:pointer; margin-bottom:6px; border-radius:6px; }
 .sidebar-nav.active { background: rgba(102,126,234,0.12); color:#2a2a2a; }
 .control-btn { padding:8px 10px; border-radius:6px; border:none; cursor:pointer; background:#667eea; color:#fff; margin:6px 4px; }
@@ -623,4 +883,67 @@ a:focus {
     font-size: 0.75em;
     font-weight: bold;
     z-index: 10;
+}
+/* === CRÍTICO: Forzar clickabilidad de nœuds SIN position === */
+.leaflet-pane.leaflet-noeud-pane {
+  z-index: 850 !important;
+  pointer-events: auto !important;
+}
+
+.marqueur-noeud-container {
+  pointer-events: all !important;
+  z-index: 10000 !important;
+  /* NO position: relative aquí */
+}
+
+.marqueur-noeud {
+  pointer-events: all !important;
+  cursor: pointer !important;
+  z-index: 10000 !important;
+  touch-action: manipulation !important;
+  /* NO position, NO transform, NO top/left */
+}
+
+/* En modo ajout, máxima prioridad */
+.mode-ajout-actif .marqueur-noeud-container {
+  z-index: 99999 !important;
+  pointer-events: all !important;
+}
+
+.mode-ajout-actif .marqueur-noeud {
+  cursor: crosshair !important;
+  pointer-events: all !important;
+  z-index: 99999 !important;
+}
+
+/* Prevenir que el mapa capture el click */
+.mode-ajout-actif .leaflet-container {
+  cursor: crosshair !important;
+}
+
+.mode-ajout-actif .leaflet-tile-pane {
+  pointer-events: none !important;
+}
+
+/* Forzar que los markers sean clickeables */
+.mode-ajout-actif .leaflet-marker-pane {
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+}
+
+/* Animación de pulse más visible */
+@keyframes pulse-highlight {
+  0%, 100% { 
+    box-shadow: 0 0 15px #FFA62B, 0 0 25px #FFA62B;
+  }
+  50% { 
+    box-shadow: 0 0 25px #FFA62B, 0 0 40px #FFA62B, 0 0 60px #FFA62B;
+  }
+}
+
+.marqueur-noeud-highlight {
+  animation: pulse-highlight 1.5s infinite !important;
+  z-index: 100000 !important;
+  pointer-events: all !important;
+  cursor: crosshair !important;
 }

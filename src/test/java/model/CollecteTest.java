@@ -70,4 +70,13 @@ public class CollecteTest {
         assertNull(c.getDepartHeure());
         assertNull(c.getArriveeHeure());
     }
+
+    @Test
+    public void LeNumeroDePassage_fonctionneCorrectement() {
+        Collecte c = new Collecte(5L, null, null, 0, 0);
+        c.setNumPassage(5); 
+
+        // Vérification de la valeur
+        assertEquals(Integer.valueOf(5),c.getNumPassage());
+    }
 }

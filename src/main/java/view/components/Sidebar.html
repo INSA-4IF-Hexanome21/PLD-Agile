@@ -3,16 +3,55 @@
 
 <div class="control-section">
   <h3 class="control-title">Navigation</h3>
-  <button id="btn-mapa" class="sidebar-nav active">
+  <button id="btn-map" class="sidebar-nav active">
     <span>📍 Carte Interactive</span>
   </button>
-  <button id="btn-filtros" class="sidebar-nav">
-    <span>🔍 Import Client</span>
-  </button>
-  <button id="btn-estadisticas" class="sidebar-nav">
-    <span>📊 Filtres Avancés</span>
-  </button>
+
+   <!-- <button id="btn-calcul" class="sidebar-nav">
+    <span>🚐 Calculer la tournée</span>
+  </button>  -->
+
+  <button id="btn-roadmap" class="sidebar-nav">
+    <span>📄 Feuille de route</span>
+  </button> 
+
+   <button id="btn-ajouter" class="sidebar-nav">
+    <span>✍🏻 Ajouter livraison</span>
+  </button> 
+
+ <!-- 1. Selectione un noeud pour ajouter une collecte--> 
+<!-- 2. Selectione le site qui precede la nouvelle collecte-->
+ <!-- 3. Selectione un noeud pour ajouter un depot-->  
+<!-- 4. Selectione le site qui precede le nouveau depot--> 
+
 </div>
+ 
+<div class="control-section fixed-width" style="box-sizing:border-box;">
+  <h3 class="control-title">Imports</h3>
+
+  <div id="chargerCarte" class="control-section">
+    <div class="file-area" data-upload-type="plan" style="width:100%;">
+      <input type="file" id="file-upload-plan" accept=".xml" style="width:100%;">
+      <div class="file-dummy" style="display:flex; align-items:center; justify-content:space-between; width:100%; overflow:hidden;">
+        <span class="default" style="font-size:0.85rem; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">📍 Plan de Distribution (XML) </span>
+        <span class="selected" style="display:none; margin-left:0.5rem; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;"></span>
+      </div>
+    </div>
+    <div class="upload-status" id="status-plan" style="display:none; margin-top: 0.5rem; font-size: 0.9rem; width:100%;"></div>
+  </div>
+
+  <div id="chargerLivraison" class="control-section" style="margin-bottom:-1rem;">
+    <div class="file-area" data-upload-type="demande" style="width:100%;">
+      <input type="file" id="file-upload-demande" accept=".xml" style="width:100%;">
+      <div class="file-dummy" style="display:flex; align-items:center; justify-content:space-between; width:100%; overflow:hidden;">
+        <span class="default" style="font-size:0.85rem; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">📦 Demandes de Livraison (XML)</span>
+        <span class="selected" style="display:none; margin-left:0.5rem; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;"></span>
+      </div>
+    </div>
+    <div class="upload-status" id="status-demande" style="display:none; font-size: 0.9rem; width:100%;"></div>
+  </div>
+</div>
+
 
 <div class="control-section">
   <h3 class="control-title">Affichage Sites</h3>
@@ -54,27 +93,28 @@
   </div>
   
   <div class="control-row">
-    <input type="checkbox" id="toggle-trajets" checked>
-    <label for="toggle-trajets">
-      <span class="site-indicator trajets"></span>
-      Trajets Calculés
-    </label>
-  </div>
-  
-  <div class="control-row">
     <input type="checkbox" id="toggle-troncons" checked>
     <label for="toggle-troncons">
+      <span class="site-indicator troncons"></span>
       Tronçons
     </label>
   </div>
   
+  <div class="control-row">
+    <input type="checkbox" id="toggle-trajets" checked>
+    <label for="toggle-trajets">
+      <span class="site-indicator trajets"></span>
+      Trajets
+    </label>
+  </div>
+
 </div>
 
 <div class="control-section">
   <button id="btn-reset-view" class="control-btn ghost">
     🔄 Réinitialiser la Vue
   </button>
-  <button id="btn-toggle-all" class="control-btn">
+  <!-- <button id="btn-toggle-all" class="control-btn">
     👁️ Tout Afficher/Masquer
-  </button>
+  </button> -->
 </div>
