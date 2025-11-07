@@ -5,9 +5,9 @@
 
    <modelVersion>4.0.0</modelVersion>
 
-   <groupId>com.example</groupId>
-   <artifactId>my-app</artifactId>
-   <version>1.0-SNAPSHOT</version>
+   <groupId>com.hexanome21</groupId>
+   <artifactId>CarteBoard</artifactId>
+   <version>1.0</version>
 
    <properties>
        <maven.compiler.source>21</maven.compiler.source>
@@ -66,6 +66,20 @@
                         </configuration>
                    </execution>
                </executions>
+           </plugin>
+
+           <!-- Maven JAR Plugin to create executable JAR -->
+           <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-jar-plugin</artifactId>
+               <version>3.3.0</version>
+               <configuration>
+                   <archive>
+                       <manifest>
+                           <mainClass>app.Main</mainClass>
+                       </manifest>
+                   </archive>
+               </configuration>
            </plugin>
        </plugins>
    </build>
