@@ -89,7 +89,8 @@ function extraerYMostrarLivraisons(sites) {
   });
   
   livraisonsData = Array.from(livraisonsMap.values())
-    .filter(liv => liv.collecte && liv.depot);
+    .filter(liv => liv.collecte && liv.depot)
+    .sort((a, b) => a.id - b.id); // Tri lexicographique par ID
   
   mostrarLivraisonsDisponibles(livraisonsData);
 }
